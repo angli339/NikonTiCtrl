@@ -1,0 +1,8 @@
+build/
+CMakeLists.txt.user
+
+.vscode/*
+!.vscode/settings.json
+
+third_party/dcamsdk4/*
+!third_party/dcamsdk4/README.md

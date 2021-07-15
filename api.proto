@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/duration.proto";
+
+package api;
+
+// To generate python client code
+// python -m grpc_tools.protoc -I. --python_out=python --grpc_python_out=python api.proto
+
+service NikonTiCtrl {
+    rpc GetProperty(GetPropertyRequest) returns (GetPropertyResponse) {}
+    rpc SetProperty(SetPropertyRequest) returns (google.protobuf.Empty) {}
+    rpc WaitProperty(WaitPropertyRequest) returns (google.protobuf.Empty) {}
+    rpc ListProperty(ListPropertyRequest) returns (ListPropertyResponse) {}
+
+    rpc SnapImage(SnapImageRequest) returns (ImageID) {}
+    rpc GetImage(ImageID) returns (Image) {}
+
+    rpc LiveImage(LiveImageRequest) returns (stream Image) {}
+}
+
+message LiveImageRequest {
+    int32 n_image = 1;
+}
+
+message PropertyValue {
+    string name = 1;
+    string value = 2;
+}
+
+message GetPropertyRequest {
+    repeated string name = 1;
+    bool from_cache = 2;
+}
+
+message GetPropertyResponse {
+    repeated PropertyValue property = 1;
+}
+
+message SetPropertyRequest {
+    repeated PropertyValue property = 1;
+}
+
+message WaitPropertyRequest {
+    repeated string name = 1;
+    google.protobuf.Duration timeout = 2;
+}
+
+message ListPropertyRequest {
+    string name = 1;
+}
+
+message ListPropertyResponse {
+    repeated string name = 1;
+}
+
+message ImageID {
+    string id = 1;
+}
+
+message Image {
+    enum PixelType {
+        MONO8 = 0;
+        MONO16 = 1;
+    }
+    PixelType pixel_type = 1;
+    int32 width = 2;
+    int32 height = 3;
+    bytes data = 4;
+    string timestamp = 5;
+}
+
+message SnapImageRequest {
+    string name = 1;
+    bool save_file = 2;
+}
