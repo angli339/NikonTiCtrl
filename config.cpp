@@ -1,6 +1,7 @@
 #include "config.h"
 #include "utils/string_utils.h"
 
+#include <stdexcept>
 #include <unordered_set>
 
 std::unordered_map<std::string, double> configPixelSize = {
