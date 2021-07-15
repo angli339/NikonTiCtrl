@@ -20,8 +20,13 @@ set(CMAKE_PREFIX_PATH "C:/Qt/5.15.2/mingw81_64")
 # ---------- Qt5 ----------
 find_package(QT NAMES Qt5 COMPONENTS Widgets REQUIRED)
 find_package(Qt5 COMPONENTS Widgets Concurrent Charts REQUIRED)
+# find windeployqt
+get_target_property(_qmake_executable Qt5::qmake IMPORTED_LOCATION)
+get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
+find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}" REQUIRED)
 message(STATUS "---------- Qt5 ----------")
 message(STATUS "Qt5 Widgets: Version ${Qt5Widgets_VERSION}")
+message(STATUS "windeployqt: ${WINDEPLOYQT_EXECUTABLE}")
 
 # ---------- MSYS2 ----------
 # provides binary packages
@@ -29,18 +34,35 @@ message(STATUS "Qt5 Widgets: Version ${Qt5Widgets_VERSION}")
 #     * protobuf: mingw-w64-x86_64-protobuf
 #     * gRPC: mingw-w64-x86_64-grpc
 # along with their dependencies
-set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "C:/msys64/mingw64")
+set(MSYS_PATH "C:/msys64/mingw64")
+set(MSYS_BIN_PATH "${MSYS_PATH}/bin")
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${MSYS_PATH})
 
 # ---------- libtiff ----------
 message(STATUS "---------- libtiff ----------")
 find_package(TIFF REQUIRED)
 message(STATUS "libtiff include dir: ${TIFF_INCLUDE_DIRS}")
 message(STATUS "libtiff libraries: ${TIFF_LIBRARIES}")
+install(FILES
+    "${MSYS_BIN_PATH}/libtiff-5.dll"
+    "${MSYS_BIN_PATH}/libdeflate.dll"
+    "${MSYS_BIN_PATH}/liblzma-5.dll"
+    "${MSYS_BIN_PATH}/libjbig-0.dll"
+    "${MSYS_BIN_PATH}/libjpeg-8.dll"
+    "${MSYS_BIN_PATH}/libwebp-7.dll"
+    "${MSYS_BIN_PATH}/libzstd.dll"
+    "${MSYS_BIN_PATH}/zlib1.dll"
+    DESTINATION .
+)
 
 # ---------- SQLite ----------
 message(STATUS "---------- SQLite ----------")
 find_package(SQLite3 REQUIRED)
 message(STATUS "SQLite version: ${SQLite3_VERSION}")
+install(FILES
+    "${MSYS_BIN_PATH}/libsqlite3-0.dll"
+    DESTINATION .
+)
 
 # ---------- Protobuf ----------
 message(STATUS "---------- Protobuf ----------")
@@ -53,6 +75,11 @@ if(CMAKE_CROSSCOMPILING)
 else()
   set(_PROTOBUF_PROTOC $<TARGET_FILE:protobuf::protoc>)
 endif()
+install(FILES
+    "${MSYS_BIN_PATH}/libprotobuf.dll"
+    "${MSYS_BIN_PATH}/zlib1.dll"
+    DESTINATION .
+)
 
 # ---------- gRPC ----------
 message(STATUS "---------- gRPC ----------")
@@ -83,6 +110,37 @@ else()
   set(_GRPC_CPP_PLUGIN_EXECUTABLE $<TARGET_FILE:gRPC::grpc_cpp_plugin>)
 endif()
 remove_definitions(-D_WIN32_WINNT)
+install(FILES
+    "${MSYS_BIN_PATH}/libgrpc++.dll"
+    "${MSYS_BIN_PATH}/libabsl_bad_optional_access.dll"
+    "${MSYS_BIN_PATH}/libabsl_base.dll"
+    "${MSYS_BIN_PATH}/libabsl_cord.dll"
+    "${MSYS_BIN_PATH}/libabsl_int128.dll"
+    "${MSYS_BIN_PATH}/libabsl_malloc_internal.dll"
+    "${MSYS_BIN_PATH}/libabsl_raw_logging_internal.dll"
+    "${MSYS_BIN_PATH}/libabsl_spinlock_wait.dll"
+    "${MSYS_BIN_PATH}/libabsl_stacktrace.dll"
+    "${MSYS_BIN_PATH}/libabsl_status.dll"
+    "${MSYS_BIN_PATH}/libabsl_statusor.dll"
+    "${MSYS_BIN_PATH}/libabsl_strings.dll"
+    "${MSYS_BIN_PATH}/libabsl_strings_internal.dll"
+    "${MSYS_BIN_PATH}/libabsl_str_format_internal.dll"
+    "${MSYS_BIN_PATH}/libabsl_symbolize.dll"
+    "${MSYS_BIN_PATH}/libabsl_synchronization.dll"
+    "${MSYS_BIN_PATH}/libabsl_throw_delegate.dll"
+    "${MSYS_BIN_PATH}/libabsl_time.dll"
+    "${MSYS_BIN_PATH}/libabsl_time_zone.dll"
+    "${MSYS_BIN_PATH}/libaddress_sorting.dll"
+    "${MSYS_BIN_PATH}/libcares-4.dll"
+    "${MSYS_BIN_PATH}/libcrypto-1_1-x64.dll"
+    "${MSYS_BIN_PATH}/libgpr.dll"
+    "${MSYS_BIN_PATH}/libgrpc.dll"
+    "${MSYS_BIN_PATH}/libre2.dll"
+    "${MSYS_BIN_PATH}/libssl-1_1-x64.dll"
+    "${MSYS_BIN_PATH}/libupb.dll"
+    "${MSYS_BIN_PATH}/zlib1.dll"
+    DESTINATION .
+)
 
 ################################
 #  Add Subdirectories
@@ -90,12 +148,11 @@ remove_definitions(-D_WIN32_WINNT)
 
 set(CMAKE_BUILD_TYPE_SAVE "${CMAKE_BUILD_TYPE}")
 set(CMAKE_BUILD_TYPE RELEASE)
+set(BUILD_SHARED_LIBS OFF)
 
 # ---------- fmt ----------
 message(STATUS "---------- fmt ----------")
-set(BUILD_SHARED_LIBS OFF)
 add_subdirectory(third_party/fmt)
-set(BUILD_SHARED_LIBS ON)
 
 # ---------- spdlog ----------
 message(STATUS "---------- spdlog ----------")
@@ -104,6 +161,7 @@ add_subdirectory(third_party/spdlog)
 
 # ---------- json ----------
 message(STATUS "---------- json ----------")
+set(JSON_Install OFF CACHE INTERNAL "")
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory(third_party/json)
 
@@ -119,6 +177,10 @@ add_library(MMCoreC UNKNOWN IMPORTED)
 set_target_properties(MMCoreC PROPERTIES
     LINKER_LANGUAGE C
     IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/third_party/MMCoreAPI/lib/MMCoreC.dll"
+)
+install(FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/third_party/MMCoreAPI/lib/MMCoreC.dll"
+    DESTINATION .
 )
 
 # ---------- Hamamatsu DCAM SDK ----------
@@ -207,9 +269,19 @@ add_executable(NikonTiControl
     ${hw_grpc_srcs}
 )
 
-target_include_directories(NikonTiControl PUBLIC
-    third_party/opencv/modules/core/include
-    third_party/opencv/modules/imgproc/include
+install (TARGETS NikonTiControl
+    RUNTIME DESTINATION .
+)
+
+# Run windeployqt
+add_custom_command(TARGET NikonTiControl POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/windeployqt"
+    COMMAND "${WINDEPLOYQT_EXECUTABLE}" --dir "${CMAKE_CURRENT_BINARY_DIR}/windeployqt" --no-translations "$<TARGET_FILE:NikonTiControl>"
+)
+
+# Copy files from windeployqt during installation
+install(
+    DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/windeployqt/" DESTINATION .
 )
 
 target_link_libraries(NikonTiControl PRIVATE

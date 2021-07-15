@@ -3,10 +3,10 @@
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "cmake.cmakePath": "C:\\Qt\\Tools\\CMake_64\\bin\\cmake.exe",
     "cmake.environment": {
-        "PATH": "C:\\Qt\\Tools\\mingw810_64\\bin;C:\\Qt\\5.15.2\\mingw81_64\\bin;C:\\msys64\\mingw64\\bin;C:\\WINDOWS\\system32;C:\\WINDOWS"
+        "PATH": "C:\\Qt\\Tools\\CMake_64\\bin;C:\\Qt\\Tools\\mingw810_64\\bin;C:\\Qt\\5.15.2\\mingw81_64\\bin;C:\\msys64\\mingw64\\bin;C:\\WINDOWS\\system32;C:\\WINDOWS"
     },
     "terminal.integrated.env.windows": {
-        "PATH": "C:\\Qt\\Tools\\mingw810_64\\bin;C:\\Qt\\5.15.2\\mingw81_64\\bin;C:\\msys64\\mingw64\\bin;C:\\WINDOWS\\system32;C:\\WINDOWS"
+        "PATH": "C:\\Qt\\Tools\\CMake_64\\bin;C:\\Qt\\Tools\\mingw810_64\\bin;C:\\Qt\\5.15.2\\mingw81_64\\bin;C:\\msys64\\mingw64\\bin;C:\\WINDOWS\\system32;C:\\WINDOWS"
     },
     "files.associations": {
         "any": "cpp",
