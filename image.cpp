@@ -1,11 +1,12 @@
 #include "image.h"
-#include "utils/string_utils.h"
 
-// #include <filesystem>
+#include <cmath>
 #include <fmt/format.h>
 #include <tiffio.h>
+
 #include "logging.h"
-#include "cmath"
+#include "utils/string_utils.h"
+#include "version.h"
 
 // #include "opencv2/core.hpp"
 // #include "opencv2/imgproc.hpp"
@@ -29,6 +30,8 @@ Image *Image::copy() {
 }
 
 std::string Image::encodeMetadata() {
+    std::string softwareVersion = fmt::format("NikonTiControl {}", gitTagVersion);
+
     nlohmann::json j = {
         {"timestamp", timestamp},
         {"id", id},
@@ -42,6 +45,8 @@ std::string Image::encodeMetadata() {
         {"positionX_um", positionX_um},
         {"positionY_um", positionY_um},
         {"positionZ_um", positionZ_um},
+
+        {"software", softwareVersion},
     };
 
     if (excitationIntensity != 0) {
@@ -53,17 +58,17 @@ std::string Image::encodeMetadata() {
     return j.dump();
 }
 
-void Image::saveFile(std::string folder) {
-    std::string path = fmt::format("{}/{}.tif", folder, name);
+void Image::saveFile(fs::path image_dir) {
+    std::string filename = fmt::format("{}.tif", name);
+    fs::path filepath = image_dir / filename;
 
-    TIFF* tif = TIFFOpen(path.c_str(), "w");
-
+    TIFF* tif = TIFFOpen(filepath.string().c_str(), "w");
     if (tif == NULL) {
-        SPDLOG_ERROR("failed to open {} for write", path);
+        SPDLOG_ERROR("failed to open {} for write", filepath.string());
     }
 
     log_io("Image", "saveFile", "",
-        "TIFFOpen()", path, "",
+        "TIFFOpen()", filepath.string(), "",
         ""
     );
 
@@ -94,7 +99,8 @@ void Image::saveFile(std::string folder) {
     }
 
     TIFFSetField(tif, TIFFTAG_IMAGEDESCRIPTION, encodeMetadata().c_str());
-    TIFFSetField(tif, TIFFTAG_SOFTWARE, "Springer Lab Nikon Ti Control");
+    std::string softwareVersion = fmt::format("NikonTiControl {}", gitTagVersion);
+    TIFFSetField(tif, TIFFTAG_SOFTWARE, softwareVersion.c_str());
     TIFFSetField(tif, TIFFTAG_MAKE, "Hamamatsu");
     TIFFSetField(tif, TIFFTAG_MODEL, "Hamamatsu ORCA-R2");
     TIFFSetField(tif, TIFFTAG_UNIQUECAMERAMODEL, "Hamamatsu ORCA-R2");
@@ -128,7 +134,7 @@ void Image::saveFile(std::string folder) {
 
     TIFFClose(tif);
     
-    SPDLOG_INFO("Image: image saved to {}", path.c_str());
+    SPDLOG_INFO("Image: image saved to {}", filepath.string());
 }
 
 std::vector<double> Image::getHistogram()

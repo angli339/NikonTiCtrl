@@ -2,15 +2,15 @@
 #define DEVICECONTROL_H
 
 #include <QObject>
+#include <mutex>
 
-#include "device/nikon_ti.h"
+#include "datamanager.h"
 #include "device/hamamatsu_dcam.h"
 #include "device/micromanager_camera.h"
+#include "device/nikon_ti.h"
 #include "device/prior_proscan.h"
 #include "device/trigger_controller.h"
 #include "utils/devnotify.h"
-#include "datamanager.h"
-#include <mutex>
 
 class DeviceControl : public QObject
 {

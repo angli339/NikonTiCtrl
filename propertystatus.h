@@ -2,10 +2,10 @@
 #define PROPERTYSTATUS_H
 
 #include <chrono>
-#include <list>
-#include <string>
-#include <mutex>
 #include <condition_variable>
+#include <list>
+#include <mutex>
+#include <string>
 
 enum prop_event_type {
     PROP_EVENT_GET = 1,

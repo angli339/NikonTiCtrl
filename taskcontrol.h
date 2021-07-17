@@ -1,13 +1,14 @@
 #ifndef TASKCONTROL_H
 #define TASKCONTROL_H
 
-#include <thread>
 #include <future>
-
 #include <QObject>
+#include <string>
+#include <thread>
+#include <vector>
 
-#include "devicecontrol.h"
 #include "datamanager.h"
+#include "devicecontrol.h"
 
 struct ChannelSetting
 {

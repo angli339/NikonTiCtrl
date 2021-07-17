@@ -2,19 +2,21 @@
 #define DATAMANAGER_H
 
 #include <atomic>
-#include <string>
-#include <vector>
-#include <unordered_map>
-#include <mutex>
 #include <condition_variable>
-
-#include <QObject>
+#include <mutex>
+#include <ghc/filesystem.hpp>
 #include <QAbstractTableModel>
+#include <QObject>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 #include "image.h"
 
+namespace fs = ghc::filesystem;
+
 struct Experiment {
-    std::string folder;
+    fs::path image_dir;
     std::string id;
     std::string name;
     std::vector<Image *> images;
@@ -24,7 +26,7 @@ class DataManager : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    explicit DataManager(QObject *parent = nullptr);
+    explicit DataManager(fs::path data_root, QObject *parent = nullptr);
     ~DataManager();
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -43,6 +45,7 @@ signals:
     void requestDisplayImage(Image *im);
 
 private:
+    fs::path data_root;
     Experiment *currentExperiment = nullptr;
     int tempID = 0;
     std::string user_full_name;

@@ -5,8 +5,8 @@
 #include <QtCharts/QtCharts>
 
 #include "datamanager.h"
-#include "taskcontrol.h"
 #include "image.h"
+#include "taskcontrol.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }

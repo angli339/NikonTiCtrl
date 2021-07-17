@@ -1,12 +1,14 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
-#include <string>
 #include <cstdint>
+#include <ghc/filesystem.hpp>
 #include <map>
 #include <nlohmann/json.hpp>
+#include <string>
 #include <vector>
-// #include <filesystem>
+
+namespace fs = ghc::filesystem;
 
 enum PixelFormat {
     PixelMono8,
@@ -56,7 +58,7 @@ struct Image {
     // uint8_t *getBuf();
     // I/O
     std::string encodeMetadata();
-    void saveFile(std::string folder);
+    void saveFile(fs::path image_dir);
     
     // Image analysis
     std::vector<double> getHistogram();

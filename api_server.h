@@ -1,18 +1,15 @@
 #ifndef APISERVER_H
 #define APISERVER_H
 
-#include <memory>
-
-#include <QObject>
-
 #include <grpcpp/grpcpp.h>
+#include <memory>
+#include <QObject>
 
 #include "api.grpc.pb.h"
 #include "api.pb.h"
-
+#include "datamanager.h"
 #include "devicecontrol.h"
 #include "taskcontrol.h"
-#include "datamanager.h"
 
 using grpc::Status;
 using grpc::ServerContext;

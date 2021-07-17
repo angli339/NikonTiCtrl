@@ -9,11 +9,12 @@
 #include <QtConcurrentRun>
 
 #include "api_server.h"
+#include "config.h"
 #include "datamanager.h"
 #include "devicecontrol.h"
 #include "logging.h"
 #include "taskcontrol.h"
-#include "config.h"
+#include "version.h"
 
 namespace fs = ghc::filesystem;
 
@@ -73,7 +74,7 @@ int main(int argc, char *argv[])
     }
     init_logger(log_dir);
 
-    SPDLOG_INFO("Welcome to NikonTiControl");
+    SPDLOG_INFO("Welcome to NikonTiControl {}", gitTagVersion);
 
     //
     // load config and print to log
@@ -89,7 +90,7 @@ int main(int argc, char *argv[])
     for (const auto& [property, labelMap]: configLabel) {
         SPDLOG_INFO("    {}", property);
         for (const auto& [value, label]: labelMap) {
-            SPDLOG_INFO("      {}={} ({})", value, label.name, label.description);
+            SPDLOG_INFO("        {}={} ({})", value, label.name, label.description);
         }
     }
 
@@ -109,7 +110,16 @@ int main(int argc, char *argv[])
         SPDLOG_INFO("Current User: {}", username);
     }
     
-    DataManager *dataManager = new DataManager;
+    //
+    // Init DataManager
+    //
+    fs::path userprofile_dir = fs::path(std::getenv("USERPROFILE"));
+    if (userprofile_dir.empty()) {
+        SPDLOG_CRITICAL("failed to get USERPROFILE path from environment variables");
+        return 1;
+    }
+    fs::path data_root = userprofile_dir / "Data";
+    DataManager *dataManager = new DataManager(data_root);
 
     DeviceControl *dev = new DeviceControl;
     dev->setDataManager(dataManager);

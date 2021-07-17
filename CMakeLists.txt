@@ -236,11 +236,48 @@ add_custom_command(
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 ################################
+#  Find version
+################################
+find_package(Git REQUIRED)
+# Find tags
+execute_process(
+    COMMAND ${GIT_EXECUTABLE} describe --tags --dirty --match "v*"
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_TAG_VERSION
+    ERROR_VARIABLE GIT_TAG_VERSION_ERROR
+    RESULT_VARIABLE GIT_TAG_VERSION_ERROR_CODE
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+if(GIT_TAG_VERSION_ERROR_CODE)
+    # Find version from tags
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_HASH
+        ERROR_VARIABLE GIT_HASH_ERROR
+        RESULT_VARIABLE GIT_HASH_ERROR_CODE
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    if(GIT_HASH_ERROR_CODE)
+        message(WARNING "Failed to get git hash.")
+    else()
+        set(GIT_TAG_VERSION "v0.0.0-${GIT_HASH}")
+    endif()
+endif()
+
+message(STATUS "---------- summary ----------")
+message(STATUS "${CMAKE_PROJECT_NAME} Version: ${GIT_TAG_VERSION}")
+
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/version.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/version.cpp" @ONLY)
+set(version_srcs "${CMAKE_CURRENT_BINARY_DIR}/version.cpp")
+
+################################
 # Target
 ################################
 
 add_executable(NikonTiControl
     main.cpp
+    ${version_srcs}
 
     # UI
     mainwindow.cpp
@@ -319,39 +356,6 @@ target_link_libraries(NikonTiControl PRIVATE
     # WMI
     wbemuuid
 )
-
-################################
-#  Find version
-################################
-find_package(Git REQUIRED)
-# Find tags
-execute_process(
-    COMMAND ${GIT_EXECUTABLE} describe --tags --dirty --match "v*"
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_TAG_VERSION
-    ERROR_VARIABLE GIT_TAG_VERSION_ERROR
-    RESULT_VARIABLE GIT_TAG_VERSION_ERROR_CODE
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-if(GIT_TAG_VERSION_ERROR_CODE)
-    # Find version from tags
-    execute_process(
-        COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        OUTPUT_VARIABLE GIT_HASH
-        ERROR_VARIABLE GIT_HASH_ERROR
-        RESULT_VARIABLE GIT_HASH_ERROR_CODE
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-    if(GIT_HASH_ERROR_CODE)
-        message(WARNING "Failed to get git hash.")
-    else()
-        set(GIT_TAG_VERSION "v0.0.0-${GIT_HASH}")
-    endif()
-endif()
-
-message(STATUS "---------- summary ----------")
-message(STATUS "${CMAKE_PROJECT_NAME} Version: ${GIT_TAG_VERSION}")
 
 ################################
 # Create package

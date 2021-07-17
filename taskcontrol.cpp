@@ -2,12 +2,11 @@
 
 #include <stdexcept>
 
-#include "logging.h"
-#include "utils/time_utils.h"
-#include "utils/string_utils.h"
-
 #include "config.h"
 #include "image.h"
+#include "logging.h"
+#include "utils/string_utils.h"
+#include "utils/time_utils.h"
 
 TaskControl::TaskControl(QObject *parent) : QObject(parent)
 {

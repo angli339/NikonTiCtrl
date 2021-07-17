@@ -1,8 +1,9 @@
 #include "config.h"
-#include "utils/string_utils.h"
 
 #include <stdexcept>
 #include <unordered_set>
+
+#include "utils/string_utils.h"
 
 ConfigUser configUser;
 std::map<std::string, double> configPixelSize;

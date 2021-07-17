@@ -1,11 +1,10 @@
 #include "devicecontrol.h"
 
+#include <QtConcurrent>
 #include <thread>
 
-#include <QtConcurrent>
-
-#include "logging.h"
 #include "config.h"
+#include "logging.h"
 #include "utils/string_utils.h"
 
 DeviceControl::DeviceControl(QObject *parent) : QObject(parent)

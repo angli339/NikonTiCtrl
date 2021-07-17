@@ -7,6 +7,7 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/stopwatch.h>
 #include <ghc/filesystem.hpp>
+
 namespace fs = ghc::filesystem;
 
 void init_logger(fs::path log_dir);
