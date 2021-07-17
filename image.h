@@ -3,7 +3,7 @@
 
 #include <string>
 #include <cstdint>
-#include <unordered_map>
+#include <map>
 #include <nlohmann/json.hpp>
 #include <vector>
 // #include <filesystem>
@@ -50,7 +50,7 @@ struct Image {
     std::string user_email;
 
     ~Image();
-    std::unordered_map<std::string, std::string> deviceProperty;
+    std::map<std::string, std::string> deviceProperty;
     Image *copy();
 
     // uint8_t *getBuf();

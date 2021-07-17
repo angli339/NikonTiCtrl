@@ -91,7 +91,10 @@
         "scoped_allocator": "cpp",
         "*.ipp": "cpp",
         "qtcharts": "cpp",
-        "qgridlayout": "cpp"
+        "qgridlayout": "cpp",
+        "filesystem": "cpp",
+        "qopenglcontext": "cpp",
+        "qstandardpaths": "cpp"
     },
     "git.ignoreLimitWarning": true
 }

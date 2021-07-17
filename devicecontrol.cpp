@@ -297,9 +297,9 @@ bool DeviceControl::waitDeviceProperty(const std::vector<std::string> nameList, 
     return nikonStatus & proscanStatus;
 }
 
-std::unordered_map<std::string, std::string> DeviceControl::getCachedDeviceProperty()
+std::map<std::string, std::string> DeviceControl::getCachedDeviceProperty()
 {
-    std::unordered_map<std::string, std::string> cachedProperty;
+    std::map<std::string, std::string> cachedProperty;
     if (nikon->isConnected()) {
         for (const auto& [name, value] : nikon->getCachedDeviceProperty()) {
             cachedProperty["NikonTi/" + name] = value;

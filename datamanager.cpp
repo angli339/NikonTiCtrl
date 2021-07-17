@@ -5,6 +5,7 @@
 #include <ctime>
 #include <fmt/format.h>
 #include "logging.h"
+#include "config.h"
 
 DataManager::DataManager(QObject *parent) : QAbstractTableModel(parent)
 {
@@ -33,21 +34,6 @@ std::string DataManager::createExperiment(std::string name)
 
     if (name == "") {
         exp->name = fmt::format("{:%Y-%m-%d}", *std::localtime(&t));
-    }
-
-    // Find out current user
-    std::string user_name = qgetenv("USERNAME").toStdString();
-    if (user_name == "") {
-        user_name = qgetenv("USER").toStdString();
-    }
-    if (user_name == "Ang") {
-        user_full_name = "Ang Li";
-        user_email = "angli01@g.harvard.edu";
-    }
-    if (user_full_name != "") {
-        SPDLOG_INFO("Current User: {} ({} <{}>)", user_name, user_full_name, user_email);
-    } else {
-        SPDLOG_INFO("Current User: {}", user_name);
     }
 
     // Path to save images
@@ -101,8 +87,8 @@ std::string DataManager::addImage(Image *im)
 {
     im->id = std::to_string(tempID);
     tempID++;
-    im->user_full_name = user_full_name;
-    im->user_email = user_email;
+    im->user_full_name = configUser.name;
+    im->user_email = configUser.email;
    
     im->saveFile(currentExperiment->folder);
 

@@ -10,3 +10,6 @@
 [submodule "third_party/MMCoreAPI"]
 	path = third_party/MMCoreAPI
 	url = https://github.com/Andeling/MMCoreAPI
+[submodule "third_party/filesystem"]
+	path = third_party/filesystem
+	url = https://github.com/gulrak/filesystem.git

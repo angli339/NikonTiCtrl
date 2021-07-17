@@ -192,7 +192,7 @@ std::string TaskControl::captureImage(std::string name)
 
     dev->waitExposureEnd(exposure_ms + 500);
     std::string timestamp = getTimestamp();
-    std::unordered_map<std::string, std::string> deviceProperty = dev->getCachedDeviceProperty();
+    auto deviceProperty = dev->getCachedDeviceProperty();
     SPDLOG_INFO("TaskControl: captureImage waitExposureEnd {:.3f}ms", stopwatch_ms(sw));
 
     Image *im = new Image;

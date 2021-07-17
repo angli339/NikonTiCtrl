@@ -1,17 +1,21 @@
 #include "mainwindow.h"
 
-#include <csignal>
-
+#include <csignal> // std::signal
+#include <cstdlib> // std::getenv
+#include <ghc/filesystem.hpp>
 #include <QApplication>
 #include <QOpenGLContext>
-#include <QtConcurrentRun>
 #include <QStandardPaths>
+#include <QtConcurrentRun>
 
 #include "api_server.h"
 #include "datamanager.h"
 #include "devicecontrol.h"
-#include "taskcontrol.h"
 #include "logging.h"
+#include "taskcontrol.h"
+#include "config.h"
+
+namespace fs = ghc::filesystem;
 
 void sigHandler(int s)
 {
@@ -22,9 +26,6 @@ void sigHandler(int s)
 
 int main(int argc, char *argv[])
 {
-    init_logger();
-    SPDLOG_INFO("Welcome to NikonTiControl");
-
     qRegisterMetaType<std::string>("std::string");
     qRegisterMetaType<uint16_t>("uint16_t");
 
@@ -35,6 +36,79 @@ int main(int argc, char *argv[])
     std::signal(SIGINT,  sigHandler);
     std::signal(SIGTERM, sigHandler);
 
+    //
+    // Find directories for config and log
+    //
+    
+    // C:/ProgramData
+    auto program_data_dir = fs::path(std::getenv("ProgramData"));
+    if (program_data_dir.empty()) {
+        SPDLOG_CRITICAL("failed to get ProgramData path from environment variables");
+        return 1;
+    }
+    // C:/ProgramData/NikonTiControl
+    fs::path app_dir = program_data_dir / "NikonTiControl";
+    if (!fs::exists(app_dir)) {
+        SPDLOG_CRITICAL("Directory {} does not exists. It needs to be created manually and assigned with the correct permission.", app_dir.string());
+        return 1;
+    }
+    // C:/Users/<username>/AppData/Roaming
+    fs::path user_app_data_dir = fs::path(std::getenv("APPDATA"));
+    if (user_app_data_dir.empty()) {
+        SPDLOG_CRITICAL("failed to get APPDATA path from environment variables");
+        return 1;
+    }
+    // C:/Users/<username>/AppData/Roaming/NikonTiControl
+    fs::path user_app_dir = user_app_data_dir / "NikonTiControl";
+    if (!fs::exists(user_app_dir)) {
+        fs::create_directory(user_app_dir);
+    }
+
+    //
+    // init logger
+    //
+    fs::path log_dir = app_dir / "log";
+    if (!fs::exists(log_dir)) {
+        fs::create_directory(log_dir);
+    }
+    init_logger(log_dir);
+
+    SPDLOG_INFO("Welcome to NikonTiControl");
+
+    //
+    // load config and print to log
+    //
+    fs::path config_dir = app_dir;
+    fs::path config_file = config_dir / "config.json";
+    fs::path user_config_dir = user_app_dir;
+    fs::path user_config_file = user_config_dir / "user.json";
+   
+    loadConfig(config_file);
+    SPDLOG_INFO("Configuration loaded from {}", config_file.string());
+    SPDLOG_INFO("Configurated Labels:");
+    for (const auto& [property, labelMap]: configLabel) {
+        SPDLOG_INFO("    {}", property);
+        for (const auto& [value, label]: labelMap) {
+            SPDLOG_INFO("      {}={} ({})", value, label.name, label.description);
+        }
+    }
+
+    SPDLOG_INFO("Configurated Channels:");
+    for (const auto& [name, channelPropertyValue]: configChannel) {
+        SPDLOG_INFO("    {}", name);
+    }
+    
+    if (fs::exists(user_config_file)) {
+        loadUserConfig(user_config_file);
+        SPDLOG_INFO("User configuration loaded from {}", user_config_file.string());
+        SPDLOG_INFO("Current User: {} <{}>", configUser.name, configUser.email);
+    } else {
+        SPDLOG_INFO("User configuration not found.");
+        std::string username = std::string(std::getenv("USERNAME"));
+        configUser.name = username;
+        SPDLOG_INFO("Current User: {}", username);
+    }
+    
     DataManager *dataManager = new DataManager;
 
     DeviceControl *dev = new DeviceControl;

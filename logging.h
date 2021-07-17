@@ -6,8 +6,10 @@
 #include <fmt/chrono.h>
 #include <spdlog/spdlog.h>
 #include <spdlog/stopwatch.h>
+#include <ghc/filesystem.hpp>
+namespace fs = ghc::filesystem;
 
-void init_logger();
+void init_logger(fs::path log_dir);
 void deinit_logger();
 
 void log_io(std::string module, std::string function, std::string device, std::string method, std::string request, std::string response, std::string status);

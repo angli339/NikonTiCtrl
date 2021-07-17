@@ -150,6 +150,12 @@ set(CMAKE_BUILD_TYPE_SAVE "${CMAKE_BUILD_TYPE}")
 set(CMAKE_BUILD_TYPE RELEASE)
 set(BUILD_SHARED_LIBS OFF)
 
+# ---------- ghc::filesystem ----------
+# gcc 8.1.0 does not yet support std::filesystem on Windows
+message(STATUS "---------- ghc::filesystem ----------")
+set(GHC_FILESYSTEM_WITH_INSTALL OFF CACHE INTERNAL "")
+add_subdirectory(third_party/filesystem)
+
 # ---------- fmt ----------
 message(STATUS "---------- fmt ----------")
 add_subdirectory(third_party/fmt)
@@ -293,6 +299,7 @@ target_link_libraries(NikonTiControl PRIVATE
     Qt5::Concurrent
     Qt5::Charts
 
+    ghc_filesystem
     fmt::fmt
     spdlog::spdlog
     TIFF::TIFF

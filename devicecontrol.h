@@ -29,7 +29,7 @@ public:
     std::string getDeviceProperty(const std::string name, bool force_update=true);
     bool waitDeviceProperty(const std::vector<std::string> nameList, const std::chrono::milliseconds timeout);
 
-    std::unordered_map<std::string, std::string> getCachedDeviceProperty();
+    std::map<std::string, std::string> getCachedDeviceProperty();
 
     // Camera Control
     void setExposure(double exposure_ms);

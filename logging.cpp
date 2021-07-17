@@ -27,11 +27,13 @@ CREATE TABLE "io" (
 const char *sql_insert_io_log = "INSERT INTO \"io\" VALUES(?,?,?,?,?,?,?,?);";
 sqlite3_stmt *stmt_insert_io_log;
 
-void init_logger()
+void init_logger(fs::path log_dir)
 {
     std::time_t t = std::time(nullptr);
-    std::string log_path = fmt::format("logs/nikon_ti_ctrl-{:%Y%m%d-%H%M%S}.log", *std::localtime(&t));
-    std::string log_db_path = fmt::format("logs/nikon_ti_ctrl-{:%Y%m%d-%H%M%S}.sqlite3", *std::localtime(&t));
+    std::string log_filename = fmt::format("nikon_ti_ctrl-{:%Y%m%d-%H%M%S}.log", fmt::localtime(t));
+    std::string log_db_filename = fmt::format("nikon_ti_ctrl-{:%Y%m%d-%H%M%S}.sqlite3", fmt::localtime(t));
+    fs::path log_path = log_dir / log_filename;
+    fs::path log_db_path = log_dir / log_db_filename;
 
     try {
         std::vector<spdlog::sink_ptr> sinks;
@@ -41,7 +43,7 @@ void init_logger()
         console_sink->set_pattern("%^[%5!l]%$[%Y-%m-%dT%H:%M:%S.%f%z][TID=%t] %v");
         sinks.push_back(console_sink);
 
-        auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_path, true);
+        auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_path.string(), true);
         file_sink->set_level(spdlog::level::trace);
         file_sink->set_pattern("[%5!l][%Y-%m-%dT%H:%M:%S.%f%z][TID=%t] %v");
         sinks.push_back(file_sink);
@@ -58,9 +60,9 @@ void init_logger()
     }
 
     int rc;
-    rc = sqlite3_open(log_db_path.c_str(), &log_db);
+    rc = sqlite3_open(log_db_path.string().c_str(), &log_db);
     if (rc) {
-        SPDLOG_ERROR("Log init failed: Can't open database '%s'", log_db_path);
+        SPDLOG_ERROR("Log init failed: Can't open database '%s'", log_db_path.string());
         sqlite3_close(log_db);
         exit(1);
     }
