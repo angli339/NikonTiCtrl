@@ -172,6 +172,8 @@ set(CMAKE_BUILD_TYPE "${CMAKE_BUILD_TYPE_SAVE}")
 ################################
 
 # ---------- MMCore API ----------
+set(MICROMANAGER14_DIR "C:/Program Files/Micro-Manager-1.4")
+
 include_directories(third_party/MMCoreAPI/MMCoreC)
 add_library(MMCoreC UNKNOWN IMPORTED)
 set_target_properties(MMCoreC PROPERTIES
@@ -180,6 +182,7 @@ set_target_properties(MMCoreC PROPERTIES
 )
 install(FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/third_party/MMCoreAPI/lib/MMCoreC.dll"
+    "${MICROMANAGER14_DIR}/mmgr_dal_NikonTI.dll"
     DESTINATION .
 )
 
