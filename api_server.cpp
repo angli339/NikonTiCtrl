@@ -240,8 +240,11 @@ APIServer::APIServer(QObject *parent)
   : QObject(parent)
   , server(buildAndStartService(this))
 {
-  QtConcurrent::run([=] {
-    SPDLOG_INFO("APIServer: listening {}", api_server_address);
-    this->server->Wait();
-  });
+    if (this->server == nullptr) {
+        throw std::runtime_error(fmt::format("failed to listen {}", api_server_address));
+    }
+    QtConcurrent::run([=] {
+        SPDLOG_INFO("APIServer: listening {}", api_server_address);
+        this->server->Wait();
+    });
 }

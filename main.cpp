@@ -2,6 +2,7 @@
 
 #include <csignal> // std::signal
 #include <cstdlib> // std::getenv
+#include <fmt/format.h>
 #include <ghc/filesystem.hpp>
 #include <QApplication>
 #include <QOpenGLContext>
@@ -25,6 +26,16 @@ void sigHandler(int s)
     qApp->quit();
 }
 
+void showStartupFatalError(std::string message)
+{
+    QMessageBox msgBox;
+    msgBox.setText("Program fails to start");
+    msgBox.setInformativeText(message.c_str());
+    msgBox.setIcon(QMessageBox::Critical);
+    msgBox.addButton("Exit", QMessageBox::AcceptRole);
+    msgBox.exec();
+}
+
 int main(int argc, char *argv[])
 {
     qRegisterMetaType<std::string>("std::string");
@@ -42,21 +53,27 @@ int main(int argc, char *argv[])
     //
     
     // C:/ProgramData
-    auto program_data_dir = fs::path(std::getenv("ProgramData"));
+    auto program_data_dir = fs::path(std::getenv("ALLUSERSPROFILE"));
     if (program_data_dir.empty()) {
-        SPDLOG_CRITICAL("failed to get ProgramData path from environment variables");
+        std::string error_msg = "failed to get ALLUSERSPROFILE path from environment variables";
+        SPDLOG_CRITICAL(error_msg);
+        showStartupFatalError(error_msg);
         return 1;
     }
     // C:/ProgramData/NikonTiControl
     fs::path app_dir = program_data_dir / "NikonTiControl";
     if (!fs::exists(app_dir)) {
-        SPDLOG_CRITICAL("Directory {} does not exists. It needs to be created manually and assigned with the correct permission.", app_dir.string());
+        std::string error_msg = fmt::format("Directory {} does not exists. It needs to be created manually and assigned with the correct permission.", app_dir.string());
+        SPDLOG_CRITICAL(error_msg);
+        showStartupFatalError(error_msg);
         return 1;
     }
     // C:/Users/<username>/AppData/Roaming
     fs::path user_app_data_dir = fs::path(std::getenv("APPDATA"));
     if (user_app_data_dir.empty()) {
-        SPDLOG_CRITICAL("failed to get APPDATA path from environment variables");
+        std::string error_msg = "failed to get APPDATA path from environment variables";
+        SPDLOG_CRITICAL(error_msg);
+        showStartupFatalError(error_msg);
         return 1;
     }
     // C:/Users/<username>/AppData/Roaming/NikonTiControl
@@ -115,7 +132,9 @@ int main(int argc, char *argv[])
     //
     fs::path userprofile_dir = fs::path(std::getenv("USERPROFILE"));
     if (userprofile_dir.empty()) {
-        SPDLOG_CRITICAL("failed to get USERPROFILE path from environment variables");
+        std::string error_msg = "failed to get USERPROFILE path from environment variables";
+        SPDLOG_CRITICAL(error_msg);
+        showStartupFatalError(error_msg);
         return 1;
     }
     fs::path data_root = userprofile_dir / "Data";
@@ -128,10 +147,19 @@ int main(int argc, char *argv[])
     taskControl->setDeviceControl(dev);
     taskControl->setDataManager(dataManager);
 
-    APIServer apiServer;
-    apiServer.setDeviceControl(dev);
-    apiServer.setDataManager(dataManager);
-    apiServer.setTaskControl(taskControl);
+    APIServer *apiServer;
+    try {
+        apiServer = new APIServer;
+    } catch (std::runtime_error &e) {
+        std::string error_msg = fmt::format("API server failed to start: {}. Another NikonTiControl process may be running.", e.what());
+        SPDLOG_CRITICAL(error_msg);
+        showStartupFatalError(error_msg);
+        return 1;
+    }
+    
+    apiServer->setDeviceControl(dev);
+    apiServer->setDataManager(dataManager);
+    apiServer->setTaskControl(taskControl);
 
     MainWindow *w = new MainWindow;
     QObject::connect(w, &MainWindow::requestDevicePropertyGet, [dev](std::string name){
@@ -147,11 +175,12 @@ int main(int argc, char *argv[])
 
     int return_code = app.exec();
     SPDLOG_INFO("Exiting...");
-
-    delete w;
+    
+    delete apiServer;
     delete dataManager;
     delete dev;
-
+    delete w;
+    
     SPDLOG_INFO("Exit {}", return_code);
     deinit_logger();
     return return_code;

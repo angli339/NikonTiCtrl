@@ -32,10 +32,6 @@ public:
     Status GetImage(ServerContext* context, const api::ImageID* req, api::Image* resp) override;
     Status LiveImage(grpc::ServerContext* context, const api::LiveImageRequest* req, grpc::ServerWriter<api::Image>* writer) override;
 
-signals:
-    void shutdown();
-    void messageReceived(QString message);
-
 private:
     std::shared_ptr<grpc::Server> server;
 
