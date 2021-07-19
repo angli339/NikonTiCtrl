@@ -2,7 +2,7 @@
 #include "./ui_mainwindow.h"
 
 #include "fmt/format.h"
-#include "logging.h"
+#include "logger.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)

@@ -4,7 +4,7 @@
 #include <fmt/format.h>
 #include <tiffio.h>
 
-#include "logging.h"
+#include "logger.h"
 #include "utils/string_utils.h"
 #include "version.h"
 
@@ -62,15 +62,17 @@ void Image::saveFile(fs::path image_dir) {
     std::string filename = fmt::format("{}.tif", name);
     fs::path filepath = image_dir / filename;
 
-    TIFF* tif = TIFFOpen(filepath.string().c_str(), "w");
-    if (tif == NULL) {
-        SPDLOG_ERROR("failed to open {} for write", filepath.string());
-    }
+    slog::Fields log_fields;
+    log_fields["filename"] = filepath.string();
 
-    log_io("Image", "saveFile", "",
-        "TIFFOpen()", filepath.string(), "",
-        ""
-    );
+    utils::stopwatch sw;
+    TIFF* tif = TIFFOpen(filepath.string().c_str(), "w");
+
+    if (tif == NULL) {
+        LOGFIELDS_ERROR(log_fields, "failed to open tiff file for write");
+    } else {
+        LOGFIELDS_TRACE(log_fields, "tiff file opened");
+    }
 
     TIFFSetField(tif, TIFFTAG_SUBFILETYPE, 0);
     TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, width);
@@ -133,8 +135,8 @@ void Image::saveFile(fs::path image_dir) {
     TIFFSetField(tif, TIFFTAG_EXIFIFD, offsetExifIFD);
 
     TIFFClose(tif);
-    
-    SPDLOG_INFO("Image: image saved to {}", filepath.string());
+    log_fields["duration_ms"] = stopwatch_ms(sw);
+    LOGFIELDS_DEBUG(log_fields, "tiff file saved");
 }
 
 std::vector<double> Image::getHistogram()

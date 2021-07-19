@@ -3,7 +3,7 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 
-#include "logging.h"
+#include "logger.h"
 
 extern const uint8_t cmap_data_viridis[];
 
@@ -80,7 +80,7 @@ void GLImageViewer::initializeGL()
 
     auto err = glGetError();
     if (err != GL_NO_ERROR) {
-        SPDLOG_ERROR("GLImageViewer: initializeGL failed, err={:#06x}", err);
+        LOG_ERROR("GLImageViewer: initializeGL failed, err={:#06x}", err);
     }
 }
 
@@ -153,7 +153,7 @@ void GLImageViewer::setImageFormat(uint16_t width, uint16_t height) {
 
     auto err = glGetError();
     if (err != GL_NO_ERROR) {
-        SPDLOG_ERROR("GLImageViewer: setImageFormat({}, {}) failed, err={:#06x}", width, height, err);
+        LOG_ERROR("GLImageViewer: setImageFormat({}, {}) failed, err={:#06x}", width, height, err);
     }
 
     doneCurrent();

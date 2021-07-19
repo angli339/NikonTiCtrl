@@ -4,7 +4,7 @@
 #include <fmt/format.h>
 
 #include "config.h"
-#include "logging.h"
+#include "logger.h"
 
 DataManager::DataManager(fs::path data_root, QObject *parent) : QAbstractTableModel(parent)
 {
@@ -38,11 +38,11 @@ std::string DataManager::createExperiment(std::string name)
     fs::path image_dir = data_root / exp->name / "images";
     if (!fs::exists(image_dir)) {
         if (!fs::create_directories(image_dir)) {
-            SPDLOG_ERROR("failed to create {}", image_dir.string());
+            LOG_ERROR("failed to create {}", image_dir.string());
         }
     }
     exp->image_dir = image_dir;
-    SPDLOG_INFO("Images will be saved to '{}'", image_dir.string());
+    LOG_INFO("Images will be saved to '{}'", image_dir.string());
 
     if (currentExperiment) {
         delete currentExperiment;

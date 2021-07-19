@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <stdexcept>
 #include <fmt/format.h>
-#include "logging.h"
+#include "logger.h"
 
 #define _WIN32_DCOM
 #include <comdef.h>
@@ -18,7 +18,7 @@ WMI::WMI()
     //   COINIT_APARTMENTTHREADED somehow works.
     hres =  CoInitializeEx(0, COINIT_APARTMENTTHREADED);
     if (FAILED(hres)) {
-        SPDLOG_ERROR("WMI: CoInitializeEx: Error {:#10x}", (uint32_t)hres);
+        LOG_ERROR("WMI: CoInitializeEx: Error {:#10x}", (uint32_t)hres);
         throw std::runtime_error(fmt::format("CoInitializeEx: Error {:#10x}", (uint32_t)hres));
     }
 
@@ -38,9 +38,9 @@ WMI::WMI()
 
     // Ignore RPC_E_TOO_LATE error
     if (hres == RPC_E_TOO_LATE) {
-        SPDLOG_DEBUG("WMI: CoInitializeSecurity: Ignore Error {:#10x}", (uint32_t)hres);
+        LOG_DEBUG("WMI: CoInitializeSecurity: Ignore Error {:#10x}", (uint32_t)hres);
     } else if (FAILED(hres)) {
-        SPDLOG_ERROR("WMI: CoInitializeSecurity: Error {:#10x}", (uint32_t)hres);
+        LOG_ERROR("WMI: CoInitializeSecurity: Error {:#10x}", (uint32_t)hres);
         CoUninitialize();
         throw std::runtime_error(fmt::format("CoInitializeSecurity: Error {:#10x}", (uint32_t)hres));
     }
@@ -54,7 +54,7 @@ WMI::WMI()
         IID_IWbemLocator, (LPVOID *) &pLoc);
 
     if (FAILED(hres)) {
-        SPDLOG_ERROR("WMI: CoCreateInstance: Error {:#10x}", (uint32_t)hres);
+        LOG_ERROR("WMI: CoCreateInstance: Error {:#10x}", (uint32_t)hres);
         CoUninitialize();
         throw std::runtime_error(fmt::format("CoCreateInstance: Error {:#10x}", (uint32_t)hres));
     }
@@ -77,7 +77,7 @@ WMI::WMI()
         );
 
     if (FAILED(hres)) {
-        SPDLOG_ERROR("WMI: ConnectServer: Error {:#10x}", (uint32_t)hres);
+        LOG_ERROR("WMI: ConnectServer: Error {:#10x}", (uint32_t)hres);
         pLoc->Release();
         pLoc = nullptr;
 
@@ -100,7 +100,7 @@ WMI::WMI()
     );
 
     if (FAILED(hres)) {
-        SPDLOG_ERROR("WMI: CoSetProxyBlanket: Error {:#10x}", (uint32_t)hres);
+        LOG_ERROR("WMI: CoSetProxyBlanket: Error {:#10x}", (uint32_t)hres);
         pSvc->Release();
         pSvc = nullptr;
 
@@ -143,7 +143,7 @@ std::vector<std::string> WMI::listDeviceID(std::string queryWhere)
         &pEnumerator);
 
     if (FAILED(hres)) {
-        SPDLOG_ERROR("WMI: ExecQuery: Error {:#10x}", (uint32_t)hres);
+        LOG_ERROR("WMI: ExecQuery: Error {:#10x}", (uint32_t)hres);
         throw std::runtime_error(fmt::format("ExecQuery: Error {:#10x}", (uint32_t)hres));
     }
 

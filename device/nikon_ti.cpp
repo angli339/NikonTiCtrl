@@ -10,7 +10,7 @@
 #include <functional>
 
 #include <fmt/format.h>
-#include "logging.h"
+#include "logger.h"
 #include "utils/wmi.h"
 #include "propertystatus.h"
 
@@ -81,12 +81,12 @@ bool NikonTi::detectDevice()
     try {
         usbList = w.listUSBDeviceID("04B0", "7832");
     } catch (std::runtime_error &e) {
-        SPDLOG_DEBUG("NikonTi::detectDevice failed: %s", e.what());
+        LOG_DEBUG("NikonTi::detectDevice failed: %s", e.what());
         throw e;
     }
 
     if (usbList.size() > 0) {
-        SPDLOG_DEBUG("NikonTi: detected {}", usbList[0]);
+        LOG_DEBUG("NikonTi: detected {}", usbList[0]);
     }
     return usbList.size() != 0;
 }
@@ -94,14 +94,14 @@ bool NikonTi::detectDevice()
 void NikonTi::connect()
 {
     if (!detectDevice()) {
-        SPDLOG_WARN("NikonTi: USB connection not detected...");
+        LOG_WARN("NikonTi: USB connection not detected...");
         emit propertyUpdated("", "Disconnected");
         return;
     }
 
-    SPDLOG_INFO("NikonTi: connecting...");
+    LOG_INFO("NikonTi: connecting...");
     emit propertyUpdated("", "Connecting");
-    spdlog::stopwatch sw;
+    utils::stopwatch sw;
     std::unique_lock<std::mutex> lk(mu_mmc);
 
     MM_Open(&mmc);
@@ -113,7 +113,7 @@ void NikonTi::connect()
     //
     status = MM_LoadDevice(mmc, "TIScope", "NikonTI", "TIScope");
     if (status != 0) {
-        SPDLOG_ERROR("NikonTi: Failed to load TIScope. Err={}", status);
+        LOG_ERROR("NikonTi: Failed to load TIScope. Err={}", status);
 
         MM_Close(mmc);
         mmc = nullptr;
@@ -121,7 +121,7 @@ void NikonTi::connect()
     }
     status = MM_InitializeDevice(mmc, "TIScope");
     if (status != 0) {
-        SPDLOG_ERROR("NikonTi: Failed to init TIScope. Err={}", status);
+        LOG_ERROR("NikonTi: Failed to init TIScope. Err={}", status);
 
         MM_Close(mmc);
         mmc = nullptr;
@@ -146,12 +146,12 @@ void NikonTi::connect()
     for(const auto& module : modules) {
         status = MM_LoadDevice(mmc, module.c_str(), "NikonTI", module.c_str());
         if (status != 0) {
-            SPDLOG_ERROR("NikonTi: Failed to load module {}. Err={}", module.c_str(), status);
+            LOG_ERROR("NikonTi: Failed to load module {}. Err={}", module.c_str(), status);
             continue;
         }
         status = MM_InitializeDevice(mmc, module.c_str());
         if (status != 0) {
-            SPDLOG_ERROR("NikonTi: Failed to init module {}. Err={}", module.c_str(), status);
+            LOG_ERROR("NikonTi: Failed to init module {}. Err={}", module.c_str(), status);
             continue;
         }
 
@@ -161,12 +161,12 @@ void NikonTi::connect()
         if (module == "TIZDrive") {
             status = MM_SetFocusDevice(mmc, "TIZDrive");
             if (status != 0) {
-                SPDLOG_ERROR("NikonTi: MM_SetFocusDevice(TIZDrive) failed. Err={}. Unloading...", status);
+                LOG_ERROR("NikonTi: MM_SetFocusDevice(TIZDrive) failed. Err={}. Unloading...", status);
                 status = MM_UnloadDevice(mmc, module.c_str());
                 if (status != 0) {
-                    SPDLOG_ERROR("NikonTi: MM_UnloadDevice(TIZDrive) failed. Err={}", status);
+                    LOG_ERROR("NikonTi: MM_UnloadDevice(TIZDrive) failed. Err={}", status);
                 } else {
-                    SPDLOG_INFO("NikonTi: TIZDrive unloaded");
+                    LOG_INFO("NikonTi: TIZDrive unloaded");
                     loadedModules.pop_back();
                 }
             }
@@ -209,11 +209,11 @@ void NikonTi::connect()
     //
     for (const auto& name : propertyList) {
         auto value = getDeviceProperty(name);
-        SPDLOG_INFO("NikonTi: [Init] {}='{}'", name, value);
+        LOG_INFO("NikonTi: [Init] {}='{}'", name, value);
     }
 
     emit propertyUpdated("", "Connected");
-    SPDLOG_INFO("NikonTi: connected in {:.3f}ms", stopwatch_ms(sw));
+    LOG_INFO("NikonTi: connected in {:.3f}ms", stopwatch_ms(sw));
 }
 
 void NikonTi::disconnect()
@@ -224,9 +224,9 @@ void NikonTi::disconnect()
         return;
     }
 
-    SPDLOG_INFO("NikonTi: disconnecting...");
+    LOG_INFO("NikonTi: disconnecting...");
     emit propertyUpdated("", "Disconnecting");
-    spdlog::stopwatch sw;
+    utils::stopwatch sw;
 
     MM_UnloadAllDevices(mmc);
     MM_Close(mmc);
@@ -234,7 +234,7 @@ void NikonTi::disconnect()
 
     g_nikon_ti = nullptr;
     connected = false;
-    SPDLOG_INFO("NikonTi: disconnected in {:.3f}ms", stopwatch_ms(sw));
+    LOG_INFO("NikonTi: disconnected in {:.3f}ms", stopwatch_ms(sw));
     emit propertyUpdated("", "Disconnected");
 }
 
@@ -288,7 +288,7 @@ std::string NikonTi::getDeviceProperty(const std::string name, bool force_update
     }
 
     auto event = new PropertyEvent(PROP_EVENT_GET, name);
-    spdlog::stopwatch sw;
+    utils::stopwatch sw;
 
     if (name == "ZDrivePosition") {
         if (!isModuleLoaded("TIZDrive")) {
@@ -302,28 +302,32 @@ std::string NikonTi::getDeviceProperty(const std::string name, bool force_update
         double position;
         MM_Status status;
 
+        slog::Fields log_fields;
+        log_fields["api_call"] = "MM_GetPosition(TIZDrive)";
+        utils::stopwatch sw_api_call;
         {
             std::lock_guard<std::mutex> lk(mu_mmc);
+            sw_api_call.reset();
             status = MM_GetPosition(mmc, mmLabel.c_str(), &position);
         }
+        log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+
         std::string value = fmt::format("{:.3f}", position);
-
-        log_io("NikonTi", "getDeviceProperty", "",
-            "MM_GetPosition(TIZDrive)", "", value,
-            fmt::format("MM_Status {}", status)
-        );
-        if (status != 0) {
-            SPDLOG_ERROR("NikonTi: MM_GetPosition() failed. Err={}", status);
-            throw std::runtime_error("MM_GetPosition failed");
-        }
-
+        log_fields["response"] = value;
         
+        if (status != 0) {
+            log_fields["error_code"] = fmt::format("{}", status);
+            LOGFIELDS_ERROR(log_fields, "MM_GetPosition failed");
+            throw std::runtime_error("MM_GetPosition failed");
+        } else {
+            LOGFIELDS_TRACE(log_fields, "");
+        }
 
         //
         // Log the event
         //
         event->completed(value);
-        SPDLOG_DEBUG("NikonTi: GetProperty: {}='{}'. {:.3f}ms", name, value, stopwatch_ms(sw));
+        LOG_DEBUG("NikonTi: GetProperty: {}='{}'. {:.3f}ms", name, value, stopwatch_ms(sw));
         processPropertyEvent(event);
 
         return value;
@@ -344,24 +348,29 @@ std::string NikonTi::getDeviceProperty(const std::string name, bool force_update
     MM_Status status;
     char *mm_value_str;
 
+    slog::Fields log_fields;
+    log_fields["api_call"] = fmt::format("MM_GetProperty({}, {})", info.mmLabel, info.mmProperty);
+    utils::stopwatch sw_api_call;
     {
         std::lock_guard<std::mutex> lk(mu_mmc);
+        sw_api_call.reset();
         status = MM_GetProperty(mmc, info.mmLabel.c_str(), info.mmProperty.c_str(), &mm_value_str);
     }
+    log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+
     std::string mmValue = std::string(mm_value_str);
     MM_StringFree(mm_value_str);
 
-    log_io("NikonTi", "getDeviceProperty", "",
-        fmt::format("MM_GetProperty({}, {})", info.mmLabel, info.mmProperty), "", mmValue,
-        fmt::format("MM_Status {}", status)
-    );
+    log_fields["response"] = mmValue;
 
     if (status != 0) {
-        SPDLOG_WARN("NikonTi: MM_GetProperty({}, {}) failed. Err={}, Value={}", info.mmLabel, info.mmProperty, status, mmValue);
+        log_fields["error_code"] = fmt::format("{}", status);
+        LOGFIELDS_ERROR(log_fields, "MM_GetProperty failed");
         throw std::runtime_error("MM_GetProperty failed");
+    } else {
+        LOGFIELDS_TRACE(log_fields, "");
     }
     
-
     //
     // Convert value
     //
@@ -377,7 +386,7 @@ std::string NikonTi::getDeviceProperty(const std::string name, bool force_update
     // Logging and emit signals
     //
     event->completed(convertedValue);
-    // SPDLOG_DEBUG("NikonTi: GetProperty: {}='{}'. {:.3f}ms", name, convertedValue, stopwatch_ms(sw));
+    // LOG_DEBUG("NikonTi: GetProperty: {}='{}'. {:.3f}ms", name, convertedValue, stopwatch_ms(sw));
     processPropertyEvent(event);
 
     return convertedValue;
@@ -390,7 +399,7 @@ void NikonTi::setDeviceProperty(const std::string name, const std::string value)
     }
 
     auto event = new PropertyEvent(PROP_EVENT_SET, name, value);
-    spdlog::stopwatch sw;
+    utils::stopwatch sw;
 
     if (name == "ZDrivePosition") {
         if (!isModuleLoaded("TIZDrive")) {
@@ -404,26 +413,31 @@ void NikonTi::setDeviceProperty(const std::string name, const std::string value)
         double position = std::stod(value);
         MM_Status status;
 
+        slog::Fields log_fields;
+        log_fields["api_call"] = "MM_SetPosition(TIZDrive)";
+        log_fields["request"] = value;
+
+        utils::stopwatch sw_api_call;
         {
             std::lock_guard<std::mutex> lk(mu_mmc);
+            sw_api_call.reset();
             status = MM_SetPosition(mmc, mmLabel.c_str(), position);
         }
-
-        log_io("NikonTi", "setDeviceProperty", "",
-            "MM_SetPosition(TIZDrive)", "", value,
-            fmt::format("MM_Status {}", status)
-        );
+        log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
 
         if (status != 0) {
-            SPDLOG_ERROR("NikonTi: MM_SetPosition({}) failed. Err={}", position, status);
+            log_fields["error_code"] = fmt::format("{}", status);
+            LOGFIELDS_ERROR(log_fields, "MM_SetPosition failed");
             throw std::runtime_error("MM_SetPosition failed");
+        } else {
+            LOGFIELDS_TRACE(log_fields, "");
         }
 
         //
         // Log the event
         //
         event->completed(value);
-        SPDLOG_DEBUG("NikonTi: MM_SetPosition: {}='{}'. {:.3f}ms", name, value, stopwatch_ms(sw));
+        LOG_DEBUG("NikonTi: MM_SetPosition: {}='{}'. {:.3f}ms", name, value, stopwatch_ms(sw));
         processPropertyEvent(event);
 
         return;
@@ -452,26 +466,32 @@ void NikonTi::setDeviceProperty(const std::string name, const std::string value)
     // Call MM_SetPropertyString
     //
     MM_Status status;
+
+    slog::Fields log_fields;
+    log_fields["api_call"] = fmt::format("MM_SetPropertyString({}, {})", info.mmLabel, info.mmProperty);
+    log_fields["request"] = convertedValue;
+
+    utils::stopwatch sw_api_call;
     {
         std::lock_guard<std::mutex> lk(mu_mmc);
+        sw_api_call.reset();
         status = MM_SetPropertyString(mmc, info.mmLabel.c_str(), info.mmProperty.c_str(), convertedValue.c_str());
     }
-    
-    log_io("NikonTi", "setDeviceProperty", "",
-        fmt::format("MM_SetPropertyString({}, {})", info.mmLabel, info.mmProperty), convertedValue, "",
-        fmt::format("MM_Status {}", status)
-    );
+    log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
 
     if (status != 0) {
-        SPDLOG_WARN("NikonTi: MM_SetPropertyString({}, {}, '{}') failed. Err={}", info.mmLabel.c_str(), info.mmProperty.c_str(), convertedValue.c_str(), status);
-        throw std::runtime_error("MM_GetProperty failed");
+        log_fields["error_code"] = fmt::format("{}", status);
+        LOGFIELDS_ERROR(log_fields, "MM_SetPropertyString failed");
+        throw std::runtime_error("MM_SetProperty failed");
+    } else {
+        LOGFIELDS_TRACE(log_fields, "");
     }
 
     //
     // Logging
     //
     event->completed();
-    // SPDLOG_DEBUG("NikonTi: SetProperty: {}='{}'. {:.3f}ms", name, value, stopwatch_ms(sw));
+    // LOG_DEBUG("NikonTi: SetProperty: {}='{}'. {:.3f}ms", name, value, stopwatch_ms(sw));
     processPropertyEvent(event);
 
     // Setting DiaShutter is synchronous.
@@ -486,7 +506,7 @@ void NikonTi::setDeviceProperty(const std::string name, const std::string value)
                 break;
             }
             if ((i_attempt == n_attempt - 1) || (std::chrono::steady_clock::now() - polling_start > polling_timeout)) {
-                SPDLOG_ERROR("NikonTi: Set DiaShutter failed after {} attempts", i_attempt + 1);
+                LOG_ERROR("NikonTi: Set DiaShutter failed after {} attempts", i_attempt + 1);
                 throw std::runtime_error("Set DiaShutter failed");
             } else {
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -502,10 +522,10 @@ void NikonTi::onPropertyChangedCallback(MM_Session mmc, const char* label, const
         return;
     }
 
-    log_io("NikonTi", "onPropertyChangedCallback", "",
-        fmt::format("onPropertyChanged({}, {})", label, property), "", std::string(value),
-        ""
-    );
+    slog::Fields log_fields;
+    log_fields["api_call"] = fmt::format("onPropertyChanged({}, {})", label, property);
+    log_fields["response"] = value;
+    LOGFIELDS_TRACE(log_fields, "");
 
     for (const auto& kv : propInfoNikonTi) {
         std::string name = kv.first;
@@ -526,7 +546,7 @@ void NikonTi::onPropertyChangedCallback(MM_Session mmc, const char* label, const
             // Logging and emit signals
             //
             auto event = new PropertyEvent(PROP_EVENT_UPDATED, name, convertedValue);
-            SPDLOG_DEBUG("NikonTi: PropertyUpdated: {}='{}'", name, convertedValue);
+            LOG_DEBUG("NikonTi: PropertyUpdated: {}='{}'", name, convertedValue);
             processPropertyEvent(event);
 
             return;
@@ -539,10 +559,10 @@ void NikonTi::onStagePositionChangedCallback(MM_Session mmc, char* label, double
         return;
     }
 
-    log_io("NikonTi", "onStagePositionChangedCallback", "",
-        fmt::format("onStagePositionChanged({})", label), "", fmt::format("{:.3f}", pos),
-        ""
-    );
+    slog::Fields log_fields;
+    log_fields["api_call"] = fmt::format("onStagePositionChanged({})", label);
+    log_fields["response"] = pos;
+    LOGFIELDS_TRACE(log_fields, "");
 
     std::string label_str = std::string(label);
 
@@ -559,7 +579,7 @@ void NikonTi::onStagePositionChangedCallback(MM_Session mmc, char* label, double
         return;
     }
 
-    // SPDLOG_DEBUG("NikonTi: PropertyUpdated: {}='{}'", name, value);
+    // LOG_DEBUG("NikonTi: PropertyUpdated: {}='{}'", name, value);
     auto event = new PropertyEvent(PROP_EVENT_UPDATED, name, value);
     processPropertyEvent(event);
 }
@@ -612,18 +632,18 @@ void NikonTi::processPropertyEvent(PropertyEvent* event)
                     double tolerance = 0.1; // when tol is set to 9
                     double diff = std::abs(valueSet - valueCurrent);
                     setComplete = diff < (tolerance + 0.001);
-                    SPDLOG_DEBUG("ZDrivePosition update: set={}, update={}, diff={}, setComplete={}", valueSet, valueCurrent, diff, setComplete);
+                    LOG_DEBUG("ZDrivePosition update: set={}, update={}, diff={}, setComplete={}", valueSet, valueCurrent, diff, setComplete);
                 }
                 notifySetComplete = setComplete;
 
                 if (setComplete) {
                     auto duration = event->tEnd - prop->pendingSet->tStart;
                     if (previous != nullptr) {
-                        SPDLOG_DEBUG("NikonTi: {} set from {} to {} in {:.3f}ms",
+                        LOG_DEBUG("NikonTi: {} set from {} to {} in {:.3f}ms",
                                      event->name, previous->value, event->value,
                                      std::chrono::duration<double>(duration).count() * 1000);
                     } else {
-                        SPDLOG_DEBUG("NikonTi: {} set from ? to {} in {:.3f}ms",
+                        LOG_DEBUG("NikonTi: {} set from ? to {} in {:.3f}ms",
                                      event->name, event->value,
                                      std::chrono::duration<double>(duration).count() * 1000);
                     }

@@ -6,7 +6,6 @@
 
 #include "datamanager.h"
 #include "device/hamamatsu_dcam.h"
-#include "device/micromanager_camera.h"
 #include "device/nikon_ti.h"
 #include "device/prior_proscan.h"
 #include "device/trigger_controller.h"

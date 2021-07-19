@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <string>
+#include <mutex>
 #include <unordered_map>
 #include <QObject>
 
@@ -58,6 +59,7 @@ signals:
     void propertyUpdated(const std::string name, const std::string value);
 
 private:
+    std::mutex hdcam_mutex;
     HDCAM hdcam = nullptr;
     bool connected = false;
 

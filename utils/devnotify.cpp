@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-#include "logging.h"
+#include "logger.h"
 
 #include <windows.h>
 #include <dbt.h>
@@ -39,11 +39,11 @@ LRESULT CALLBACK DevNotifyWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM
         //
         if (g_dev_notify) {
             if (wParam == DBT_DEVICEARRIVAL) {
-                SPDLOG_DEBUG("DevNotify:DevNotifyWindowProc DeviceArrival: {}", name);
+                LOG_DEBUG("DevNotify:DevNotifyWindowProc DeviceArrival: {}", name);
                 emit g_dev_notify->DeviceArrival(name);
             }
             if (wParam == DBT_DEVICEREMOVECOMPLETE) {
-                SPDLOG_DEBUG("DevNotify:DevNotifyWindowProc DeviceRemoveComplete: {}", name);
+                LOG_DEBUG("DevNotify:DevNotifyWindowProc DeviceRemoveComplete: {}", name);
                 emit g_dev_notify->DeviceRemovaComplete(name);
             }
         }
@@ -126,7 +126,7 @@ void DevNotify::run() {
         throw std::runtime_error("RegisterDeviceNotificationW failed");
     }
 
-    SPDLOG_DEBUG("DevNotify: loop started");
+    LOG_DEBUG("DevNotify: loop started");
 
     g_dev_notify = this;
 
@@ -148,5 +148,5 @@ void DevNotify::run() {
         DispatchMessageW(&msg);
     }
 
-    SPDLOG_DEBUG("DevNotify: loop stopped");
+    LOG_DEBUG("DevNotify: loop stopped");
 }

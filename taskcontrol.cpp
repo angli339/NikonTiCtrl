@@ -4,7 +4,7 @@
 
 #include "config.h"
 #include "image.h"
-#include "logging.h"
+#include "logger.h"
 #include "utils/string_utils.h"
 #include "utils/time_utils.h"
 
@@ -40,7 +40,7 @@ void TaskControl::switchToChannel(std::string channel)
     for (const auto& [name, value] : channelConfig_Filter) {
         auto it = cache.find(name);
         if (it == cache.end()) {
-            SPDLOG_WARN("TaskControl::switchToChannel({}): {} not found in cache", channel, name);
+            LOG_WARN("TaskControl::switchToChannel({}): {} not found in cache", channel, name);
             propertyToChange[name] = value;
         }
         if (it->second != value) {
@@ -49,13 +49,13 @@ void TaskControl::switchToChannel(std::string channel)
     }
 
     if (propertyToChange.size() == 0) {
-        SPDLOG_INFO("TaskControl: {} is already the current channel", channel);
+        LOG_INFO("TaskControl: {} is already the current channel", channel);
         emit channelChanged(channel);
         return;
     }
 
-    SPDLOG_INFO("TaskControl: switching to {}...", channel);
-    spdlog::stopwatch sw;
+    LOG_INFO("TaskControl: switching to {}...", channel);
+    utils::stopwatch sw;
 
     std::vector<std::string> waitProperties;
 
@@ -66,10 +66,10 @@ void TaskControl::switchToChannel(std::string channel)
 
     if (dev->waitDeviceProperty(waitProperties, std::chrono::milliseconds(5000))) {
         this->channel = channel;
-        SPDLOG_INFO("TaskControl: switched to {}. {:.3f}ms", channel, stopwatch_ms(sw));
+        LOG_INFO("TaskControl: switched to {}. {:.3f}ms", channel, stopwatch_ms(sw));
         emit channelChanged(channel);
     } else {
-        SPDLOG_ERROR("TaskControl: timeout");
+        LOG_ERROR("TaskControl: timeout");
     }
 }
 
@@ -109,9 +109,9 @@ void TaskControl::openShutter()
 
     using namespace std::chrono_literals;
     if (dev->waitDeviceProperty(waitProperties, 500ms)) {
-        SPDLOG_INFO("TaskControl: openShutter: done", channel);
+        LOG_INFO("TaskControl: openShutter: done", channel);
     } else {
-        SPDLOG_ERROR("TaskControl: openShutter: timeout");
+        LOG_ERROR("TaskControl: openShutter: timeout");
     }
 }
 
@@ -123,11 +123,11 @@ void TaskControl::closeShutter()
         try {
             dev->setDeviceProperty("NikonTi/DiaShutter", "Off");
         } catch (std::runtime_error &e1) {
-            SPDLOG_ERROR("TaskControl: Nikon DiaShutter failed to close: {}. Try again...", e1.what());
+            LOG_ERROR("TaskControl: Nikon DiaShutter failed to close: {}. Try again...", e1.what());
             try {
                 dev->setDeviceProperty("NikonTi/DiaShutter", "Off");
             } catch (std::runtime_error &e2) {
-                SPDLOG_ERROR("TaskControl: Nikon DiaShutter still failed to close.");
+                LOG_ERROR("TaskControl: Nikon DiaShutter still failed to close.");
                 throw std::runtime_error(fmt::format("shutter failed to close: {}", e2.what()));
             }
         }
@@ -146,18 +146,18 @@ void TaskControl::closeShutter()
 
     using namespace std::chrono_literals;
     if (dev->waitDeviceProperty(waitProperties, 500ms)) {
-        SPDLOG_INFO("TaskControl: closeShutter: done", channel);
+        LOG_INFO("TaskControl: closeShutter: done", channel);
     } else {
-        SPDLOG_ERROR("TaskControl: closeShutter: timeout");
+        LOG_ERROR("TaskControl: closeShutter: timeout");
     }
 }
 
 std::string TaskControl::captureImage(std::string name)
 {
     if (getFrameFuture.valid()) {
-        SPDLOG_INFO("TaskControl: waiting for getFrame");
+        LOG_INFO("TaskControl: waiting for getFrame");
         getFrameFuture.wait();
-        SPDLOG_INFO("TaskControl: getFrame completed");
+        LOG_INFO("TaskControl: getFrame completed");
     }
     if (taskState != "Ready") {
         throw std::runtime_error(fmt::format("TaskControl: captureImage. taskStatus is {}, not ready", taskState));
@@ -165,24 +165,24 @@ std::string TaskControl::captureImage(std::string name)
 
     taskState = "Capture";
     emit taskStateChanged(taskState);
-    SPDLOG_INFO("TaskControl: captureImage start --------------");
+    LOG_INFO("TaskControl: captureImage start --------------");
 
     dev->setExposure(exposure_ms);
     dev->setBinning(binning);
 
-    spdlog::stopwatch sw;
+    utils::stopwatch sw;
     dev->allocBuffer(1);
-    SPDLOG_INFO("TaskControl: allocBuffer {:.3f}ms", stopwatch_ms(sw));
+    LOG_INFO("TaskControl: allocBuffer {:.3f}ms", stopwatch_ms(sw));
     
     if (channel != "") {
         sw.reset();
         openShutter();
-        SPDLOG_INFO("TaskControl: captureImage openShutter {:.3f}ms", stopwatch_ms(sw));
+        LOG_INFO("TaskControl: captureImage openShutter {:.3f}ms", stopwatch_ms(sw));
     }
 
     sw.reset();
     dev->startAcquisition();
-    SPDLOG_INFO("TaskControl: captureImage startAcquisition {:.3f}ms", stopwatch_ms(sw));
+    LOG_INFO("TaskControl: captureImage startAcquisition {:.3f}ms", stopwatch_ms(sw));
     
     sw.reset();
     if (ext_trigger_enable) {
@@ -190,9 +190,9 @@ std::string TaskControl::captureImage(std::string name)
     }
 
     dev->waitExposureEnd(exposure_ms + 500);
-    std::string timestamp = getTimestamp();
+    std::string timestamp = utils::Now().FormatRFC3339();
     auto deviceProperty = dev->getCachedDeviceProperty();
-    SPDLOG_INFO("TaskControl: captureImage waitExposureEnd {:.3f}ms", stopwatch_ms(sw));
+    LOG_INFO("TaskControl: captureImage waitExposureEnd {:.3f}ms", stopwatch_ms(sw));
 
     Image *im = new Image;
 
@@ -214,13 +214,13 @@ std::string TaskControl::captureImage(std::string name)
         getSaveFrame(im);
 
         try {
-            SPDLOG_DEBUG("TaskControl: releaseBuffer");
+            LOG_DEBUG("TaskControl: releaseBuffer");
             dev->releaseBuffer();
         } catch (std::exception &e) {
-            SPDLOG_ERROR("TaskControl: releaseBuffer failed: {}", e.what());
+            LOG_ERROR("TaskControl: releaseBuffer failed: {}", e.what());
         }
         
-        SPDLOG_INFO("TaskControl: captureImage done --------------");
+        LOG_INFO("TaskControl: captureImage done --------------");
 
         this->taskState = "Ready";
         emit taskStateChanged(this->taskState);
@@ -233,7 +233,7 @@ std::string TaskControl::captureImage(std::string name)
 
 void TaskControl::getSaveFrame(Image *im)
 {
-    spdlog::stopwatch sw;
+    utils::stopwatch sw;
 
     if (channel != "") {
         sw.reset();
@@ -244,18 +244,18 @@ void TaskControl::getSaveFrame(Image *im)
             emit taskStateChanged(this->taskState);
             throw std::runtime_error(e);
         }
-        SPDLOG_INFO("TaskControl: getSaveFrame closeShutter {:.3f}ms after exposure end", stopwatch_ms(sw));
+        LOG_INFO("TaskControl: getSaveFrame closeShutter {:.3f}ms after exposure end", stopwatch_ms(sw));
     }
     uint32_t bufSize;
     uint16_t imageWidth;
     uint16_t imageHeight;
     dev->waitFrameReady(500);
-    SPDLOG_INFO("TaskControl: getSaveFrame frame ready {:.3f}ms after exposure end", stopwatch_ms(sw));
+    LOG_INFO("TaskControl: getSaveFrame frame ready {:.3f}ms after exposure end", stopwatch_ms(sw));
 
 
     uint8_t *buf = dev->getFrame(&bufSize, &imageWidth, &imageHeight);
 
-    SPDLOG_INFO("TaskControl: data transfer completed. image size {}x{}.  {:.3f}ms after exposure end", imageWidth, imageHeight, stopwatch_ms(sw));
+    LOG_INFO("TaskControl: data transfer completed. image size {}x{}.  {:.3f}ms after exposure end", imageWidth, imageHeight, stopwatch_ms(sw));
     
     im->width = imageWidth;
     im->height = imageHeight;
@@ -313,7 +313,7 @@ void TaskControl::setTaskState(std::string state)
                         t_previous = t_now;
                         int duration_us = std::chrono::duration_cast<std::chrono::microseconds>(duration).count();
                         double frame_rate =  1 / ((double)duration_us * 1e-6 / 5);
-                        SPDLOG_INFO("live view frame rate: {}", frame_rate);
+                        LOG_INFO("live view frame rate: {}", frame_rate);
                     }
                     
                     dev->waitFrameReady(timeout);
@@ -332,7 +332,7 @@ void TaskControl::setTaskState(std::string state)
                         }
                         return;
                     }
-                    SPDLOG_ERROR("Error during live view: {}", e.what());
+                    LOG_ERROR("Error during live view: {}", e.what());
                     this->taskState = "Error";
                     if (channel == "BF") {
                         closeShutter();
@@ -355,7 +355,7 @@ void TaskControl::setTaskState(std::string state)
             try {
                 captureImage();
             } catch (std::exception& e) {
-                SPDLOG_ERROR("capture failed: {}", e.what());
+                LOG_ERROR("capture failed: {}", e.what());
                 this->taskState = "Error";
                 return;
             }
@@ -389,7 +389,7 @@ void TaskControl::setTaskState(std::string state)
         this->taskState = "Pause";
         emit taskStateChanged(this->taskState);
     } else {
-        SPDLOG_ERROR("undefined state transition: '{}' -> '{}'", this->taskState, state);
+        LOG_ERROR("undefined state transition: '{}' -> '{}'", this->taskState, state);
         return;
     }
 }

@@ -1,16 +1,14 @@
 #ifndef PRIORPROSCAN_H
 #define PRIORPROSCAN_H
 
-#include <string>
 #include <mutex>
+#include <QObject>
+#include <string>
 #include <thread>
 #include <unordered_map>
-
-#include <QObject>
+#include <visatype.h>
 
 #include "propertystatus.h"
-
-#include "visatype.h"
 
 class PriorProscan : public QObject
 {

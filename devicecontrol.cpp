@@ -4,7 +4,7 @@
 #include <thread>
 
 #include "config.h"
-#include "logging.h"
+#include "logger.h"
 #include "utils/string_utils.h"
 
 DeviceControl::DeviceControl(QObject *parent) : QObject(parent)
@@ -57,7 +57,7 @@ DeviceControl::~DeviceControl()
 
 void DeviceControl::connectAll()
 {
-    SPDLOG_INFO("DeviceControl: connecting all devices...");
+    LOG_INFO("DeviceControl: connecting all devices...");
 
     auto f1 = QtConcurrent::run(nikon, &NikonTi::connect);
     auto f2 = QtConcurrent::run(proscan, &PriorProscan::connect);
@@ -74,7 +74,7 @@ void DeviceControl::connectAll()
 
 void DeviceControl::disconnectAll()
 {
-    SPDLOG_INFO("DeviceControl: disconnecting all devices...");
+    LOG_INFO("DeviceControl: disconnecting all devices...");
 
     auto f1 = QtConcurrent::run(nikon, &NikonTi::disconnect);
     auto f2 = QtConcurrent::run(proscan, &PriorProscan::disconnect);
@@ -138,14 +138,14 @@ void DeviceControl::releaseBuffer()
 
     for (int i = 0; i < n_attempts; i++) {
         if (hamamatsu->isBusy()) {
-            SPDLOG_WARN("releaseBuffer: camera is busy, wait 10 ms and check again...");
+            LOG_WARN("releaseBuffer: camera is busy, wait 10 ms and check again...");
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         } else {
             break;
         }
 
         if (i == n_attempts - 1) {
-            SPDLOG_ERROR("camera is still busy, fail");
+            LOG_ERROR("camera is still busy, fail");
         }
     }
     return hamamatsu->releaseBuffer();

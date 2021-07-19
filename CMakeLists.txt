@@ -55,15 +55,6 @@ install(FILES
     DESTINATION .
 )
 
-# ---------- SQLite ----------
-message(STATUS "---------- SQLite ----------")
-find_package(SQLite3 REQUIRED)
-message(STATUS "SQLite version: ${SQLite3_VERSION}")
-install(FILES
-    "${MSYS_BIN_PATH}/libsqlite3-0.dll"
-    DESTINATION .
-)
-
 # ---------- Protobuf ----------
 message(STATUS "---------- Protobuf ----------")
 cmake_policy(SET CMP0077 NEW)
@@ -286,7 +277,7 @@ add_executable(NikonTiControl
     nikon_control.qrc
 
     image.cpp
-    logging.cpp
+    logger.cpp
     devicecontrol.cpp
     taskcontrol.cpp
     datamanager.cpp
@@ -349,7 +340,6 @@ target_link_libraries(NikonTiControl PRIVATE
     spdlog::spdlog
     TIFF::TIFF
     nlohmann_json::nlohmann_json
-    SQLite::SQLite3
 
     # Device Interface
     MMCoreC

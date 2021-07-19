@@ -13,7 +13,7 @@
 #include "config.h"
 #include "datamanager.h"
 #include "devicecontrol.h"
-#include "logging.h"
+#include "logger.h"
 #include "taskcontrol.h"
 #include "version.h"
 
@@ -22,7 +22,7 @@ namespace fs = ghc::filesystem;
 void sigHandler(int s)
 {
     std::signal(s, SIG_DFL);
-    SPDLOG_INFO("Received exit signal...");
+    LOG_INFO("Received exit signal...");
     qApp->quit();
 }
 
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     auto program_data_dir = fs::path(std::getenv("ALLUSERSPROFILE"));
     if (program_data_dir.empty()) {
         std::string error_msg = "failed to get ALLUSERSPROFILE path from environment variables";
-        SPDLOG_CRITICAL(error_msg);
+        LOG_FATAL(error_msg);
         showStartupFatalError(error_msg);
         return 1;
     }
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     fs::path app_dir = program_data_dir / "NikonTiControl";
     if (!fs::exists(app_dir)) {
         std::string error_msg = fmt::format("Directory {} does not exists. It needs to be created manually and assigned with the correct permission.", app_dir.string());
-        SPDLOG_CRITICAL(error_msg);
+        LOG_FATAL(error_msg);
         showStartupFatalError(error_msg);
         return 1;
     }
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
     fs::path user_app_data_dir = fs::path(std::getenv("APPDATA"));
     if (user_app_data_dir.empty()) {
         std::string error_msg = "failed to get APPDATA path from environment variables";
-        SPDLOG_CRITICAL(error_msg);
+        LOG_FATAL(error_msg);
         showStartupFatalError(error_msg);
         return 1;
     }
@@ -89,9 +89,11 @@ int main(int argc, char *argv[])
     if (!fs::exists(log_dir)) {
         fs::create_directory(log_dir);
     }
-    init_logger(log_dir);
+    std::string log_filename = fmt::format("nikon_ti_ctrl-{:%Y%m%d-%H%M%S}.log", utils::Now().Local());
+    slog::DefaultLogger().SetFilename(log_dir / log_filename);
+    slog::DefaultLogger().SetFlushLevel(slog::level::debug);
 
-    SPDLOG_INFO("Welcome to NikonTiControl {}", gitTagVersion);
+    LOG_INFO("Welcome to NikonTiControl {}", gitTagVersion);
 
     //
     // load config and print to log
@@ -102,29 +104,29 @@ int main(int argc, char *argv[])
     fs::path user_config_file = user_config_dir / "user.json";
    
     loadConfig(config_file);
-    SPDLOG_INFO("Configuration loaded from {}", config_file.string());
-    SPDLOG_INFO("Configurated Labels:");
+    LOG_INFO("Configuration loaded from {}", config_file.string());
+    LOG_INFO("Configurated Labels:");
     for (const auto& [property, labelMap]: configLabel) {
-        SPDLOG_INFO("    {}", property);
+        LOG_INFO("    {}", property);
         for (const auto& [value, label]: labelMap) {
-            SPDLOG_INFO("        {}={} ({})", value, label.name, label.description);
+            LOG_INFO("        {}={} ({})", value, label.name, label.description);
         }
     }
 
-    SPDLOG_INFO("Configurated Channels:");
+    LOG_INFO("Configurated Channels:");
     for (const auto& [name, channelPropertyValue]: configChannel) {
-        SPDLOG_INFO("    {}", name);
+        LOG_INFO("    {}", name);
     }
     
     if (fs::exists(user_config_file)) {
         loadUserConfig(user_config_file);
-        SPDLOG_INFO("User configuration loaded from {}", user_config_file.string());
-        SPDLOG_INFO("Current User: {} <{}>", configUser.name, configUser.email);
+        LOG_INFO("User configuration loaded from {}", user_config_file.string());
+        LOG_INFO("Current User: {} <{}>", configUser.name, configUser.email);
     } else {
-        SPDLOG_INFO("User configuration not found.");
+        LOG_INFO("User configuration not found.");
         std::string username = std::string(std::getenv("USERNAME"));
         configUser.name = username;
-        SPDLOG_INFO("Current User: {}", username);
+        LOG_INFO("Current User: {}", username);
     }
     
     //
@@ -133,7 +135,7 @@ int main(int argc, char *argv[])
     fs::path userprofile_dir = fs::path(std::getenv("USERPROFILE"));
     if (userprofile_dir.empty()) {
         std::string error_msg = "failed to get USERPROFILE path from environment variables";
-        SPDLOG_CRITICAL(error_msg);
+        LOG_FATAL(error_msg);
         showStartupFatalError(error_msg);
         return 1;
     }
@@ -152,7 +154,7 @@ int main(int argc, char *argv[])
         apiServer = new APIServer;
     } catch (std::runtime_error &e) {
         std::string error_msg = fmt::format("API server failed to start: {}. Another NikonTiControl process may be running.", e.what());
-        SPDLOG_CRITICAL(error_msg);
+        LOG_FATAL(error_msg);
         showStartupFatalError(error_msg);
         return 1;
     }
@@ -174,14 +176,13 @@ int main(int argc, char *argv[])
     QtConcurrent::run(dev, &DeviceControl::connectAll);
 
     int return_code = app.exec();
-    SPDLOG_INFO("Exiting...");
+    LOG_INFO("Exiting...");
     
     delete apiServer;
     delete dataManager;
     delete dev;
     delete w;
     
-    SPDLOG_INFO("Exit {}", return_code);
-    deinit_logger();
+    LOG_INFO("Exit {}", return_code);
     return return_code;
 }

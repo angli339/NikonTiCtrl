@@ -5,7 +5,7 @@
 #include <QtConcurrentRun>
 #include <QThread>
 
-#include "logging.h"
+#include "logger.h"
 #include "utils/string_utils.h"
 
 std::string api_server_address("0.0.0.0:50051");
@@ -244,7 +244,7 @@ APIServer::APIServer(QObject *parent)
         throw std::runtime_error(fmt::format("failed to listen {}", api_server_address));
     }
     QtConcurrent::run([=] {
-        SPDLOG_INFO("APIServer: listening {}", api_server_address);
+        LOG_INFO("APIServer: listening {}", api_server_address);
         this->server->Wait();
     });
 }

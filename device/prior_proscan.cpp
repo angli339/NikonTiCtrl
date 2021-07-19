@@ -3,11 +3,11 @@
 
 #include <stdexcept>
 #include <unordered_map>
+#include <visa.h>
 
-#include "logging.h"
+#include "logger.h"
 #include "utils/wmi.h"
 
-#include "visa.h"
 
 PriorProscan::PriorProscan(std::string name, QObject *parent) : QObject(parent)
 {
@@ -39,12 +39,12 @@ bool PriorProscan::detectDevice()
     try {
         usbList = w.listUSBDeviceID("10DB", "1234");
     } catch (std::runtime_error &e) {
-        SPDLOG_DEBUG("NikonTi::detectDevice failed: %s", e.what());
+        LOG_DEBUG("NikonTi::detectDevice failed: %s", e.what());
         throw e;
     }
 
     if (usbList.size() > 0) {
-        SPDLOG_DEBUG("PriorProscan::detected {}", usbList[0]);
+        LOG_DEBUG("PriorProscan::detected {}", usbList[0]);
     }
     return usbList.size() != 0;
 }
@@ -52,34 +52,43 @@ bool PriorProscan::detectDevice()
 void PriorProscan::connect()
 {
     if (!detectDevice()) {
-        SPDLOG_WARN("PriorProscan: USB connection not detected...");
+        LOG_WARN("PriorProscan: USB connection not detected...");
         emit propertyUpdated("", "Disconnected");
         return;
     }
 
-    SPDLOG_INFO("PriorProscan: connecting...");
+    LOG_INFO("PriorProscan: connecting...");
     emit propertyUpdated("", "Connecting");
-    spdlog::stopwatch sw;
+    utils::stopwatch sw;
 
     ViStatus status;
 
+    slog::Fields log_fields;
+    log_fields["device"] = portName;
+    log_fields["api_call"] = "viOpen(VI_EXCLUSIVE_LOCK, 50)";
+
+    utils::stopwatch sw_api_call;
     status = viOpen(rm, portName.c_str(), VI_EXCLUSIVE_LOCK, 50, &dev);
-    log_io("PriorProscan", "connect", portName,
-        "viOpen(VI_EXCLUSIVE_LOCK, 50)", "", "",
-        fmt::format("ViStatus {:#10x}", uint32_t(status))
-    );
+    log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+
     if (status != VI_SUCCESS) {
+        log_fields["error_code"] = fmt::format("{:#10x}", uint32_t(status));
+        LOGFIELDS_ERROR(log_fields, "");
         throw std::runtime_error(fmt::format("viOpen: Error {:#10x}", uint32_t(status)));
+    } else {
+        LOGFIELDS_TRACE(log_fields, "");
     }
-    SPDLOG_INFO("PriorProscan: port {} opened", portName);
+    LOG_INFO("PriorProscan: port {} opened", portName);
 
     status = viSetAttribute(dev, VI_ATTR_ASRL_BAUD, 38400);
-    log_io("PriorProscan", "connect", portName,
-            "viSetAttribute(VI_ATTR_ASRL_BAUD, 38400)", "", "",
-            fmt::format("ViStatus {:#10x}", uint32_t(status))
-    );
+    log_fields["api_call"] = "viSetAttribute(VI_ATTR_ASRL_BAUD, 38400)";
+
     if (status != VI_SUCCESS) {
+        log_fields["error_code"] = fmt::format("{:#10x}", uint32_t(status));
+        LOGFIELDS_ERROR(log_fields, "");
         throw std::runtime_error(fmt::format("viSetAttribute VI_ATTR_ASRL_BAUD: Error {:#10x}", uint32_t(status)));
+    } else {
+        LOGFIELDS_TRACE(log_fields, "");
     }
 
     status = viSetAttribute(dev, VI_ATTR_TERMCHAR, '\r');
@@ -96,11 +105,11 @@ void PriorProscan::connect()
             switchBaudrate();
         }
     } catch (std::runtime_error& e) {
-        SPDLOG_ERROR("failed to connect: {}", e.what());
+        LOG_ERROR("failed to connect: {}", e.what());
         throw std::runtime_error(fmt::format("failed to connect: {}", e.what()));
     }
     connected = true;
-    SPDLOG_INFO("PriorProscan: communication established at 38400. {:.3f}ms", stopwatch_ms(sw));
+    LOG_INFO("PriorProscan: communication established at 38400. {:.3f}ms", stopwatch_ms(sw));
 
     //
     // Init property cache
@@ -120,7 +129,7 @@ void PriorProscan::connect()
 
     for (const auto& [name, value] : propertyToInit) {
         std::string getResp = getDeviceProperty(name);
-        SPDLOG_INFO("ProScan: [Init] Get {}='{}'", name, getResp);
+        LOG_INFO("ProScan: [Init] Get {}='{}'", name, getResp);
         if (getResp == value) {
             continue;
         }
@@ -128,16 +137,16 @@ void PriorProscan::connect()
         try {
             getValue = setGetDeviceProperty(name, value);
         } catch (std::exception& e) {
-            SPDLOG_ERROR("PriorProScan: [Init] setGetDeviceProperty: {}", e.what());
+            LOG_ERROR("PriorProScan: [Init] setGetDeviceProperty: {}", e.what());
             emit propertyUpdated("", "Error");
             return;
         }
         if (getValue != value) {
-            SPDLOG_ERROR("PriorProScan: [Init] Set {}={}, got {}", name, value, getValue);
+            LOG_ERROR("PriorProScan: [Init] Set {}={}, got {}", name, value, getValue);
             emit propertyUpdated("", "Error");
             return;
         }
-        SPDLOG_INFO("ProScan: [Init] Set {}='{}'", name, value);
+        LOG_INFO("ProScan: [Init] Set {}='{}'", name, value);
     }
 
     //
@@ -148,7 +157,7 @@ void PriorProscan::connect()
         if (info.getCommand == "") {
             if ((name == "LumenOutputIntensity") || (name == "XYPosition")) {
                 getResp = getDeviceProperty(name);
-                SPDLOG_INFO("ProScan: [Init] {}='{}'", name, getResp);
+                LOG_INFO("ProScan: [Init] {}='{}'", name, getResp);
             }
             continue;
         }
@@ -156,10 +165,10 @@ void PriorProscan::connect()
             continue;
         }
         getResp = getDeviceProperty(name);
-        SPDLOG_INFO("ProScan: [Init] {}='{}'", name, getResp);
+        LOG_INFO("ProScan: [Init] {}='{}'", name, getResp);
     }
 
-    SPDLOG_INFO("PriorProscan: init finished. connected. {:.3f}ms", stopwatch_ms(sw));
+    LOG_INFO("PriorProscan: init finished. connected. {:.3f}ms", stopwatch_ms(sw));
     emit propertyUpdated("", "Connected");
 
     //
@@ -175,12 +184,12 @@ void PriorProscan::connect()
                 getDeviceProperty("MotionStatus", true, "pollingThread");
             } catch (std::exception& e) {
                 polling = false;
-                SPDLOG_ERROR("Error in polling: {}", e.what());
+                LOG_ERROR("Error in polling: {}", e.what());
                 return;
             }
         }
     });
-    SPDLOG_INFO("PriorProscan: Polling started.");
+    LOG_INFO("PriorProscan: Polling started.");
 }
 
 void PriorProscan::disconnect()
@@ -189,21 +198,21 @@ void PriorProscan::disconnect()
         return;
     }
 
-    SPDLOG_INFO("PriorProscan: disconnecting...");
+    LOG_INFO("PriorProscan: disconnecting...");
     emit propertyUpdated("", "Disconnecting");
-    spdlog::stopwatch sw;
+    utils::stopwatch sw;
 
     if (polling) {
         polling = false;
         threadPolling.join();
-        SPDLOG_INFO("PriorProscan: Polling stopped.");
+        LOG_INFO("PriorProscan: Polling stopped.");
     }
 
     viClose(dev);
     dev = 0;
     connected = false;
 
-    SPDLOG_INFO("PriorProscan: disconnected in {:.3f}ms", stopwatch_ms(sw));
+    LOG_INFO("PriorProscan: disconnected in {:.3f}ms", stopwatch_ms(sw));
     emit propertyUpdated("", "Disconnected");
 }
 
@@ -234,7 +243,7 @@ void PriorProscan::switchBaudrate()
     if (!checkCommunication(2)) {
         throw std::runtime_error("communication cannot be established at 9600 either");
     }
-    SPDLOG_INFO("PriorProscan: communication established at 9600. switching to 38400");
+    LOG_INFO("PriorProscan: communication established at 9600. switching to 38400");
 
     // Set ProScan to 38400
     write("BAUD,38");
@@ -269,13 +278,22 @@ uint32_t PriorProscan::clearReadBuffer()
 
     viGetAttribute(dev, VI_ATTR_ASRL_AVAIL_NUM, &count);
     if (count > 0) {
+        slog::Fields log_fields;
+        log_fields["device"] = portName;
+        log_fields["api_call"] = fmt::format("viRead({})", count);
+
+        utils::stopwatch sw_api_call;
         status = viRead(dev, (uint8_t *)buf, count,  &count);
-        log_io("PriorProscan", "clearReadBuffer", portName,
-            fmt::format("viRead({})", count), "", std::string(buf, count),
-            fmt::format("ViStatus {:#10x}", uint32_t(status))
-        );
+        log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+
+        log_fields["response"] = std::string(buf, count);
+
         if (status < VI_SUCCESS) {
+            log_fields["error_code"] = fmt::format("{:#10x}", uint32_t(status));
+            LOGFIELDS_ERROR(log_fields, "");
             throw std::runtime_error(fmt::format("failed to remove unexpected data from buffer. Err={:#10X}", uint32_t(status)));
+        } else {
+            LOGFIELDS_TRACE(log_fields, "");
         }
     }
 
@@ -288,13 +306,22 @@ void PriorProscan::write(const std::string command, std::string caller)
     ViUInt32 count;
 
     std::string cmdWrite = command + "\r";
+
+    slog::Fields log_fields;
+    log_fields["device"] = portName;
+    log_fields["api_call"] = "viWrite()";
+    log_fields["request"] = cmdWrite;
+
+    utils::stopwatch sw_api_call;
     status = viWrite(dev, (const uint8_t *)cmdWrite.c_str(), cmdWrite.size(), &count);
-    log_io("PriorProscan", "write", portName,
-        "viWrite()", command, "",
-        fmt::format("ViStatus {:#10x}", uint32_t(status))
-    );
+    log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+
     if (status < VI_SUCCESS) {
+        log_fields["error_code"] = fmt::format("{:#10x}", uint32_t(status));
+        LOGFIELDS_ERROR(log_fields, "");
         throw std::runtime_error(fmt::format("failed to send command. Err={:#10X}", uint32_t(status)));
+    } else {
+        LOGFIELDS_TRACE(log_fields, "");
     }
 }
 
@@ -303,18 +330,28 @@ std::string PriorProscan::readline(std::string caller)
     ViStatus status;
     ViUInt32 count;
 
+    slog::Fields log_fields;
+    log_fields["device"] = portName;
+    log_fields["api_call"] = "viRead(4096)";
+
+    utils::stopwatch sw_api_call;
     char buf[4096];
     status = viRead(dev, (uint8_t *)buf, sizeof(buf),  &count);
-    if (caller != "pollingThread") {
-        log_io("PriorProscan", "readline", portName,
-            "viRead(4096)", "", std::string(buf, count),
-            fmt::format("ViStatus {:#10x}", uint32_t(status))
-        );
-    }
+    log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+
+    log_fields["response"] = std::string(buf, count);
+
     if (status < VI_SUCCESS) {
+        log_fields["error_code"] = fmt::format("{:#10x}", uint32_t(status));
+        LOGFIELDS_ERROR(log_fields, "");
         throw std::runtime_error(fmt::format("failed to read response. Err={:#10X}", uint32_t(status)));
+    } else {
+        if (caller != "pollingThread") {
+            LOGFIELDS_TRACE(log_fields, "");
+        }
     }
     if (buf[count-1] != '\r') {
+        LOGFIELDS_ERROR(log_fields, "unexpected response: no end of line");
         throw std::runtime_error(fmt::format("unexpected response: {} bytes, not terminated by \\r", count));
     }
     std::string resp = std::string(buf, count-1);
@@ -329,22 +366,31 @@ std::string PriorProscan::query(const std::string command, std::string caller)
 
     count = clearReadBuffer();
     if (count > 0) {
-        SPDLOG_WARN("query: discarded {} bytes of unexpected data before sending command", count);
+        LOG_WARN("query: discarded {} bytes of unexpected data before sending command", count);
     }
 
     //
     // Send command
     //
     std::string cmdWrite = command + "\r";
+
+    slog::Fields log_fields;
+    log_fields["device"] = portName;
+    log_fields["api_call"] = "viWrite()";
+    log_fields["request"] = cmdWrite;
+
+    utils::stopwatch sw_api_call;
     status = viWrite(dev, (const uint8_t *)cmdWrite.c_str(), cmdWrite.size(), &count);
-    if (caller != "pollingThread") {
-        log_io("PriorProscan", "query", portName,
-            "viWrite()", cmdWrite, "",
-            fmt::format("ViStatus {:#10x}", uint32_t(status))
-        );
-    }
+    log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+
     if (status < VI_SUCCESS) {
+        log_fields["error_code"] = fmt::format("{:#10x}", uint32_t(status));
+        LOGFIELDS_ERROR(log_fields, "");
         throw std::runtime_error(fmt::format("failed to send command. Err={:#10X}", uint32_t(status)));
+    } else {
+        if (caller != "pollingThread") {
+            LOGFIELDS_TRACE(log_fields, "");
+        }
     }
 
     //
@@ -481,7 +527,7 @@ void PriorProscan::setDeviceProperty(const std::string name, const std::string v
 
         event->completed();
         processPropertyEvent(event);
-        SPDLOG_DEBUG("PriorProscan: set {}='{}'", name, value);
+        LOG_DEBUG("PriorProscan: set {}='{}'", name, value);
 
         return;
     }
@@ -499,7 +545,7 @@ void PriorProscan::setDeviceProperty(const std::string name, const std::string v
         event->completed(value);
         processPropertyEvent(event);
         
-        SPDLOG_DEBUG("PriorProscan: set {}='{}'", name, value);
+        LOG_DEBUG("PriorProscan: set {}='{}'", name, value);
 
         return;
     }
@@ -542,7 +588,7 @@ void PriorProscan::setDeviceProperty(const std::string name, const std::string v
 
     event->completed();
     processPropertyEvent(event);
-    SPDLOG_DEBUG("PriorProscan: set {}='{}'", name, value);
+    LOG_DEBUG("PriorProscan: set {}='{}'", name, value);
 
     return;
 }
@@ -725,7 +771,7 @@ void PriorProscan::processPropertyEvent(PropertyEvent* event)
                 prop->pendingSet = nullptr;
 
                 auto duration = std::chrono::steady_clock::now() - prop->current->tStart;
-                SPDLOG_DEBUG("Proscan: set {} to {} motion completed in {:.3f}ms",
+                LOG_DEBUG("Proscan: set {} to {} motion completed in {:.3f}ms",
                              prop->current->name, prop->current->value,
                              std::chrono::duration<double>(duration).count() * 1000);
             }
@@ -740,7 +786,7 @@ void PriorProscan::processPropertyEvent(PropertyEvent* event)
                 prop->pendingSet = nullptr;
 
                 auto duration = std::chrono::steady_clock::now() - prop->current->tStart;
-                SPDLOG_DEBUG("Proscan: set {} to {} motion completed in {:.3f}ms",
+                LOG_DEBUG("Proscan: set {} to {} motion completed in {:.3f}ms",
                              prop->current->name, prop->current->value,
                              std::chrono::duration<double>(duration).count() * 1000);
             }
@@ -755,7 +801,7 @@ void PriorProscan::processPropertyEvent(PropertyEvent* event)
                 prop->pendingSet = nullptr;
 
                 auto duration = std::chrono::steady_clock::now() - prop->current->tStart;
-                SPDLOG_DEBUG("Proscan: set {} to {} motion completed in {:.3f}ms",
+                LOG_DEBUG("Proscan: set {} to {} motion completed in {:.3f}ms",
                              prop->current->name, prop->current->value,
                              std::chrono::duration<double>(duration).count() * 1000);
             }
@@ -770,7 +816,7 @@ void PriorProscan::processPropertyEvent(PropertyEvent* event)
                 prop->pendingSet = nullptr;
 
                 auto duration = std::chrono::steady_clock::now() - prop->current->tStart;
-                SPDLOG_DEBUG("Proscan: set {} to {} motion completed in {:.3f}ms",
+                LOG_DEBUG("Proscan: set {} to {} motion completed in {:.3f}ms",
                              prop->current->name, prop->current->value,
                              std::chrono::duration<double>(duration).count() * 1000);
             }
