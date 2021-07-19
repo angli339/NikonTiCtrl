@@ -80,6 +80,7 @@ private:
     void flushFile();
 };
 
+void InitConsole();
 Logger &DefaultLogger();
 
 } // namespace slog

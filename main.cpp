@@ -38,6 +38,8 @@ void showStartupFatalError(std::string message)
 
 int main(int argc, char *argv[])
 {
+    slog::InitConsole();
+    
     qRegisterMetaType<std::string>("std::string");
     qRegisterMetaType<uint16_t>("uint16_t");
 

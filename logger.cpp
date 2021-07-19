@@ -1,5 +1,10 @@
 #include "logger.h"
 
+#include <windows.h> // SetConsoleMode
+#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+#endif
+
 namespace slog {
 
 namespace level {
@@ -115,6 +120,14 @@ void Logger::flushFile()
     if (file.is_open()) {
         file.flush();
     }
+}
+
+void InitConsole()
+{
+    DWORD dwMode = 0;
+    GetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), &dwMode);
+    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), dwMode);
 }
 
 Logger default_logger;
