@@ -319,6 +319,14 @@ install (TARGETS NikonTiControl
     RUNTIME DESTINATION .
 )
 
+# Copy MMCore and device adapter dlls to build directory
+add_custom_command(TARGET NikonTiControl POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy 
+        "${CMAKE_CURRENT_SOURCE_DIR}/third_party/MMCoreAPI/lib/MMCoreC.dll"
+        "${MICROMANAGER14_DIR}/mmgr_dal_NikonTI.dll"
+        "${CMAKE_CURRENT_BINARY_DIR}"
+)
+
 # Run windeployqt
 add_custom_command(TARGET NikonTiControl POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/windeployqt"
