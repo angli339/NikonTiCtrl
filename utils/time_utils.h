@@ -21,7 +21,8 @@ public:
     TimePoint() {}
     TimePoint(std::chrono::system_clock::time_point time_point) { tp = time_point; }
 
-    std::string FormatRFC3339() const;
+    std::string FormatRFC3339_Milli_UTC() const;
+    std::string FormatRFC3339_Local() const;
 
     inline std::tm UTC() const { return fmt::gmtime(tp); }
     inline std::tm Local() const { return fmt::localtime(tp); }
@@ -36,6 +37,18 @@ public:
         auto secs = duration_cast<seconds>(duration);
         auto micros = duration_cast<microseconds>(duration) - duration_cast<microseconds>(secs);
         return micros.count();
+    }
+
+    inline int Milliseconds() const
+    {
+        using std::chrono::duration_cast;
+        using std::chrono::seconds;
+        using std::chrono::milliseconds;
+
+        auto duration = tp.time_since_epoch();
+        auto secs = duration_cast<seconds>(duration);
+        auto millis = duration_cast<milliseconds>(duration) - duration_cast<milliseconds>(secs);
+        return millis.count();
     }
 
     inline int TZOffset() const

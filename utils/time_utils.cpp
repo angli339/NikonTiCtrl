@@ -5,7 +5,7 @@
 
 namespace utils {
 
-std::string TimePoint::FormatRFC3339() const
+std::string TimePoint::FormatRFC3339_Local() const
 {   
     int tz_total_min = TZOffset();
     char sign;
@@ -20,6 +20,12 @@ std::string TimePoint::FormatRFC3339() const
 
     return fmt::format("{:%Y-%m-%dT%H:%M:%S}.{:06d}{}{:02d}{:02d}",
         Local(), Microseconds(), sign, tz_hr, tz_min);
+}
+
+std::string TimePoint::FormatRFC3339_Milli_UTC() const
+{ 
+    return fmt::format("{:%Y-%m-%dT%H:%M:%S}.{:03d}Z",
+        UTC(), Milliseconds());
 }
 
 } // namespace utils

@@ -190,7 +190,7 @@ std::string TaskControl::captureImage(std::string name)
     }
 
     dev->waitExposureEnd(exposure_ms + 500);
-    std::string timestamp = utils::Now().FormatRFC3339();
+    std::string timestamp = utils::Now().FormatRFC3339_Local();
     auto deviceProperty = dev->getCachedDeviceProperty();
     LOG_INFO("TaskControl: captureImage waitExposureEnd {:.3f}ms", stopwatch_ms(sw));
 

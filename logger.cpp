@@ -23,7 +23,8 @@ inline const fmt::text_style  &to_text_style(LevelEnum l)
 std::string Entry::FormatJSON() const
 {
     nlohmann::ordered_json j;
-    j["time"] = time.FormatRFC3339();
+    j["@timestamp"] = time.FormatRFC3339_Milli_UTC(); // Elasticsearch only supports timestamp with millisecond resolution
+    j["time"] = time.FormatRFC3339_Local();
     j["level"] = level::to_string(level);
     j["func"] = func;
     j["message"] = message;
@@ -85,7 +86,7 @@ void Logger::formatToConsole(const Entry &entry)
     std::lock_guard<std::mutex> lk(con_mutex);
 
     fmt::print(level::to_text_style(entry.level), "[{:>5}]", level::to_string(entry.level));
-    fmt::print("[{}] {:<80}", entry.time.FormatRFC3339(), entry.message);
+    fmt::print("[{}] {:<80}", entry.time.FormatRFC3339_Local(), entry.message);
 
     fmt::print(level::to_text_style(entry.level), "    func");
     fmt::print("={}", entry.func);
