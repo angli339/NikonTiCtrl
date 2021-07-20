@@ -11,7 +11,6 @@ Graphical user interface and API for controlling a Nikon Ti-E widefield fluoresc
     * mingw-w64-x86_64-libtiff 4.3.0-3
     * mingw-w64-x86_64-grpc 1.35.0-4
     * mingw-w64-x86_64-protobuf 3.16.0-1
-    * mingw-w64-x86_64-sqlite3 3.36.0-1
 * [DCAM-API](https://dcam-api.com) 21.7.6307
 * [DCAM-SDK4](https://dcam-api.com/dcam-sdk-login/) 21.6.6291 (download and extract into `third_party/dcamsdk`)
 * Micro-Manager 1.4.23 20180508 (for copying the Nikon Ti device adapter dll)
