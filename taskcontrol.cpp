@@ -211,8 +211,12 @@ std::string TaskControl::captureImage(std::string name)
     im->deviceProperty = deviceProperty;
 
     getFrameFuture = std::async(std::launch::async, [this, im] {
-        getSaveFrame(im);
-
+        try {
+            getSaveFrame(im);
+        } catch (std::exception &e) {
+            LOG_ERROR("TaskControl: getSaveFrame failed: {}", e.what());
+        }
+        
         try {
             LOG_DEBUG("TaskControl: releaseBuffer");
             dev->releaseBuffer();

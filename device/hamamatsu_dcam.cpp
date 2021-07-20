@@ -465,7 +465,7 @@ double HamamatsuDCAM::getExposure()
     double floatValue;
     err = dcamprop_getvalue(hdcam, DCAM_IDPROP_EXPOSURETIME, &floatValue);
     if ((int32_t)err < 0) {
-        throw std::runtime_error(fmt::format("dcamprop_getvalue failed: {:#10x}", uint32_t(err)));
+        throw std::runtime_error(fmt::format("getExposure: dcamprop_getvalue failed: {:#10x}", uint32_t(err)));
     }
     return floatValue * 1000.0;
 }
@@ -475,7 +475,7 @@ bool HamamatsuDCAM::isBusy() {
     int32 status;
     err = dcamcap_status(hdcam, &status);
     if ((int32_t)err < 0) {
-        throw std::runtime_error(fmt::format("dcamcap_status failed: {:#10x}", uint32_t(err)));
+        throw std::runtime_error(fmt::format("isBusy: dcamcap_status failed: {:#10x}", uint32_t(err)));
     }
 
     return (status == DCAMCAP_STATUS_BUSY);
@@ -499,7 +499,7 @@ void HamamatsuDCAM::allocBuffer(int n_frame)
     if ((int32_t)err < 0) {
         log_fields["error_code"] = fmt::format("{:#10x}", uint32_t(err));
         LOGFIELDS_ERROR(log_fields, "");
-        throw std::runtime_error(fmt::format("dcambuf_alloc failed: {:#10x}", uint32_t(err)));
+        throw std::runtime_error(fmt::format("allocBuffer: dcambuf_alloc failed: {:#10x}", uint32_t(err)));
     } else {
         LOGFIELDS_TRACE(log_fields, "");
     }
@@ -523,7 +523,7 @@ void HamamatsuDCAM::releaseBuffer()
     if ((int32_t)err < 0) {
         log_fields["error_code"] = fmt::format("{:#10x}", uint32_t(err));
         LOGFIELDS_ERROR(log_fields, "dcambuf_release() failed");
-        throw std::runtime_error(fmt::format("dcambuf_release failed: {:#10x}", uint32_t(err)));
+        throw std::runtime_error(fmt::format("releaseBuffer: dcambuf_release failed: {:#10x}", uint32_t(err)));
     } else {
         LOGFIELDS_TRACE(log_fields, "dcambuf_release() completed");
     }
@@ -544,7 +544,7 @@ void HamamatsuDCAM::startAcquisition()
     if ((int32_t)err < 0) {
         log_fields["error_code"] = fmt::format("{:#10x}", uint32_t(err));
         LOGFIELDS_ERROR(log_fields, "");
-        throw std::runtime_error(fmt::format("dcamcap_start failed: {:#10x}", uint32_t(err)));
+        throw std::runtime_error(fmt::format("startAcquisition: dcamcap_start failed: {:#10x}", uint32_t(err)));
     } else {
         LOGFIELDS_TRACE(log_fields, "");
     }
@@ -565,7 +565,7 @@ void HamamatsuDCAM::startContinuousAcquisition()
     if ((int32_t)err < 0) {
         log_fields["error_code"] = fmt::format("{:#10x}", uint32_t(err));
         LOGFIELDS_ERROR(log_fields, "");
-        throw std::runtime_error(fmt::format("dcamcap_start failed: {:#10x}", uint32_t(err)));
+        throw std::runtime_error(fmt::format("startContinuousAcquisition: dcamcap_start failed: {:#10x}", uint32_t(err)));
     } else {
         LOGFIELDS_TRACE(log_fields, "");
     }
@@ -586,14 +586,14 @@ void HamamatsuDCAM::stopAcquisition()
     if ((int32_t)err < 0) {
         log_fields["error_code"] = fmt::format("{:#10x}", uint32_t(err));
         LOGFIELDS_ERROR(log_fields, "");
-        throw std::runtime_error(fmt::format("dcamcap_stop failed: {:#10x}", uint32_t(err)));
+        throw std::runtime_error(fmt::format("stopAcquisition: dcamcap_stop failed: {:#10x}", uint32_t(err)));
     } else {
         LOGFIELDS_TRACE(log_fields, "");
     }
     if (pending_hwait != nullptr) {
         err = dcamwait_abort(pending_hwait);
         if ((int32_t)err < 0) {
-            throw std::runtime_error(fmt::format("dcamwait_abort failed: {:#10x}", uint32_t(err)));
+            throw std::runtime_error(fmt::format("stopAcquisition: dcamwait_abort failed: {:#10x}", uint32_t(err)));
         }
     }
     return;
@@ -605,7 +605,7 @@ bool HamamatsuDCAM::isAcquisitionReady()
     int32 status;
     err = dcamcap_status(hdcam, &status);
     if ((int32_t)err < 0) {
-        throw std::runtime_error(fmt::format("dcamcap_status failed: {:#10x}", uint32_t(err)));
+        throw std::runtime_error(fmt::format("isAcquisitionReady: dcamcap_status failed: {:#10x}", uint32_t(err)));
     }
     return (status == DCAMCAP_STATUS_READY);
 }
@@ -630,7 +630,7 @@ void HamamatsuDCAM::waitExposureEnd(int32_t timeout_ms) {
 
     err = dcamwait_open(&waitOpen);
     if ((int32_t)err < 0) {
-        throw std::runtime_error(fmt::format("dcamwait_open failed: {:#10x}", uint32_t(err)));
+        throw std::runtime_error(fmt::format("waitExposureEnd: dcamwait_open failed: {:#10x}", uint32_t(err)));
     }
 
     DCAMWAIT_START waitStart;
@@ -639,17 +639,21 @@ void HamamatsuDCAM::waitExposureEnd(int32_t timeout_ms) {
     waitStart.eventmask = DCAMWAIT_CAPEVENT_EXPOSUREEND;
     waitStart.timeout = timeout_ms;
 
-    pending_hwait = waitOpen.hwait;
     err = dcamwait_start(waitOpen.hwait, &waitStart);
     if ((int32_t)err < 0) {
-        throw std::runtime_error(fmt::format("dcamwait_start failed: {:#10x}", uint32_t(err)));
+        DCAMERR err_close = dcamwait_close(waitOpen.hwait);
+        if ((int32_t)err_close < 0) {
+             throw std::runtime_error(fmt::format("waitExposureEnd: dcamwait_start failed: {:#10x}. dcamwait_close failed: {:#10x}", uint32_t(err), uint32_t(err_close)));
+        }
+        throw std::runtime_error(fmt::format("waitExposureEnd: dcamwait_start failed: {:#10x}, dcamwait_close completed", uint32_t(err)));
     }
+    pending_hwait = waitOpen.hwait;
 
-    pending_hwait = nullptr;
     err = dcamwait_close(waitOpen.hwait);
     if ((int32_t)err < 0) {
-        throw std::runtime_error(fmt::format("dcamwait_close failed: {:#10x}", uint32_t(err)));
+        throw std::runtime_error(fmt::format("waitExposureEnd: dcamwait_close failed: {:#10x}", uint32_t(err)));
     }
+    pending_hwait = nullptr;
 }
 
 void HamamatsuDCAM::waitFrameReady(int32_t timeout_ms) {
@@ -661,7 +665,7 @@ void HamamatsuDCAM::waitFrameReady(int32_t timeout_ms) {
 
     err = dcamwait_open(&waitOpen);
     if ((int32_t)err < 0) {
-        throw std::runtime_error(fmt::format("dcamwait_open failed: {:#10x}", uint32_t(err)));
+        throw std::runtime_error(fmt::format("waitFrameReady: dcamwait_open failed: {:#10x}", uint32_t(err)));
     }
 
     DCAMWAIT_START waitStart;
@@ -670,17 +674,21 @@ void HamamatsuDCAM::waitFrameReady(int32_t timeout_ms) {
     waitStart.eventmask = DCAMWAIT_CAPEVENT_FRAMEREADY;
     waitStart.timeout = timeout_ms;
 
-    pending_hwait = waitOpen.hwait;
     err = dcamwait_start(waitOpen.hwait, &waitStart);
     if ((int32_t)err < 0) {
-        throw std::runtime_error(fmt::format("dcamwait_start failed: {:#10x}", uint32_t(err)));
+        DCAMERR err_close = dcamwait_close(waitOpen.hwait);
+        if ((int32_t)err_close < 0) {
+             throw std::runtime_error(fmt::format("waitFrameReady: dcamwait_start failed: {:#10x}. dcamwait_close failed: {:#10x}", uint32_t(err), uint32_t(err_close)));
+        }
+        throw std::runtime_error(fmt::format("waitFrameReady: dcamwait_start failed: {:#10x}, dcamwait_close completed", uint32_t(err)));
     }
+    pending_hwait = waitOpen.hwait;
 
-    pending_hwait = nullptr;
     err = dcamwait_close(waitOpen.hwait);
     if ((int32_t)err < 0) {
-        throw std::runtime_error(fmt::format("dcamwait_close failed: {:#10x}", uint32_t(err)));
+        throw std::runtime_error(fmt::format("waitFrameReady: dcamwait_close failed: {:#10x}", uint32_t(err)));
     }
+    pending_hwait = nullptr;
 }
 
 uint8_t *HamamatsuDCAM::getFrame()
@@ -693,7 +701,7 @@ uint8_t *HamamatsuDCAM::getFrame()
 
     err = dcambuf_lockframe(hdcam, &frame);
     if ((int32_t)err < 0) {
-        throw std::runtime_error(fmt::format("dcamcap_status failed: {:#10x}", uint32_t(err)));
+        throw std::runtime_error(fmt::format("getFrame: dcambuf_lockframe failed: {:#10x}", uint32_t(err)));
     }
 
     return (uint8_t *)frame.buf;
