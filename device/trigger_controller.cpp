@@ -32,7 +32,7 @@ void TriggerController::connect()
 {
     LOG_INFO("TriggerController: connecting...");
     emit propertyUpdated("", "Connecting");
-    utils::stopwatch sw;
+    utils::StopWatch sw;
 
     ViStatus status;
 
@@ -40,9 +40,9 @@ void TriggerController::connect()
     log_fields["device"] = portName;
     log_fields["api_call"] = "viOpen(VI_EXCLUSIVE_LOCK, 50)";
 
-    utils::stopwatch sw_api_call;
+    utils::StopWatch sw_api_call;
     status = viOpen(rm, portName.c_str(), VI_EXCLUSIVE_LOCK, 50, &dev);
-    log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+    log_fields["duration_ms"] = sw_api_call.Milliseconds();
 
     if (status != VI_SUCCESS) {
         log_fields["error_code"] = fmt::format("{:#10x}", uint32_t(status));
@@ -82,7 +82,7 @@ void TriggerController::connect()
     }
     connected = true;
 
-    LOG_INFO("TriggerController: connected ({}). {:.3f}ms", idn, stopwatch_ms(sw));
+    LOG_INFO("TriggerController: connected ({}). {:.3f}ms", idn, sw.Milliseconds());
     emit propertyUpdated("", "Connected");
 }
 
@@ -94,13 +94,13 @@ void TriggerController::disconnect()
 
     LOG_INFO("TriggerController: disconnecting...");
     emit propertyUpdated("", "Disconnecting");
-    utils::stopwatch sw;
+    utils::StopWatch sw;
 
     viClose(dev);
     dev = 0;
     connected = false;
 
-    LOG_INFO("TriggerController: disconnected in {:.3f}ms", stopwatch_ms(sw));
+    LOG_INFO("TriggerController: disconnected in {:.3f}ms", sw.Milliseconds());
     emit propertyUpdated("", "Disconnected");
 }
 
@@ -117,9 +117,9 @@ uint32_t TriggerController::clearReadBuffer()
         log_fields["device"] = portName;
         log_fields["api_call"] = fmt::format("viRead({})", count);
 
-        utils::stopwatch sw_api_call;
+        utils::StopWatch sw_api_call;
         status = viRead(dev, (uint8_t *)buf, count,  &count);
-        log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+        log_fields["duration_ms"] = sw_api_call.Milliseconds();
         
         log_fields["response"] = std::string(buf, count);
 
@@ -147,9 +147,9 @@ void TriggerController::write(const std::string command, std::string caller)
     log_fields["api_call"] = "viWrite()";
     log_fields["request"] = cmdWrite;
 
-    utils::stopwatch sw_api_call;
+    utils::StopWatch sw_api_call;
     status = viWrite(dev, (const uint8_t *)cmdWrite.c_str(), cmdWrite.size(), &count);
-    log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+    log_fields["duration_ms"] = sw_api_call.Milliseconds();
 
     if (status < VI_SUCCESS) {
         log_fields["error_code"] = fmt::format("{:#10x}", uint32_t(status));
@@ -171,9 +171,9 @@ std::string TriggerController::readline(std::string caller)
     log_fields["device"] = portName;
     log_fields["api_call"] = "viRead(4096)";
 
-    utils::stopwatch sw_api_call;
+    utils::StopWatch sw_api_call;
     status = viRead(dev, (uint8_t *)buf, sizeof(buf),  &count);
-    log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+    log_fields["duration_ms"] = sw_api_call.Milliseconds();
 
     log_fields["response"] = std::string(buf, count);
 
@@ -213,9 +213,9 @@ std::string TriggerController::query(const std::string command, std::string call
     log_fields["api_call"] = "viWrite()";
     log_fields["request"] = cmdWrite;
 
-    utils::stopwatch sw_api_call;
+    utils::StopWatch sw_api_call;
     status = viWrite(dev, (const uint8_t *)cmdWrite.c_str(), cmdWrite.size(), &count);
-    log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+    log_fields["duration_ms"] = sw_api_call.Milliseconds();
 
     if (status < VI_SUCCESS) {
         log_fields["error_code"] = fmt::format("{:#10x}", uint32_t(status));

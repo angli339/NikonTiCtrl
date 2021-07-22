@@ -92,7 +92,7 @@ void HamamatsuDCAM::connect()
 {
     LOG_INFO("HamamatsuDCAM: detecting devices with DCAMAPI");
     emit propertyUpdated("", "Connecting");
-    utils::stopwatch sw;
+    utils::StopWatch sw;
 
     DCAMERR err;
     DCAMAPI_INIT apiinit;
@@ -108,14 +108,14 @@ void HamamatsuDCAM::connect()
             LOG_ERROR("HamamatsuDCAM: dcamapi_init failed {:#010x}", uint32_t(err));
         }
     }
-    LOG_INFO("HamamatsuDCAM: found {} devices in {:.3f}ms", apiinit.iDeviceCount, stopwatch_ms(sw));
+    LOG_INFO("HamamatsuDCAM: found {} devices in {:.3f}ms", apiinit.iDeviceCount, sw.Milliseconds());
 
     //
     // Open Device
     //
 
     LOG_INFO("HamamatsuDCAM: connecting...");
-    sw.reset();
+    sw.Reset();
 
     DCAMDEV_OPEN devopen;
     memset(&devopen, 0, sizeof(devopen));
@@ -128,14 +128,14 @@ void HamamatsuDCAM::connect()
     }
 
     hdcam = devopen.hdcam;
-    LOG_INFO("HamamatsuDCAM: connected in {:.3f}ms", stopwatch_ms(sw));
+    LOG_INFO("HamamatsuDCAM: connected in {:.3f}ms", sw.Milliseconds());
 
     //
     // Enumerate Properties
     //
 
     LOG_INFO("HamamatsuDCAM: enumerating properties...");
-    sw.reset();
+    sw.Reset();
 
     int32 iProp = 0;
     for (;;) {
@@ -205,7 +205,7 @@ void HamamatsuDCAM::connect()
     }
 
     connected = true;
-    LOG_INFO("HamamatsuDCAM: property enumeration completed in {:.3f}ms", stopwatch_ms(sw));
+    LOG_INFO("HamamatsuDCAM: property enumeration completed in {:.3f}ms", sw.Milliseconds());
     emit propertyUpdated("", "Connected");
 
 //    for(const auto& [name, info] : propInfo) {
@@ -226,7 +226,7 @@ void HamamatsuDCAM::disconnect()
 
     LOG_INFO("HamamatsuDCAM: disconnecting...");
     emit propertyUpdated("", "Disconnected");
-    utils::stopwatch sw;
+    utils::StopWatch sw;
 
     for(auto& [name, info] : propInfo) {
         if (info->NumRange) {
@@ -246,7 +246,7 @@ void HamamatsuDCAM::disconnect()
 
     connected = false;
 
-    LOG_INFO("HamamatsuDCAM: disconnected in {:.3f}ms", stopwatch_ms(sw));
+    LOG_INFO("HamamatsuDCAM: disconnected in {:.3f}ms", sw.Milliseconds());
     emit propertyUpdated("", "Disconnected");
 }
 
@@ -284,9 +284,9 @@ std::string HamamatsuDCAM::getDeviceProperty(const std::string name, bool /*forc
     slog::Fields log_fields;
     log_fields["api_call"] = fmt::format("dcamprop_getvalue({}({:#010x}))", name, uint32_t(iProp));
     
-    utils::stopwatch sw_api_call;
+    utils::StopWatch sw_api_call;
     err = dcamprop_getvalue(hdcam, iProp, &value);
-    log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+    log_fields["duration_ms"] = sw_api_call.Milliseconds();
 
     log_fields["response"] = value;
     
@@ -344,9 +344,9 @@ void HamamatsuDCAM::setDeviceProperty(const std::string name, const std::string 
     log_fields["api_call"] = fmt::format("dcamprop_setvalue({}({:#010x}))", name, uint32_t(iProp));
     log_fields["request"] = floatValue;
 
-    utils::stopwatch sw_api_call;
+    utils::StopWatch sw_api_call;
     err = dcamprop_setvalue(hdcam, iProp, floatValue);
-    log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+    log_fields["duration_ms"] = sw_api_call.Milliseconds();
 
     if ((int32_t)err < 0) {
         log_fields["error_code"] = fmt::format("{:#10x}", uint32_t(err));
@@ -445,9 +445,9 @@ void HamamatsuDCAM::setExposure(double exposure_ms)
     log_fields["api_call"] = "dcamprop_setvalue(DCAM_IDPROP_EXPOSURETIME)";
     log_fields["request"] = exposure_s;
 
-    utils::stopwatch sw_api_call;
+    utils::StopWatch sw_api_call;
     err = dcamprop_setvalue(hdcam, DCAM_IDPROP_EXPOSURETIME, exposure_s);
-    log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+    log_fields["duration_ms"] = sw_api_call.Milliseconds();
 
     if ((int32_t)err < 0) {
         log_fields["error_code"] = fmt::format("{:#10x}", uint32_t(err));
@@ -492,9 +492,9 @@ void HamamatsuDCAM::allocBuffer(int n_frame)
     slog::Fields log_fields;
     log_fields["api_call"] = fmt::format("dcambuf_alloc({})", n_frame);
 
-    utils::stopwatch sw_api_call;
+    utils::StopWatch sw_api_call;
     DCAMERR err = dcambuf_alloc(hdcam, n_frame);
-    log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+    log_fields["duration_ms"] = sw_api_call.Milliseconds();
 
     if ((int32_t)err < 0) {
         log_fields["error_code"] = fmt::format("{:#10x}", uint32_t(err));
@@ -516,9 +516,9 @@ void HamamatsuDCAM::releaseBuffer()
 
     std::lock_guard<std::mutex> lk(hdcam_mutex);
 
-    utils::stopwatch sw_api_call;
+    utils::StopWatch sw_api_call;
     DCAMERR err = dcambuf_release(hdcam);
-    log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+    log_fields["duration_ms"] = sw_api_call.Milliseconds();
 
     if ((int32_t)err < 0) {
         log_fields["error_code"] = fmt::format("{:#10x}", uint32_t(err));
@@ -537,9 +537,9 @@ void HamamatsuDCAM::startAcquisition()
 
     std::lock_guard<std::mutex> lk(hdcam_mutex);
 
-    utils::stopwatch sw_api_call;
+    utils::StopWatch sw_api_call;
     DCAMERR err = dcamcap_start(hdcam, DCAMCAP_START_SNAP);
-    log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+    log_fields["duration_ms"] = sw_api_call.Milliseconds();
 
     if ((int32_t)err < 0) {
         log_fields["error_code"] = fmt::format("{:#10x}", uint32_t(err));
@@ -558,9 +558,9 @@ void HamamatsuDCAM::startContinuousAcquisition()
 
     std::lock_guard<std::mutex> lk(hdcam_mutex);
 
-    utils::stopwatch sw_api_call;
+    utils::StopWatch sw_api_call;
     DCAMERR err = dcamcap_start(hdcam, DCAMCAP_START_SEQUENCE);
-    log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+    log_fields["duration_ms"] = sw_api_call.Milliseconds();
 
     if ((int32_t)err < 0) {
         log_fields["error_code"] = fmt::format("{:#10x}", uint32_t(err));
@@ -579,9 +579,9 @@ void HamamatsuDCAM::stopAcquisition()
 
     std::lock_guard<std::mutex> lk(hdcam_mutex);
 
-    utils::stopwatch sw_api_call;
+    utils::StopWatch sw_api_call;
     DCAMERR err = dcamcap_stop(hdcam);
-    log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+    log_fields["duration_ms"] = sw_api_call.Milliseconds();
 
     if ((int32_t)err < 0) {
         log_fields["error_code"] = fmt::format("{:#10x}", uint32_t(err));

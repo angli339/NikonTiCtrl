@@ -65,7 +65,7 @@ void Image::saveFile(fs::path image_dir) {
     slog::Fields log_fields;
     log_fields["filename"] = filepath.string();
 
-    utils::stopwatch sw;
+    utils::StopWatch sw;
     TIFF* tif = TIFFOpen(filepath.string().c_str(), "w");
 
     if (tif == NULL) {
@@ -135,7 +135,7 @@ void Image::saveFile(fs::path image_dir) {
     TIFFSetField(tif, TIFFTAG_EXIFIFD, offsetExifIFD);
 
     TIFFClose(tif);
-    log_fields["duration_ms"] = stopwatch_ms(sw);
+    log_fields["duration_ms"] = sw.Milliseconds();
     LOGFIELDS_DEBUG(log_fields, "tiff file saved");
 }
 

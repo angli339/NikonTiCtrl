@@ -151,11 +151,6 @@ add_subdirectory(third_party/filesystem)
 message(STATUS "---------- fmt ----------")
 add_subdirectory(third_party/fmt)
 
-# ---------- spdlog ----------
-message(STATUS "---------- spdlog ----------")
-set(SPDLOG_FMT_EXTERNAL ON CACHE INTERNAL "")
-add_subdirectory(third_party/spdlog)
-
 # ---------- json ----------
 message(STATUS "---------- json ----------")
 set(JSON_Install OFF CACHE INTERNAL "")
@@ -337,7 +332,6 @@ target_link_libraries(NikonTiControl PRIVATE
 
     ghc_filesystem
     fmt::fmt
-    spdlog::spdlog
     TIFF::TIFF
     nlohmann_json::nlohmann_json
 

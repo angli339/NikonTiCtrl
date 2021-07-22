@@ -59,7 +59,7 @@ void PriorProscan::connect()
 
     LOG_INFO("PriorProscan: connecting...");
     emit propertyUpdated("", "Connecting");
-    utils::stopwatch sw;
+    utils::StopWatch sw;
 
     ViStatus status;
 
@@ -67,9 +67,9 @@ void PriorProscan::connect()
     log_fields["device"] = portName;
     log_fields["api_call"] = "viOpen(VI_EXCLUSIVE_LOCK, 50)";
 
-    utils::stopwatch sw_api_call;
+    utils::StopWatch sw_api_call;
     status = viOpen(rm, portName.c_str(), VI_EXCLUSIVE_LOCK, 50, &dev);
-    log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+    log_fields["duration_ms"] = sw_api_call.Milliseconds();
 
     if (status != VI_SUCCESS) {
         log_fields["error_code"] = fmt::format("{:#10x}", uint32_t(status));
@@ -109,7 +109,7 @@ void PriorProscan::connect()
         throw std::runtime_error(fmt::format("failed to connect: {}", e.what()));
     }
     connected = true;
-    LOG_INFO("PriorProscan: communication established at 38400. {:.3f}ms", stopwatch_ms(sw));
+    LOG_INFO("PriorProscan: communication established at 38400. {:.3f}ms", sw.Milliseconds());
 
     //
     // Init property cache
@@ -168,7 +168,7 @@ void PriorProscan::connect()
         LOG_INFO("ProScan: [Init] {}='{}'", name, getResp);
     }
 
-    LOG_INFO("PriorProscan: init finished. connected. {:.3f}ms", stopwatch_ms(sw));
+    LOG_INFO("PriorProscan: init finished. connected. {:.3f}ms", sw.Milliseconds());
     emit propertyUpdated("", "Connected");
 
     //
@@ -200,7 +200,7 @@ void PriorProscan::disconnect()
 
     LOG_INFO("PriorProscan: disconnecting...");
     emit propertyUpdated("", "Disconnecting");
-    utils::stopwatch sw;
+    utils::StopWatch sw;
 
     if (polling) {
         polling = false;
@@ -212,7 +212,7 @@ void PriorProscan::disconnect()
     dev = 0;
     connected = false;
 
-    LOG_INFO("PriorProscan: disconnected in {:.3f}ms", stopwatch_ms(sw));
+    LOG_INFO("PriorProscan: disconnected in {:.3f}ms", sw.Milliseconds());
     emit propertyUpdated("", "Disconnected");
 }
 
@@ -282,9 +282,9 @@ uint32_t PriorProscan::clearReadBuffer()
         log_fields["device"] = portName;
         log_fields["api_call"] = fmt::format("viRead({})", count);
 
-        utils::stopwatch sw_api_call;
+        utils::StopWatch sw_api_call;
         status = viRead(dev, (uint8_t *)buf, count,  &count);
-        log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+        log_fields["duration_ms"] = sw_api_call.Milliseconds();
 
         log_fields["response"] = std::string(buf, count);
 
@@ -312,9 +312,9 @@ void PriorProscan::write(const std::string command, std::string caller)
     log_fields["api_call"] = "viWrite()";
     log_fields["request"] = cmdWrite;
 
-    utils::stopwatch sw_api_call;
+    utils::StopWatch sw_api_call;
     status = viWrite(dev, (const uint8_t *)cmdWrite.c_str(), cmdWrite.size(), &count);
-    log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+    log_fields["duration_ms"] = sw_api_call.Milliseconds();
 
     if (status < VI_SUCCESS) {
         log_fields["error_code"] = fmt::format("{:#10x}", uint32_t(status));
@@ -334,10 +334,10 @@ std::string PriorProscan::readline(std::string caller)
     log_fields["device"] = portName;
     log_fields["api_call"] = "viRead(4096)";
 
-    utils::stopwatch sw_api_call;
+    utils::StopWatch sw_api_call;
     char buf[4096];
     status = viRead(dev, (uint8_t *)buf, sizeof(buf),  &count);
-    log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+    log_fields["duration_ms"] = sw_api_call.Milliseconds();
 
     log_fields["response"] = std::string(buf, count);
 
@@ -379,9 +379,9 @@ std::string PriorProscan::query(const std::string command, std::string caller)
     log_fields["api_call"] = "viWrite()";
     log_fields["request"] = cmdWrite;
 
-    utils::stopwatch sw_api_call;
+    utils::StopWatch sw_api_call;
     status = viWrite(dev, (const uint8_t *)cmdWrite.c_str(), cmdWrite.size(), &count);
-    log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+    log_fields["duration_ms"] = sw_api_call.Milliseconds();
 
     if (status < VI_SUCCESS) {
         log_fields["error_code"] = fmt::format("{:#10x}", uint32_t(status));

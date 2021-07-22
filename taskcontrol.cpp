@@ -55,7 +55,7 @@ void TaskControl::switchToChannel(std::string channel)
     }
 
     LOG_INFO("TaskControl: switching to {}...", channel);
-    utils::stopwatch sw;
+    utils::StopWatch sw;
 
     std::vector<std::string> waitProperties;
 
@@ -66,7 +66,7 @@ void TaskControl::switchToChannel(std::string channel)
 
     if (dev->waitDeviceProperty(waitProperties, std::chrono::milliseconds(5000))) {
         this->channel = channel;
-        LOG_INFO("TaskControl: switched to {}. {:.3f}ms", channel, stopwatch_ms(sw));
+        LOG_INFO("TaskControl: switched to {}. {:.3f}ms", channel, sw.Milliseconds());
         emit channelChanged(channel);
     } else {
         LOG_ERROR("TaskControl: timeout");
@@ -170,21 +170,21 @@ std::string TaskControl::captureImage(std::string name)
     dev->setExposure(exposure_ms);
     dev->setBinning(binning);
 
-    utils::stopwatch sw;
+    utils::StopWatch sw;
     dev->allocBuffer(1);
-    LOG_INFO("TaskControl: allocBuffer {:.3f}ms", stopwatch_ms(sw));
+    LOG_INFO("TaskControl: allocBuffer {:.3f}ms", sw.Milliseconds());
     
     if (channel != "") {
-        sw.reset();
+        sw.Reset();
         openShutter();
-        LOG_INFO("TaskControl: captureImage openShutter {:.3f}ms", stopwatch_ms(sw));
+        LOG_INFO("TaskControl: captureImage openShutter {:.3f}ms", sw.Milliseconds());
     }
 
-    sw.reset();
+    sw.Reset();
     dev->startAcquisition();
-    LOG_INFO("TaskControl: captureImage startAcquisition {:.3f}ms", stopwatch_ms(sw));
+    LOG_INFO("TaskControl: captureImage startAcquisition {:.3f}ms", sw.Milliseconds());
     
-    sw.reset();
+    sw.Reset();
     if (ext_trigger_enable) {
         dev->outputTriggerPulse();
     }
@@ -192,7 +192,7 @@ std::string TaskControl::captureImage(std::string name)
     dev->waitExposureEnd(exposure_ms + 500);
     std::string timestamp = utils::Now().FormatRFC3339_Local();
     auto deviceProperty = dev->getCachedDeviceProperty();
-    LOG_INFO("TaskControl: captureImage waitExposureEnd {:.3f}ms", stopwatch_ms(sw));
+    LOG_INFO("TaskControl: captureImage waitExposureEnd {:.3f}ms", sw.Milliseconds());
 
     Image *im = new Image;
 
@@ -237,10 +237,10 @@ std::string TaskControl::captureImage(std::string name)
 
 void TaskControl::getSaveFrame(Image *im)
 {
-    utils::stopwatch sw;
+    utils::StopWatch sw;
 
     if (channel != "") {
-        sw.reset();
+        sw.Reset();
         try {
             closeShutter();
         } catch (std::runtime_error &e) {
@@ -248,18 +248,18 @@ void TaskControl::getSaveFrame(Image *im)
             emit taskStateChanged(this->taskState);
             throw std::runtime_error(e);
         }
-        LOG_INFO("TaskControl: getSaveFrame closeShutter {:.3f}ms after exposure end", stopwatch_ms(sw));
+        LOG_INFO("TaskControl: getSaveFrame closeShutter {:.3f}ms after exposure end", sw.Milliseconds());
     }
     uint32_t bufSize;
     uint16_t imageWidth;
     uint16_t imageHeight;
     dev->waitFrameReady(500);
-    LOG_INFO("TaskControl: getSaveFrame frame ready {:.3f}ms after exposure end", stopwatch_ms(sw));
+    LOG_INFO("TaskControl: getSaveFrame frame ready {:.3f}ms after exposure end", sw.Milliseconds());
 
 
     uint8_t *buf = dev->getFrame(&bufSize, &imageWidth, &imageHeight);
 
-    LOG_INFO("TaskControl: data transfer completed. image size {}x{}.  {:.3f}ms after exposure end", imageWidth, imageHeight, stopwatch_ms(sw));
+    LOG_INFO("TaskControl: data transfer completed. image size {}x{}.  {:.3f}ms after exposure end", imageWidth, imageHeight, sw.Milliseconds());
     
     im->width = imageWidth;
     im->height = imageHeight;

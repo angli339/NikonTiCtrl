@@ -101,7 +101,7 @@ void NikonTi::connect()
 
     LOG_INFO("NikonTi: connecting...");
     emit propertyUpdated("", "Connecting");
-    utils::stopwatch sw;
+    utils::StopWatch sw;
     std::unique_lock<std::mutex> lk(mu_mmc);
 
     MM_Open(&mmc);
@@ -213,7 +213,7 @@ void NikonTi::connect()
     }
 
     emit propertyUpdated("", "Connected");
-    LOG_INFO("NikonTi: connected in {:.3f}ms", stopwatch_ms(sw));
+    LOG_INFO("NikonTi: connected in {:.3f}ms", sw.Milliseconds());
 }
 
 void NikonTi::disconnect()
@@ -226,7 +226,7 @@ void NikonTi::disconnect()
 
     LOG_INFO("NikonTi: disconnecting...");
     emit propertyUpdated("", "Disconnecting");
-    utils::stopwatch sw;
+    utils::StopWatch sw;
 
     MM_UnloadAllDevices(mmc);
     MM_Close(mmc);
@@ -234,7 +234,7 @@ void NikonTi::disconnect()
 
     g_nikon_ti = nullptr;
     connected = false;
-    LOG_INFO("NikonTi: disconnected in {:.3f}ms", stopwatch_ms(sw));
+    LOG_INFO("NikonTi: disconnected in {:.3f}ms", sw.Milliseconds());
     emit propertyUpdated("", "Disconnected");
 }
 
@@ -288,7 +288,7 @@ std::string NikonTi::getDeviceProperty(const std::string name, bool force_update
     }
 
     auto event = new PropertyEvent(PROP_EVENT_GET, name);
-    utils::stopwatch sw;
+    utils::StopWatch sw;
 
     if (name == "ZDrivePosition") {
         if (!isModuleLoaded("TIZDrive")) {
@@ -304,13 +304,13 @@ std::string NikonTi::getDeviceProperty(const std::string name, bool force_update
 
         slog::Fields log_fields;
         log_fields["api_call"] = "MM_GetPosition(TIZDrive)";
-        utils::stopwatch sw_api_call;
+        utils::StopWatch sw_api_call;
         {
             std::lock_guard<std::mutex> lk(mu_mmc);
-            sw_api_call.reset();
+            sw_api_call.Reset();
             status = MM_GetPosition(mmc, mmLabel.c_str(), &position);
         }
-        log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+        log_fields["duration_ms"] = sw_api_call.Milliseconds();
 
         std::string value = fmt::format("{:.3f}", position);
         log_fields["response"] = value;
@@ -327,7 +327,7 @@ std::string NikonTi::getDeviceProperty(const std::string name, bool force_update
         // Log the event
         //
         event->completed(value);
-        LOG_DEBUG("NikonTi: GetProperty: {}='{}'. {:.3f}ms", name, value, stopwatch_ms(sw));
+        LOG_DEBUG("NikonTi: GetProperty: {}='{}'. {:.3f}ms", name, value, sw.Milliseconds());
         processPropertyEvent(event);
 
         return value;
@@ -350,13 +350,13 @@ std::string NikonTi::getDeviceProperty(const std::string name, bool force_update
 
     slog::Fields log_fields;
     log_fields["api_call"] = fmt::format("MM_GetProperty({}, {})", info.mmLabel, info.mmProperty);
-    utils::stopwatch sw_api_call;
+    utils::StopWatch sw_api_call;
     {
         std::lock_guard<std::mutex> lk(mu_mmc);
-        sw_api_call.reset();
+        sw_api_call.Reset();
         status = MM_GetProperty(mmc, info.mmLabel.c_str(), info.mmProperty.c_str(), &mm_value_str);
     }
-    log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+    log_fields["duration_ms"] = sw_api_call.Milliseconds();
 
     std::string mmValue = std::string(mm_value_str);
     MM_StringFree(mm_value_str);
@@ -386,7 +386,7 @@ std::string NikonTi::getDeviceProperty(const std::string name, bool force_update
     // Logging and emit signals
     //
     event->completed(convertedValue);
-    // LOG_DEBUG("NikonTi: GetProperty: {}='{}'. {:.3f}ms", name, convertedValue, stopwatch_ms(sw));
+    // LOG_DEBUG("NikonTi: GetProperty: {}='{}'. {:.3f}ms", name, convertedValue, sw.Milliseconds());
     processPropertyEvent(event);
 
     return convertedValue;
@@ -399,7 +399,7 @@ void NikonTi::setDeviceProperty(const std::string name, const std::string value)
     }
 
     auto event = new PropertyEvent(PROP_EVENT_SET, name, value);
-    utils::stopwatch sw;
+    utils::StopWatch sw;
 
     if (name == "ZDrivePosition") {
         if (!isModuleLoaded("TIZDrive")) {
@@ -417,13 +417,13 @@ void NikonTi::setDeviceProperty(const std::string name, const std::string value)
         log_fields["api_call"] = "MM_SetPosition(TIZDrive)";
         log_fields["request"] = value;
 
-        utils::stopwatch sw_api_call;
+        utils::StopWatch sw_api_call;
         {
             std::lock_guard<std::mutex> lk(mu_mmc);
-            sw_api_call.reset();
+            sw_api_call.Reset();
             status = MM_SetPosition(mmc, mmLabel.c_str(), position);
         }
-        log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+        log_fields["duration_ms"] = sw_api_call.Milliseconds();
 
         if (status != 0) {
             log_fields["error_code"] = fmt::format("{}", status);
@@ -437,7 +437,7 @@ void NikonTi::setDeviceProperty(const std::string name, const std::string value)
         // Log the event
         //
         event->completed(value);
-        LOG_DEBUG("NikonTi: MM_SetPosition: {}='{}'. {:.3f}ms", name, value, stopwatch_ms(sw));
+        LOG_DEBUG("NikonTi: MM_SetPosition: {}='{}'. {:.3f}ms", name, value, sw.Milliseconds());
         processPropertyEvent(event);
 
         return;
@@ -471,13 +471,13 @@ void NikonTi::setDeviceProperty(const std::string name, const std::string value)
     log_fields["api_call"] = fmt::format("MM_SetPropertyString({}, {})", info.mmLabel, info.mmProperty);
     log_fields["request"] = convertedValue;
 
-    utils::stopwatch sw_api_call;
+    utils::StopWatch sw_api_call;
     {
         std::lock_guard<std::mutex> lk(mu_mmc);
-        sw_api_call.reset();
+        sw_api_call.Reset();
         status = MM_SetPropertyString(mmc, info.mmLabel.c_str(), info.mmProperty.c_str(), convertedValue.c_str());
     }
-    log_fields["duration_ms"] = stopwatch_ms(sw_api_call);
+    log_fields["duration_ms"] = sw_api_call.Milliseconds();
 
     if (status != 0) {
         log_fields["error_code"] = fmt::format("{}", status);
@@ -491,7 +491,7 @@ void NikonTi::setDeviceProperty(const std::string name, const std::string value)
     // Logging
     //
     event->completed();
-    // LOG_DEBUG("NikonTi: SetProperty: {}='{}'. {:.3f}ms", name, value, stopwatch_ms(sw));
+    // LOG_DEBUG("NikonTi: SetProperty: {}='{}'. {:.3f}ms", name, value, sw.Milliseconds());
     processPropertyEvent(event);
 
     // Setting DiaShutter is synchronous.

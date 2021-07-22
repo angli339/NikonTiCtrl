@@ -4,17 +4,23 @@
 #include <chrono>
 #include <ctime> // std::tm, std::mktime
 #include <fmt/chrono.h> // fmt::gmtime, fmt::localtime
-#include <spdlog/stopwatch.h>
 #include <string>
-
-static inline double stopwatch_ms(spdlog::stopwatch sw)
-{
-    return sw.elapsed().count() * 1000;
-}
 
 namespace utils {
 
-using stopwatch = spdlog::stopwatch;
+class StopWatch {
+    using clock = std::chrono::steady_clock;
+public:
+    StopWatch() { tp_start = clock::now(); }
+    void Reset() { tp_start = clock::now(); }
+    double Milliseconds() const
+    {
+        return std::chrono::duration<double>(clock::now() - tp_start).count() * 1000;
+    }
+
+private:
+    clock::time_point tp_start;
+};
 
 class TimePoint {
 public:
