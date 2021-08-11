@@ -185,9 +185,6 @@ std::string TaskControl::captureImage(std::string name)
     LOG_INFO("TaskControl: captureImage startAcquisition {:.3f}ms", sw.Milliseconds());
     
     sw.Reset();
-    if (ext_trigger_enable) {
-        dev->outputTriggerPulse();
-    }
 
     dev->waitExposureEnd(exposure_ms + 500);
     std::string timestamp = utils::Now().FormatRFC3339_Local();
@@ -290,9 +287,6 @@ void TaskControl::getSaveFrame(Image *im)
 void TaskControl::setTaskState(std::string state)
 {
     if ((this->taskState == "Ready") && (state == "Live")) {
-        if (ext_trigger_enable) {
-            dev->setLevelTrigger(false);
-        }
         if (channel == "BF") {
             dev->setExposure(25);
             openShutter();
@@ -379,9 +373,6 @@ void TaskControl::setTaskState(std::string state)
         dataManager->setLiveViewStatus(false);
         taskThread.join();
         dev->releaseBuffer();
-        if (ext_trigger_enable) {
-            dev->setLevelTrigger(ext_trigger_enable);
-        }
         this->taskState = "Ready";
         emit taskStateChanged(this->taskState);
     } else if ((this->taskState == "Capture") && (state == "Stop")) {
@@ -467,13 +458,6 @@ std::string TaskControl::getTaskProperty(std::string name)
     if (name == "Binning") {
         return binning;
     }
-    if (name == "ExtTrigger") {
-        if (ext_trigger_enable) {
-            return "Enable";
-        } else {
-            return "Disable";
-        }
-    }
     if (util::hasPrefix(name, "ChannelSettings")) {
         std::string ch_property_name = util::trimPrefix(name, "ChannelSettings/");
         
@@ -505,16 +489,6 @@ void TaskControl::setTaskProperty(std::string name, std::string value)
     }
     if (name == "Binning") {
         binning = value;
-        return;
-    }
-    if (name == "ExtTrigger") {
-        if (value == "Enable") {
-            setExtTriggerMode(true);
-        } else if (value == "Disable") {
-            setExtTriggerMode(false);
-        } else {
-            throw std::invalid_argument(fmt::format("invalid value '{}', should be 'Enable' or 'Disable'", value));
-        }
         return;
     }
     if (name == "NamePrefix") {
@@ -550,15 +524,4 @@ void TaskControl::setTaskProperty(std::string name, std::string value)
         }
     }
     throw std::invalid_argument(fmt::format("{} not found", name));
-}
-
-void TaskControl::setExtTriggerMode(bool ext_trigger_enable)
-{
-    this->ext_trigger_enable = ext_trigger_enable;
-
-    if (ext_trigger_enable) {
-        dev->setLevelTrigger(true);
-    } else {
-        dev->setLevelTrigger(false);
-    }
 }

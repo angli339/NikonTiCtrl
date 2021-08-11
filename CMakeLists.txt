@@ -154,7 +154,6 @@ add_executable(NikonTiControl
     src/device/prior_proscan.cpp
     src/device/prior_proscan_property.cpp
     src/device/hamamatsu_dcam.cpp
-    src/device/trigger_controller.cpp
 
     # Device Util
     src/utils/time_utils.cpp

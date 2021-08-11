@@ -8,7 +8,6 @@
 #include "device/hamamatsu_dcam.h"
 #include "device/nikon_ti.h"
 #include "device/prior_proscan.h"
-#include "device/trigger_controller.h"
 #include "utils/devnotify.h"
 
 class DeviceControl : public QObject
@@ -35,7 +34,7 @@ public:
     double getExposure();
     void setBinning(std::string binning);
     void setLevelTrigger(bool enable);
-    void outputTriggerPulse();
+
 
     void allocBuffer(int n_frame);
     void releaseBuffer();
@@ -60,7 +59,6 @@ signals:
 
 private:
     std::atomic<bool> connected;
-    bool ext_trigger_enable = false;
 
     DevNotify *devNotify;
     DataManager *dataManager;
@@ -68,7 +66,6 @@ private:
     HamamatsuDCAM *hamamatsu = nullptr;
     PriorProscan *proscan = nullptr;
     NikonTi *nikon = nullptr;
-    TriggerController *trigger_controller = nullptr;
 
     int bufferSize = 0;
 };

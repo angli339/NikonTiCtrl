@@ -21,11 +21,6 @@ DeviceControl::DeviceControl(QObject *parent) : QObject(parent)
         emit this->propertyUpdated("PriorProScan/" + name, value);
     });
 
-    trigger_controller = new TriggerController("ASRL4::INSTR");
-    connect(trigger_controller, &TriggerController::propertyUpdated, [this](const std::string name, const std::string value) {
-        emit this->propertyUpdated("TriggerController/" + name, value);
-    });
-
     hamamatsu = new HamamatsuDCAM;
     connect(hamamatsu, &HamamatsuDCAM::propertyUpdated, [this](const std::string name, const std::string value) {
         if ((name == "") && (value == "Connected")) {
@@ -62,12 +57,10 @@ void DeviceControl::connectAll()
     auto f1 = QtConcurrent::run(nikon, &NikonTi::connect);
     auto f2 = QtConcurrent::run(proscan, &PriorProscan::connect);
     auto f3 = QtConcurrent::run(hamamatsu, &HamamatsuDCAM::connect);
-    auto f4 = QtConcurrent::run(trigger_controller, &TriggerController::connect);
 
     f1.waitForFinished();
     f2.waitForFinished();
     f3.waitForFinished();
-    f4.waitForFinished();
 
     connected = true;
 }
@@ -79,47 +72,20 @@ void DeviceControl::disconnectAll()
     auto f1 = QtConcurrent::run(nikon, &NikonTi::disconnect);
     auto f2 = QtConcurrent::run(proscan, &PriorProscan::disconnect);
     auto f3 = QtConcurrent::run(hamamatsu, &HamamatsuDCAM::disconnect);
-    auto f4 = QtConcurrent::run(trigger_controller, &TriggerController::disconnect);
 
     f1.waitForFinished();
     f2.waitForFinished();
     f3.waitForFinished();
-    f4.waitForFinished();
 }
 
 void DeviceControl::setExposure(double exposure_ms)
 {
-    if (ext_trigger_enable) {
-        trigger_controller->setTriggerPulseWidth(exposure_ms);
-    } else {
-        hamamatsu->setExposure(exposure_ms);
-    }
+    hamamatsu->setExposure(exposure_ms);
 }
 
 double DeviceControl::getExposure()
 {
-    if (ext_trigger_enable) {
-        return trigger_controller->getTriggerPulseWidth();
-    } else {
-        return hamamatsu->getExposure();
-    }
-}
-
-void DeviceControl::setLevelTrigger(bool enable)
-{
-    ext_trigger_enable = enable;
-    if (enable) {
-        hamamatsu->setDeviceProperty("TRIGGER SOURCE", "EXTERNAL");
-        hamamatsu->setDeviceProperty("TRIGGER ACTIVE", "LEVEL");
-        hamamatsu->setDeviceProperty("TRIGGER POLARITY", "POSITIVE");
-    } else {
-        hamamatsu->setDeviceProperty("TRIGGER SOURCE", "INTERNAL");
-    }
-}
-
-void DeviceControl::outputTriggerPulse()
-{
-    trigger_controller->outputTriggerPulse();
+    return hamamatsu->getExposure();
 }
 
 void DeviceControl::setBinning(std::string binning)

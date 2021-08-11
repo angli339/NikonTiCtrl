@@ -38,8 +38,6 @@ public:
     void closeShutter();
     std::string captureImage(std::string name = "");
 
-    void setExtTriggerMode(bool ext_trigger_enable);
-
     std::string getChannel();
     std::string getTaskState() { return taskState; }
 
@@ -62,7 +60,6 @@ private:
     std::string channel;
     std::string binning = "1x1";
     double exposure_ms = 25;
-    bool ext_trigger_enable = false;
 
     std::string taskState = "Not Connected";
     std::thread taskThread;
