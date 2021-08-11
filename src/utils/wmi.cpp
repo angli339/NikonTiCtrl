@@ -5,9 +5,14 @@
 #include <fmt/format.h>
 #include "logger.h"
 
+#define NOMINMAX
+#include <windows.h>
+
 #define _WIN32_DCOM
 #include <comdef.h>
 #include <Wbemidl.h>
+
+std::string widechar_to_utf8(const wchar_t* wchar_c_str);
 
 WMI::WMI()
 {
@@ -161,8 +166,7 @@ std::vector<std::string> WMI::listDeviceID(std::string queryWhere)
         VARIANT vtProp;
         hres = pclsObj->Get(L"DeviceID", 0, &vtProp, 0, 0);
 
-        std::wstring wDeviceID = std::wstring((wchar_t *)vtProp.bstrVal);
-        std::string deviceID = std::string(wDeviceID.begin(), wDeviceID.end());
+        std::string deviceID = widechar_to_utf8((wchar_t *)vtProp.bstrVal);
         deviceIDList.push_back(deviceID);
 
         VariantClear(&vtProp);
@@ -193,4 +197,38 @@ std::vector<std::string> WMI::list1394DeviceID(std::string vendor)
     } else {
         return listDeviceID("DeviceID LIKE '1394\\\\" + vendor + "&%'");
     }
+}
+
+std::string widechar_to_utf8(const wchar_t* wchar_c_str)
+{
+	int utf8_str_length = ::WideCharToMultiByte(
+        CP_UTF8,     // CodePage
+        0,           // dwFlags
+        wchar_c_str, // lpWideCharStr
+        -1,          // cchWideChar
+        NULL,        // lpMultiByteStr
+        0,           // cbMultiByte
+        NULL,        // lpDefaultChar
+        NULL         // lpUsedDefaultChar
+    );
+	if (utf8_str_length == 0) {
+		return "";
+	}
+
+    std::string utf8_str;
+    utf8_str.reserve(utf8_str_length);
+
+	utf8_str_length = ::WideCharToMultiByte(
+        CP_UTF8,                  // CodePage
+        0,                        // dwFlags
+        wchar_c_str,              // lpWideCharStr
+        -1,                       // cchWideChar
+        utf8_str.data(),          // lpMultiByteStr
+        (int)utf8_str.capacity(), // cbMultiByte
+        NULL,                     // lpDefaultChar
+        NULL                      // lpUsedDefaultChar
+    );
+
+    utf8_str.resize(utf8_str_length);
+	return utf8_str;
 }

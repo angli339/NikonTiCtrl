@@ -4,7 +4,7 @@
 #include <atomic>
 #include <condition_variable>
 #include <mutex>
-#include <ghc/filesystem.hpp>
+#include <filesystem>
 #include <QAbstractTableModel>
 #include <QObject>
 #include <string>
@@ -13,7 +13,7 @@
 
 #include "image.h"
 
-namespace fs = ghc::filesystem;
+namespace fs = std::filesystem;
 
 struct Experiment {
     fs::path image_dir;

@@ -144,7 +144,7 @@ std::vector<double> Image::getHistogram()
     int n_hist = 256;
     int bin_size = 256;
 
-    uint32_t hist_int[n_hist] = {0};
+    uint32_t hist_int[256] = {0};
     
     uint16_t *buf16 = (uint16_t *)buf;
     for (int i = 0; i < width * height; i++) {

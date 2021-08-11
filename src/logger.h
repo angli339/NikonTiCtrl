@@ -3,7 +3,7 @@
 
 #include <fmt/color.h>
 #include <fstream>
-#include <ghc/filesystem.hpp>
+#include <filesystem>
 #include <mutex>
 #include <nlohmann/json.hpp>
 
@@ -29,7 +29,7 @@
 
 namespace slog {
 
-namespace fs = ghc::filesystem;
+namespace fs = std::filesystem;
 using Fields = nlohmann::json;
 
 namespace level {
@@ -88,7 +88,12 @@ Logger &DefaultLogger();
 
 // https://stackoverflow.com/questions/23230003/something-between-func-and-pretty-function
 std::string computeMethodName(const std::string& function, const std::string& prettyFunction);
-#define __COMPACT_PRETTY_FUNCTION__ computeMethodName(__FUNCTION__,__PRETTY_FUNCTION__).c_str() //c_str() is optional
+
+#ifdef _MSC_VER
+#define __COMPACT_PRETTY_FUNCTION__ computeMethodName(__FUNCTION__,__FUNCSIG__)
+#else
+#define __COMPACT_PRETTY_FUNCTION__ computeMethodName(__FUNCTION__,__PRETTY_FUNCTION__)
+#endif
 
 
 #define LOGGER_CALL(level, message, ...) slog::DefaultLogger().Log(level, __COMPACT_PRETTY_FUNCTION__, message, ## __VA_ARGS__)

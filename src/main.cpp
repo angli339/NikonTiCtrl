@@ -3,7 +3,7 @@
 #include <csignal> // std::signal
 #include <cstdlib> // std::getenv
 #include <fmt/format.h>
-#include <ghc/filesystem.hpp>
+#include <filesystem>
 #include <QApplication>
 #include <QOpenGLContext>
 #include <QStandardPaths>
@@ -17,7 +17,7 @@
 #include "taskcontrol.h"
 #include "version.h"
 
-namespace fs = ghc::filesystem;
+namespace fs = std::filesystem;
 
 void sigHandler(int s)
 {

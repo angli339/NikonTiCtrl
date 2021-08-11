@@ -2,13 +2,13 @@
 #define IMAGE_H
 
 #include <cstdint>
-#include <ghc/filesystem.hpp>
+#include <filesystem>
 #include <map>
 #include <nlohmann/json.hpp>
 #include <string>
 #include <vector>
 
-namespace fs = ghc::filesystem;
+namespace fs = std::filesystem;
 
 enum PixelFormat {
     PixelMono8,

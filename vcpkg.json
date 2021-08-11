@@ -1,0 +1,17 @@
+{
+    "name": "nikon-ti-ctrl",
+    "version": "0.1.2",
+    "dependencies": [
+        "fmt",
+        "nlohmann-json",
+        {
+            "name": "grpc",
+            "features": ["codegen"]
+        },
+        {
+            "name": "tiff",
+            "features": ["jpeg", "zip", "zstd"],
+            "default-features": false
+        }
+    ]
+}

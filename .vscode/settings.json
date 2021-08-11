@@ -1,13 +1,11 @@
 {
+    "cmake.generator": "Ninja",
+    "cmake.configureSettings": {
+        "VCPKG_TARGET_TRIPLET": "x64-windows-static",
+        "CMAKE_TOOLCHAIN_FILE": "C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    },
     "cmake.configureOnOpen": true,
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
-    "cmake.cmakePath": "C:\\Qt\\Tools\\CMake_64\\bin\\cmake.exe",
-    "cmake.environment": {
-        "PATH": "C:\\Qt\\Tools\\CMake_64\\bin;C:\\Qt\\Tools\\mingw810_64\\bin;C:\\Qt\\5.15.2\\mingw81_64\\bin;C:\\msys64\\mingw64\\bin;C:\\WINDOWS\\system32;C:\\WINDOWS"
-    },
-    "terminal.integrated.env.windows": {
-        "PATH": "C:\\Qt\\Tools\\CMake_64\\bin;C:\\Qt\\Tools\\mingw810_64\\bin;C:\\Qt\\5.15.2\\mingw81_64\\bin;C:\\msys64\\mingw64\\bin;C:\\WINDOWS\\system32;C:\\WINDOWS"
-    },
     "files.associations": {
         "any": "cpp",
         "array": "cpp",

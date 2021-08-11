@@ -14,7 +14,7 @@
 #include "utils/wmi.h"
 #include "propertystatus.h"
 
-#include "MMCoreC.h"
+#include "mm_api.h"
 
 NikonTi *g_nikon_ti = nullptr;
 
@@ -39,6 +39,14 @@ struct MM_EventCallback mmCallback = {
 
 NikonTi::NikonTi(QObject *parent) : QObject(parent)
 {
+    try {
+        load_MMCoreC();
+        LOG_INFO("MMCoreC loaded");
+    } catch (std::runtime_error &e) {
+        std::string error = fmt::format("failed to load MMCoreC: {}", e.what());
+        LOG_ERROR(error);
+        throw std::runtime_error(error);
+    }
 }
 
 NikonTi::~NikonTi()
@@ -104,26 +112,26 @@ void NikonTi::connect()
     utils::StopWatch sw;
     std::unique_lock<std::mutex> lk(mu_mmc);
 
-    MM_Open(&mmc);
+    mmcore->MM_Open(&mmc);
 
     MM_Status status;
 
     //
     // Initialize microscope hub
     //
-    status = MM_LoadDevice(mmc, "TIScope", "NikonTI", "TIScope");
+    status = mmcore->MM_LoadDevice(mmc, "TIScope", "NikonTI", "TIScope");
     if (status != 0) {
         LOG_ERROR("NikonTi: Failed to load TIScope. Err={}", status);
 
-        MM_Close(mmc);
+        mmcore->MM_Close(mmc);
         mmc = nullptr;
         throw std::runtime_error("failed to load TIScope");
     }
-    status = MM_InitializeDevice(mmc, "TIScope");
+    status = mmcore->MM_InitializeDevice(mmc, "TIScope");
     if (status != 0) {
         LOG_ERROR("NikonTi: Failed to init TIScope. Err={}", status);
 
-        MM_Close(mmc);
+        mmcore->MM_Close(mmc);
         mmc = nullptr;
         throw std::runtime_error("failed to init TIScope");
     }
@@ -144,12 +152,12 @@ void NikonTi::connect()
     };
 
     for(const auto& module : modules) {
-        status = MM_LoadDevice(mmc, module.c_str(), "NikonTI", module.c_str());
+        status = mmcore->MM_LoadDevice(mmc, module.c_str(), "NikonTI", module.c_str());
         if (status != 0) {
             LOG_ERROR("NikonTi: Failed to load module {}. Err={}", module.c_str(), status);
             continue;
         }
-        status = MM_InitializeDevice(mmc, module.c_str());
+        status = mmcore->MM_InitializeDevice(mmc, module.c_str());
         if (status != 0) {
             LOG_ERROR("NikonTi: Failed to init module {}. Err={}", module.c_str(), status);
             continue;
@@ -159,10 +167,10 @@ void NikonTi::connect()
 
         // Set focus device so that we can get Z focus with GetPosition()
         if (module == "TIZDrive") {
-            status = MM_SetFocusDevice(mmc, "TIZDrive");
+            status = mmcore->MM_SetFocusDevice(mmc, "TIZDrive");
             if (status != 0) {
                 LOG_ERROR("NikonTi: MM_SetFocusDevice(TIZDrive) failed. Err={}. Unloading...", status);
-                status = MM_UnloadDevice(mmc, module.c_str());
+                status = mmcore->MM_UnloadDevice(mmc, module.c_str());
                 if (status != 0) {
                     LOG_ERROR("NikonTi: MM_UnloadDevice(TIZDrive) failed. Err={}", status);
                 } else {
@@ -195,7 +203,7 @@ void NikonTi::connect()
     }
 
     g_nikon_ti = this;
-    MM_RegisterCallback(mmc, &mmCallback);
+    mmcore->MM_RegisterCallback(mmc, &mmCallback);
 
 //    QObject::connect(&volatilePropertyUpdateTimer, &QTimer::timeout, this, &NikonTi::updateVolatileProperties);
 //    volatilePropertyUpdateTimer.start(100);
@@ -228,8 +236,8 @@ void NikonTi::disconnect()
     emit propertyUpdated("", "Disconnecting");
     utils::StopWatch sw;
 
-    MM_UnloadAllDevices(mmc);
-    MM_Close(mmc);
+    mmcore->MM_UnloadAllDevices(mmc);
+    mmcore->MM_Close(mmc);
     mmc = nullptr;
 
     g_nikon_ti = nullptr;
@@ -308,7 +316,7 @@ std::string NikonTi::getDeviceProperty(const std::string name, bool force_update
         {
             std::lock_guard<std::mutex> lk(mu_mmc);
             sw_api_call.Reset();
-            status = MM_GetPosition(mmc, mmLabel.c_str(), &position);
+            status = mmcore->MM_GetPosition(mmc, mmLabel.c_str(), &position);
         }
         log_fields["duration_ms"] = sw_api_call.Milliseconds();
 
@@ -354,12 +362,12 @@ std::string NikonTi::getDeviceProperty(const std::string name, bool force_update
     {
         std::lock_guard<std::mutex> lk(mu_mmc);
         sw_api_call.Reset();
-        status = MM_GetProperty(mmc, info.mmLabel.c_str(), info.mmProperty.c_str(), &mm_value_str);
+        status = mmcore->MM_GetProperty(mmc, info.mmLabel.c_str(), info.mmProperty.c_str(), &mm_value_str);
     }
     log_fields["duration_ms"] = sw_api_call.Milliseconds();
 
     std::string mmValue = std::string(mm_value_str);
-    MM_StringFree(mm_value_str);
+    mmcore->MM_StringFree(mm_value_str);
 
     log_fields["response"] = mmValue;
 
@@ -421,7 +429,7 @@ void NikonTi::setDeviceProperty(const std::string name, const std::string value)
         {
             std::lock_guard<std::mutex> lk(mu_mmc);
             sw_api_call.Reset();
-            status = MM_SetPosition(mmc, mmLabel.c_str(), position);
+            status = mmcore->MM_SetPosition(mmc, mmLabel.c_str(), position);
         }
         log_fields["duration_ms"] = sw_api_call.Milliseconds();
 
@@ -475,7 +483,7 @@ void NikonTi::setDeviceProperty(const std::string name, const std::string value)
     {
         std::lock_guard<std::mutex> lk(mu_mmc);
         sw_api_call.Reset();
-        status = MM_SetPropertyString(mmc, info.mmLabel.c_str(), info.mmProperty.c_str(), convertedValue.c_str());
+        status = mmcore->MM_SetPropertyString(mmc, info.mmLabel.c_str(), info.mmProperty.c_str(), convertedValue.c_str());
     }
     log_fields["duration_ms"] = sw_api_call.Milliseconds();
 

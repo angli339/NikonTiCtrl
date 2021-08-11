@@ -1,5 +1,6 @@
 #include "config.h"
 
+#include <fstream>
 #include <stdexcept>
 #include <unordered_set>
 
@@ -15,7 +16,7 @@ using json = nlohmann::json;
 
 void loadConfig(fs::path filename)
 {
-     std::ifstream ifs(filename.string());
+     std::ifstream ifs(filename.string().c_str());
      json j = json::parse(ifs);
 
      configPixelSize = j.at("pixel_size").get<std::map<std::string, double>>();
@@ -25,7 +26,7 @@ void loadConfig(fs::path filename)
 
 void loadUserConfig(fs::path filename)
 {
-     std::ifstream ifs(filename.string());
+     std::ifstream ifs(filename.string().c_str());
      json j = json::parse(ifs);
 
      configUser = j.get<ConfigUser>();

@@ -1,13 +1,13 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include <ghc/filesystem.hpp>
+#include <filesystem>
 #include <string>
 #include <map>
 #include <vector>
 #include <nlohmann/json.hpp>
 
-namespace fs = ghc::filesystem;
+namespace fs = std::filesystem;
 
 struct Label {
     std::string name;
