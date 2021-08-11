@@ -19,3 +19,6 @@ Graphical user interface and API for controlling a Nikon Ti-E widefield fluoresc
 * [DCAM-API](https://dcam-api.com) 21.7.6307 (Camera driver)
 * [Ti Control](https://www.nikon.com/products/microscope-solutions/support/download/software/biological/index.htm#toc02) 4.4.6 (Microscope driver) 
 * [Nikon Ti SDK Redistributable](https://micro-manager.org/wiki/NikonTI) 4.4.1.714
+
+## Screenshot
+![screenshot](.github/screenshot.jpg)
