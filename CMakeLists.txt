@@ -127,23 +127,25 @@ set(version_srcs "${CMAKE_CURRENT_BINARY_DIR}/version.cpp")
 # Target
 ################################
 
+set(QT_SOURCES
+    src/qt/mainwindow.cpp
+    src/qt/mainwindow.h
+    src/qt/mainwindow.ui
+    src/qt/nikon_control.qrc
+    src/qt/glimageviewer.cpp
+    src/qt/cmap_data.cpp
+)
+
 add_executable(NikonTiControl
     src/main.cpp
     ${version_srcs}
-
-    # UI
-    src/mainwindow.cpp
-    src/mainwindow.h
-    src/mainwindow.ui
-    src/nikon_control.qrc
+    ${QT_SOURCES}
 
     src/image.cpp
     src/logger.cpp
     src/devicecontrol.cpp
     src/taskcontrol.cpp
     src/datamanager.cpp
-    src/glimageviewer.cpp
-    src/cmap_data.cpp
     src/propertystatus.cpp
     src/config.cpp
 
