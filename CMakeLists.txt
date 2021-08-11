@@ -2,14 +2,14 @@ cmake_minimum_required(VERSION 3.5)
 
 project(NikonTiControl LANGUAGES CXX)
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+include_directories("src")
 
 ################################
 #  Find Packages
@@ -199,27 +199,27 @@ set_target_properties(VISA PROPERTIES
 ################################
 
 # Proto file
-get_filename_component(hw_proto "./api.proto" ABSOLUTE)
+get_filename_component(hw_proto "./src/api.proto" ABSOLUTE)
 get_filename_component(hw_proto_path "${hw_proto}" PATH)
 
 # Generated sources
-set(hw_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/api.pb.cc")
-set(hw_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/api.pb.h")
-set(hw_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/api.grpc.pb.cc")
-set(hw_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/api.grpc.pb.h")
+set(hw_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/proto/api.pb.cc")
+set(hw_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/proto/api.pb.h")
+set(hw_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/proto/api.grpc.pb.cc")
+set(hw_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/proto/api.grpc.pb.h")
 
 add_custom_command(
       OUTPUT "${hw_proto_srcs}" "${hw_proto_hdrs}" "${hw_grpc_srcs}" "${hw_grpc_hdrs}"
       COMMAND ${_PROTOBUF_PROTOC}
-      ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
-        --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
+      ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}/proto"
+        --cpp_out "${CMAKE_CURRENT_BINARY_DIR}/proto"
         -I "${hw_proto_path}"
         --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
         "${hw_proto}"
       DEPENDS "${hw_proto}")
 
 ## Include generated *.pb.h files
-include_directories("${CMAKE_CURRENT_BINARY_DIR}")
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/proto")
 
 ################################
 #  Find version
@@ -254,7 +254,7 @@ endif()
 message(STATUS "---------- summary ----------")
 message(STATUS "${CMAKE_PROJECT_NAME} Version: ${GIT_TAG_VERSION}")
 
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/version.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/version.cpp" @ONLY)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/version.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/version.cpp" @ONLY)
 set(version_srcs "${CMAKE_CURRENT_BINARY_DIR}/version.cpp")
 
 ################################
@@ -262,41 +262,41 @@ set(version_srcs "${CMAKE_CURRENT_BINARY_DIR}/version.cpp")
 ################################
 
 add_executable(NikonTiControl
-    main.cpp
+    src/main.cpp
     ${version_srcs}
 
     # UI
-    mainwindow.cpp
-    mainwindow.h
-    mainwindow.ui
-    nikon_control.qrc
+    src/mainwindow.cpp
+    src/mainwindow.h
+    src/mainwindow.ui
+    src/nikon_control.qrc
 
-    image.cpp
-    logger.cpp
-    devicecontrol.cpp
-    taskcontrol.cpp
-    datamanager.cpp
-    glimageviewer.cpp
-    cmap_data.cpp
-    propertystatus.cpp
-    config.cpp
+    src/image.cpp
+    src/logger.cpp
+    src/devicecontrol.cpp
+    src/taskcontrol.cpp
+    src/datamanager.cpp
+    src/glimageviewer.cpp
+    src/cmap_data.cpp
+    src/propertystatus.cpp
+    src/config.cpp
 
     # Device Interface
-    device/nikon_ti.cpp
-    device/nikon_ti_property.cpp
-    device/prior_proscan.cpp
-    device/prior_proscan_property.cpp
-    device/hamamatsu_dcam.cpp
-    device/trigger_controller.cpp
+    src/device/nikon_ti.cpp
+    src/device/nikon_ti_property.cpp
+    src/device/prior_proscan.cpp
+    src/device/prior_proscan_property.cpp
+    src/device/hamamatsu_dcam.cpp
+    src/device/trigger_controller.cpp
 
     # Device Util
-    utils/time_utils.cpp
-    utils/string_utils.cpp
-    utils/wmi.cpp
-    utils/devnotify.cpp
+    src/utils/time_utils.cpp
+    src/utils/string_utils.cpp
+    src/utils/wmi.cpp
+    src/utils/devnotify.cpp
 
     # gRPC API
-    api_server.cpp
+    src/api_server.cpp
     ${hw_proto_srcs}
     ${hw_grpc_srcs}
 )
