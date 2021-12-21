@@ -6,11 +6,21 @@
         "nlohmann-json",
         {
             "name": "grpc",
-            "features": ["codegen"]
+            "features": [
+                "codegen"
+            ]
         },
         {
             "name": "tiff",
-            "features": ["jpeg", "zip", "zstd"],
+            "features": [
+                "jpeg",
+                "zip",
+                "zstd"
+            ],
+            "default-features": false
+        },
+        {
+            "name": "opencv4",
             "default-features": false
         }
     ]

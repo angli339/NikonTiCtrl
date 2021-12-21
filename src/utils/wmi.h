@@ -1,19 +1,19 @@
 #ifndef WMI_H
 #define WMI_H
 
-#include <vector>
 #include <string>
+#include <vector>
 
 struct IWbemLocator;
 struct IWbemServices;
 
-class WMI
-{
+class WMI {
 public:
     WMI();
     ~WMI();
 
-    std::vector<std::string> listUSBDeviceID(std::string vid = "", std::string pid = "");
+    std::vector<std::string> listUSBDeviceID(std::string vid = "",
+                                             std::string pid = "");
     std::vector<std::string> list1394DeviceID(std::string vendor = "");
 
 private:

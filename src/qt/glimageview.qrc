@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>glimageview.vert</file>
+        <file>glimageview_mono.frag</file>
+    </qresource>
+</RCC>

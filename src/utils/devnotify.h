@@ -7,8 +7,7 @@ struct HWND__;
 typedef HWND__ *HWND;
 typedef void *HDEVNOTIFY;
 
-class DevNotify : public QThread
-{
+class DevNotify : public QThread {
     Q_OBJECT
 public:
     explicit DevNotify(QObject *parent = nullptr);

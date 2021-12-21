@@ -2,67 +2,60 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QtCharts/QtCharts>
+#include <QPushButton>
+#include <QStackedWidget>
+#include <QWidget>
 
-#include "datamanager.h"
-#include "image.h"
-#include "taskcontrol.h"
+#include "device/devicehub.h"
+#include "imagingcontrol.h"
 
-QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
-QT_END_NAMESPACE
+#include "qt/acquirepage.h"
+#include "qt/datapage.h"
+#include "qt/setuppage.h"
 
-class MainWindow : public QMainWindow
-{
+#include "qt/devicecontrol_model.h"
+#include "qt/imagingcontrol_model.h"
+
+class NavBar;
+
+class MainWindow : public QMainWindow {
     Q_OBJECT
-
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    void setDataManager(DataManager *dataManager);
-    void setTaskControl(TaskControl *taskControl);
-
-signals:
-    void requestSetTaskState(std::string state);
-    void requestSetChannel(std::string channel);
-    void requestDevicePropertyGet(std::string name);
-    void requestDevicePropertySet(std::string name, std::string value);
+    void setDeviceHub(DeviceHub *hub);
+    void setImagingControl(ImagingControl *imagingControl);
+    void testData();
 
 public slots:
-    void displayImage(Image *im);
-    void updateDeviceProperty(std::string name, std::string value);
-    void updateTaskState(std::string state);
-    void updateChannel(std::string channel);
+    void showSetupPage();
+    void showAcquirePage();
+    void showDataPage();
 
-private:
-    Ui::MainWindow *ui;
-    DataManager *dataManager;
-    TaskControl *taskControl;
+public:
+    NavBar *navBar;
 
-    void updateButtonGroup(std::unordered_map<std::string, QPushButton *> buttons, std::string value);
-    void setButtonGroupEnabled(std::unordered_map<std::string, QPushButton *> buttons, bool enabled);
+    QStackedWidget *contentArea;
+    SetupPage *setupPage;
+    AcquirePage *acquirePage;
+    DataPage *dataPage;
 
-    // Histogram View
-    QChart *histChart;
-    QLineSeries *histSeries;
-    QValueAxis *histAxisX;
-    QValueAxis *histAxisY;
-
-    // Device Control View
-    std::unordered_map<std::string, QPushButton *> filterBlock1Buttons;
-    std::unordered_map<std::string, QPushButton *> lightPathButtons;
-    std::unordered_map<std::string, QPushButton *> nosePieceButtons;
-    std::unordered_map<std::string, QPushButton *> diaShutterButtons;
-    std::unordered_map<std::string, QPushButton *> pfsStateButtons;
-    std::unordered_map<std::string, QPushButton *> excitationFilterButtons;
-    std::unordered_map<std::string, QPushButton *> emissionFilterButtons;
-
-    // Task Control View
-    std::unordered_map<std::string, QPushButton *> channelButtons;
-
-    void initHistogramView();
-    void initDeviceControlView();
-    void initTaskControlView();
+    DeviceControlModel *deviceControlModel;
+    ImagingControlModel *imagingControlModel;
 };
+
+class NavBar : public QWidget {
+    Q_OBJECT
+public:
+    explicit NavBar(QWidget *parent = nullptr);
+
+    void setCurrentButton(QPushButton *currentButton);
+
+public:
+    QPushButton *buttonSetup;
+    QPushButton *buttonAcquire;
+    QPushButton *ButtonData;
+};
+
 #endif // MAINWINDOW_H

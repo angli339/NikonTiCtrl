@@ -2,43 +2,35 @@
 #define CONFIG_H
 
 #include <filesystem>
-#include <string>
 #include <map>
-#include <vector>
 #include <nlohmann/json.hpp>
+#include <string>
+#include <vector>
 
-namespace fs = std::filesystem;
+#include "channel.h"
+#include "device/propertypath.h"
 
 struct Label {
     std::string name;
     std::string description;
-
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Label, name, description)
 };
 
 struct ConfigUser {
     std::string name;
     std::string email;
-
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(ConfigUser, name, email)
 };
 
-//
-// Global variables for the configurations (as a temporary solution)
-//
-extern ConfigUser configUser;
-extern std::map<std::string, double> configPixelSize;
-extern std::map<std::string, std::map<std::string, Label>> configLabel;
-extern std::map<std::string, std::map<std::string, std::string>> configChannel;
+struct Config {
+    ConfigUser user;
+    std::string data_root;
+    std::string unet_grpc_addr;
+    std::map<PropertyPath, std::map<std::string, Label>> labels;
+    std::vector<ChannelPreset> presets;
+};
 
-void loadConfig(fs::path filename);
-void loadUserConfig(fs::path filename);
-std::string propertyLabelToPosition(std::string name, std::string value);
-std::string propertyLabelFromPosition(std::string name, std::string value);
+extern Config config;
 
-std::vector<std::string> getChannelList();
-std::map<std::string, std::string> getChannelConfig_Filter(std::string channel);
-std::map<std::string, std::string> getChannelConfig_Shutter(std::string channel);
-std::string getChannelFromDeviceProperties(std::map<std::string, std::string> properties);
+void loadConfig(std::filesystem::path filename);
+void loadUserConfig(std::filesystem::path filename);
 
-#endif // CONFIG_H
+#endif

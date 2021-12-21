@@ -5,7 +5,10 @@ project(NikonTiControl LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+if(MSVC)
+    add_compile_options("/Zc:__cplusplus")
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
 
 include_directories("src")
 
@@ -16,18 +19,21 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_PREFIX_PATH "C:/Qt/5.15.2/msvc2019_64/lib/cmake;${CMAKE_PREFIX_PATH}")
-find_package(Qt5 COMPONENTS Widgets Concurrent Charts REQUIRED)
-
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 get_target_property(_qmake_executable Qt5::qmake IMPORTED_LOCATION)
 get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
 find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}" REQUIRED)
 
+find_package(absl REQUIRED)
+add_compile_definitions(_HAS_DEPRECATED_RESULT_OF=1)
+
 find_package(fmt CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
-find_package(TIFF REQUIRED)
 find_package(Protobuf CONFIG REQUIRED)
-find_package(gRPC CONFIG REQUIRED)
+find_package(TIFF REQUIRED)
+find_package(OpenCV REQUIRED COMPONENTS core imgproc)
 
+find_package(gRPC CONFIG REQUIRED)
 find_program(_GRPC_CPP_PLUGIN_EXECUTABLE grpc_cpp_plugin REQUIRED)
 
 ################################
@@ -65,7 +71,7 @@ set_target_properties(DCAMAPI PROPERTIES
 ################################
 
 # Proto file
-get_filename_component(hw_proto "./src/api.proto" ABSOLUTE)
+get_filename_component(hw_proto "./src/api/api.proto" ABSOLUTE)
 get_filename_component(hw_proto_path "${hw_proto}" PATH)
 
 # Generated sources
@@ -87,6 +93,91 @@ add_custom_command(
 ## Include generated *.pb.h files
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/proto")
 
+################################
+# Generated tensorflow_serving gRPC code
+################################
+set (tf_serving_grpc_proto
+    "tensorflow_serving/apis/prediction_service.proto"
+)
+set (tf_serving_proto
+    "tensorflow_serving/apis/classification.proto"
+    "tensorflow_serving/apis/get_model_metadata.proto"
+    "tensorflow_serving/apis/inference.proto"
+    "tensorflow_serving/apis/input.proto"
+    "tensorflow_serving/apis/model.proto"
+    "tensorflow_serving/apis/predict.proto"
+    "tensorflow_serving/apis/regression.proto"
+)
+
+set (tf_proto
+    "tensorflow/core/example/example.proto"
+    "tensorflow/core/example/feature.proto"
+    "tensorflow/core/framework/attr_value.proto"
+    "tensorflow/core/framework/function.proto"
+    "tensorflow/core/framework/graph.proto"
+    "tensorflow/core/framework/node_def.proto"
+    "tensorflow/core/framework/op_def.proto"
+    "tensorflow/core/framework/resource_handle.proto"
+    "tensorflow/core/framework/tensor.proto"
+    "tensorflow/core/framework/tensor_shape.proto"
+    "tensorflow/core/framework/types.proto"
+    "tensorflow/core/framework/variable.proto"
+    "tensorflow/core/framework/versions.proto"
+    "tensorflow/core/protobuf/meta_graph.proto"
+    "tensorflow/core/protobuf/saved_object_graph.proto"
+    "tensorflow/core/protobuf/saver.proto"
+    "tensorflow/core/protobuf/struct.proto"
+    "tensorflow/core/protobuf/trackable_object_graph.proto"
+)
+
+foreach (proto_file ${tf_serving_grpc_proto})
+    list (APPEND tf_serving_grpc_path "${CMAKE_CURRENT_SOURCE_DIR}/third_party/serving/${proto_file}")
+    string(REGEX REPLACE "[.]proto$" ".grpc.pb.cc" proto_src ${proto_file})
+    string(REGEX REPLACE "[.]proto$" ".grpc.pb.h" proto_hdr ${proto_file})
+    list (APPEND tf_serving_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/proto/${proto_src}")
+    list (APPEND tf_serving_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/proto/${proto_hdr}")
+endforeach()
+
+foreach (proto_file ${tf_serving_proto})
+    list (APPEND tf_serving_grpc_path "${CMAKE_CURRENT_SOURCE_DIR}/third_party/serving/${proto_file}")
+    string(REGEX REPLACE "[.]proto$" ".pb.cc" proto_src ${proto_file})
+    string(REGEX REPLACE "[.]proto$" ".pb.h" proto_hdr ${proto_file})
+    list (APPEND tf_serving_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/proto/${proto_src}")
+    list (APPEND tf_serving_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/proto/${proto_hdr}")
+endforeach()
+
+foreach (proto_file ${tf_proto})
+    list (APPEND tf_proto_path "${CMAKE_CURRENT_SOURCE_DIR}/third_party/tensorflow/${proto_file}")
+    string(REGEX REPLACE "[.]proto$" ".pb.cc" proto_src ${proto_file})
+    string(REGEX REPLACE "[.]proto$" ".pb.h" proto_hdr ${proto_file})
+    list (APPEND tf_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/proto/${proto_src}")
+    list (APPEND tf_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/proto/${proto_hdr}")
+endforeach()
+
+add_custom_command(
+      WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/third_party/serving"
+      OUTPUT ${tf_serving_proto_srcs} ${tf_serving_proto_hdrs} ${tf_serving_grpc_srcs} ${tf_serving_grpc_hdrs}
+      COMMAND ${Protobuf_PROTOC_EXECUTABLE}
+      ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}/proto"
+        --cpp_out "${CMAKE_CURRENT_BINARY_DIR}/proto"
+        -I "${CMAKE_CURRENT_SOURCE_DIR}/third_party/tensorflow"
+        -I "${CMAKE_CURRENT_SOURCE_DIR}/third_party/serving"
+        --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
+        ${tf_serving_grpc_proto}
+        ${tf_serving_proto}
+      DEPENDS ${tf_serving_grpc_path}
+)
+
+add_custom_command(
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/third_party/tensorflow"
+        OUTPUT ${tf_proto_srcs} ${tf_proto_hdrs}
+        COMMAND ${Protobuf_PROTOC_EXECUTABLE}
+        ARGS --cpp_out "${CMAKE_CURRENT_BINARY_DIR}/proto"
+          -I "${CMAKE_CURRENT_SOURCE_DIR}/third_party/tensorflow"
+          ${tf_proto}
+        DEPENDS ${tf_proto_path}
+)
+  
 ################################
 #  Find version
 ################################
@@ -129,44 +220,74 @@ set(version_srcs "${CMAKE_CURRENT_BINARY_DIR}/version.cpp")
 
 set(QT_SOURCES
     src/qt/mainwindow.cpp
-    src/qt/mainwindow.h
-    src/qt/mainwindow.ui
-    src/qt/nikon_control.qrc
-    src/qt/glimageviewer.cpp
-    src/qt/cmap_data.cpp
+
+    src/qt/setuppage.cpp
+    src/qt/acquirepage.cpp
+    src/qt/datapage.cpp
+
+    src/qt/devicecontrol_view.cpp
+    src/qt/devicecontrol_model.cpp
+    src/qt/imagingcontrol_view.cpp
+    src/qt/imagingcontrol_model.cpp
+    src/qt/channelcontrol_model.cpp
+    src/qt/datamanager_view.cpp
+    src/qt/datamanager_model.cpp
+    src/qt/samplemanager_view.cpp
+    src/qt/samplemanager_model.cpp
+    src/qt/ndimageview.cpp
+    src/qt/glimageview.cpp
+    src/qt/glimageview.qrc
+
+    src/qt/imagehistview.cpp
+    src/qt/cmap/cmap_data.cpp
+    third_party/QDarkStyleSheet/qdarkstyle/dark/style.qrc
 )
 
 add_executable(NikonTiControl
     src/main.cpp
+    src/config.cpp
+    src/eventstream.cpp
+    src/logging.cpp
+    src/imagingcontrol.cpp
     ${version_srcs}
     ${QT_SOURCES}
 
-    src/image.cpp
-    src/logger.cpp
-    src/devicecontrol.cpp
-    src/taskcontrol.cpp
-    src/datamanager.cpp
-    src/propertystatus.cpp
-    src/config.cpp
+    src/sample/sample.cpp
+    src/sample/samplemanager.cpp
+    src/data/datamanager.cpp
+    src/data/imageio.cpp
+    src/data/imagedata.cpp
+    src/data/imageutils.cpp
+    src/data/ndimage.cpp
+    src/task/channelcontrol.cpp
+    src/task/live_view_task.cpp
+    src/task/multi_channel_task.cpp
+    
+    src/device/device.cpp
+    src/device/devicehub.cpp
+    src/device/propertypath.cpp
 
-    # Device Interface
-    src/device/mm_api.cpp
-    src/device/nikon_ti.cpp
-    src/device/nikon_ti_property.cpp
-    src/device/prior_proscan.cpp
-    src/device/prior_proscan_property.cpp
-    src/device/hamamatsu_dcam.cpp
+    src/device/hamamatsu/hamamatsu_dcam.cpp
+    src/device/nikon/mm_api.cpp
+    src/device/nikon/nikon_ti_prop_info.cpp
+    src/device/nikon/nikon_ti.cpp
+    src/device/prior/prior_proscan_prop_info.cpp
+    src/device/prior/prior_proscan.cpp
 
-    # Device Util
     src/utils/time_utils.cpp
-    src/utils/string_utils.cpp
     src/utils/wmi.cpp
-    src/utils/devnotify.cpp
+    src/utils/uuid.cpp
 
-    # gRPC API
-    src/api_server.cpp
+    src/api/api_server.cpp
     ${hw_proto_srcs}
     ${hw_grpc_srcs}
+
+    ${tf_serving_proto_srcs}
+    ${tf_serving_proto_hdrs}
+    ${tf_serving_grpc_srcs}
+    ${tf_serving_grpc_hdrs}
+    ${tf_proto_srcs}
+    ${tf_proto_hdrs}
 )
 
 install (TARGETS NikonTiControl
@@ -195,21 +316,24 @@ install(
 
 target_link_libraries(NikonTiControl PRIVATE
     wbemuuid # WMI
+    ole32    # UUID
 
     Qt5::Widgets
-    Qt5::Concurrent
-    Qt5::Charts
 
+    absl::statusor
     fmt::fmt
-    TIFF::TIFF
-    nlohmann_json::nlohmann_json
-    protobuf::libprotobuf
     gRPC::grpc++
     gRPC::grpc++_reflection
+    nlohmann_json::nlohmann_json
+    protobuf::libprotobuf
+    TIFF::TIFF
+    opencv_core
+    opencv_imgproc
 
     # Device Interface
     DCAMAPI
     VISA
+
 )
 
 ################################

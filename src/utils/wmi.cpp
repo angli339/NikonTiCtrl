@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <stdexcept>
 #include <fmt/format.h>
-#include "logger.h"
+#include "logging.h"
 
 #define NOMINMAX
 #include <windows.h>

@@ -1,0 +1,228 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/duration.proto";
+
+package api;
+
+// To generate python client code
+// python -m grpc_tools.protoc -I. --python_out=../../python --grpc_python_out=../../python api.proto
+
+message PropertyValue {
+    string name = 1;
+    string value = 2;
+}
+
+message Channel {
+    string preset_name = 1;
+    double exposure_ms = 2;
+    double illumination_intensity = 3;
+}
+
+enum DataType {
+    UNKNOWN_DTYPE = 0;
+    BOOL8 = 1;
+    UINT8 = 2;
+    UINT16 = 3;
+    INT16 = 4;
+    INT32 = 5;
+    FLOAT32 = 6;
+    FLOAT64 = 7;
+}
+enum ColorType {
+    UNKNOWN_CTYPE = 0;
+    MONO8 = 1;
+    MONO10 =2;
+    MONO12 =3;
+    MONO14 = 4;
+    MONO16 = 5;
+    BAYERRG8 = 6;
+    BAYERRG16 = 7;
+}
+
+message NDImage {
+    string name = 1;
+    repeated NDImageChannel channel_info = 2;
+    int32 n_images = 3;
+    int32 n_ch = 4;
+    int32 n_z = 5;
+    int32 n_t = 6;
+}
+
+message NDImageChannel {
+    string name = 1;
+    uint32 width = 2;
+    uint32 height = 3;
+    DataType dtype = 4;
+    ColorType ctype = 5;
+}
+
+message ImageData {
+    uint32 width = 1;
+    uint32 height = 2;
+    DataType dtype = 3;
+    ColorType ctype = 4;
+    bytes buf = 5;
+}
+
+message Sample {
+    string id = 1;
+}
+
+message Site {
+    Sample sample = 1;
+    string id = 2;
+}
+
+message SampleInfo {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    repeated SiteInfo sites = 4;
+}
+
+message SiteInfo {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    double relative_pos_x = 4;
+    double relative_pos_y = 5;
+}
+
+service NikonTiCtrl {
+    // Device
+    rpc ListProperty(ListPropertyRequest) returns (ListPropertyResponse) {}
+    rpc GetProperty(GetPropertyRequest) returns (GetPropertyResponse) {}
+    rpc SetProperty(SetPropertyRequest) returns (google.protobuf.Empty) {}
+    rpc WaitProperty(WaitPropertyRequest) returns (google.protobuf.Empty) {}
+    
+    // Channel
+    rpc ListChannel(google.protobuf.Empty) returns (ListChannelResponse) {}
+    rpc SwitchChannel(SwitchChannelRequest) returns (google.protobuf.Empty) {}
+
+    // Experiment
+    rpc SetExperimentPath(SetExperimentPathRequest) returns (google.protobuf.Empty) {}
+    
+    // Sample
+    // rpc AddSamples(AddSamplesRequest) returns (google.protobuf.Empty) {}
+    // rpc AddSites(AddSitesRequest) returns (google.protobuf.Empty) {}
+    // rpc MoveToSite(MoveToSiteRequest) returns (google.protobuf.Empty) {}
+
+    // Task
+    rpc AcquireMultiChannel(AcquireMultiChannelRequest) returns (google.protobuf.Empty) {}
+    
+    // Data
+    rpc ListNDImage(google.protobuf.Empty) returns (ListNDImageResponse) {}
+    rpc GetImage(GetImageRequest) returns (GetImageResponse) {}
+    rpc GetSegmentationScore(GetSegmentationScoreRequest) returns (GetSegmentationScoreResponse) {}
+}
+
+//
+// Device
+//
+
+message ListPropertyRequest {
+    string name = 1;
+}
+
+message ListPropertyResponse {
+    repeated string name = 1;
+}
+
+message GetPropertyRequest {
+    repeated string name = 1;
+}
+
+message GetPropertyResponse {
+    repeated PropertyValue property = 1;
+}
+
+message SetPropertyRequest {
+    repeated PropertyValue property = 1;
+}
+
+message WaitPropertyRequest {
+    repeated string name = 1;
+    google.protobuf.Duration timeout = 2;
+}
+
+//
+// Channel
+//
+
+message ListChannelResponse {
+    repeated Channel channels = 1;
+}
+
+message SwitchChannelRequest {
+    Channel channel = 1;
+}
+
+//
+// Experiment
+//
+
+message SetExperimentPathRequest {
+    string path = 1;
+}
+
+//
+// Sample
+//
+
+message AddSamplesRequest {
+    repeated SampleInfo samples = 1;
+}
+
+message AddSitesRequest {
+    Sample sample = 1;
+    repeated SiteInfo sites = 2;
+}
+
+message MoveToSiteRequest {
+    Site site = 1;
+}
+
+//
+// Task
+//
+
+message AcquireMultiChannelRequest {
+    string ndimage_name = 1;
+    repeated Channel channels = 2;
+    int32 i_z = 3;
+    int32 i_t = 4;
+    map<string, string> metadata = 5;
+}
+
+//
+// Data
+//
+
+message ListNDImageResponse {
+    repeated NDImage ndimages = 1;
+}
+
+message GetImageRequest {
+    string ndimage_name = 1;
+    string channel_name = 2;
+    int32 i_z = 3;
+    int32 i_t = 4;
+}
+
+message GetImageResponse {
+    ImageData data = 1;
+}
+
+
+//
+// Image Analysis
+//
+
+message GetSegmentationScoreRequest {
+    ImageData data = 1;
+}
+
+message GetSegmentationScoreResponse {
+    ImageData data = 1;
+}

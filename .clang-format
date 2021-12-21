@@ -1,0 +1,20 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+AccessModifierOffset: -4
+MaxEmptyLinesToKeep: 2
+AllowShortEnumsOnASingleLine: false
+FixNamespaceComments: true
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass:      false
+  AfterControlStatement: MultiLine
+  AfterEnum:       false
+  AfterFunction:   true
+  AfterNamespace:  false
+  AfterExternBlock: false
+  AfterStruct:     false
+  AfterUnion:      false
+  BeforeCatch:     false
+  BeforeElse:      false
+  IndentBraces:    false
+  BeforeWhile: false

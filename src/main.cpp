@@ -1,190 +1,178 @@
-#include "qt/mainwindow.h"
+#include <csignal>
+#include <future>
 
-#include <csignal> // std::signal
-#include <cstdlib> // std::getenv
-#include <fmt/format.h>
-#include <filesystem>
 #include <QApplication>
-#include <QOpenGLContext>
-#include <QStandardPaths>
-#include <QtConcurrentRun>
+#include <QFile>
+#include <QSurfaceFormat>
+#include <fmt/format.h>
 
-#include "api_server.h"
+#include "api/api_server.h"
 #include "config.h"
-#include "datamanager.h"
-#include "devicecontrol.h"
-#include "logger.h"
-#include "taskcontrol.h"
-#include "version.h"
+#include "device/devicehub.h"
+#include "imagingcontrol.h"
+#include "logging.h"
+#include "qt/mainwindow.h"
+#include "utils/time_utils.h"
 
-namespace fs = std::filesystem;
+#include "device/hamamatsu/hamamatsu_dcam.h"
+#include "device/nikon/nikon_ti.h"
+#include "device/prior/prior_proscan.h"
 
-void sigHandler(int s)
+void printEvents(EventStream *stream)
 {
-    std::signal(s, SIG_DFL);
-    LOG_INFO("Received exit signal...");
-    qApp->quit();
+    Event e;
+    while (stream->Receive(&e)) {
+        switch (e.type) {
+        case EventType::DeviceConnectionStateChanged:
+            LOG_DEBUG("[Event:{}] {}=\"{}\"", EventTypeToString(e.type),
+                      e.device, e.value);
+            break;
+        case EventType::DeviceOperationComplete:
+            LOG_DEBUG("[Event:{}] {}=\"{}\"", EventTypeToString(e.type), e.path,
+                      e.value);
+            break;
+        case EventType::DevicePropertyValueUpdate:
+            if ((e.path.PropertyName() != "XYPosition") &&
+                (e.path.PropertyName() != "RawXYPosition") &&
+                (e.path.PropertyName() != "ZDrivePosition"))
+            {
+                LOG_DEBUG("[Event:{}] {}=\"{}\"", EventTypeToString(e.type),
+                          e.path, e.value);
+            }
+        }
+    }
 }
 
-void showStartupFatalError(std::string message)
+std::string api_listen_addr = "0.0.0.0:50051";
+
+void sigHandler(int signal)
 {
-    QMessageBox msgBox;
-    msgBox.setText("Program fails to start");
-    msgBox.setInformativeText(message.c_str());
-    msgBox.setIcon(QMessageBox::Critical);
-    msgBox.addButton("Exit", QMessageBox::AcceptRole);
-    msgBox.exec();
+    std::signal(signal, SIG_DFL);
+    LOG_INFO("Received exit signal...");
+
+    qApp->exit(0);
+}
+
+void configApp()
+{
+    QFile file(":/qdarkstyle/dark/style.qss");
+    file.open(QFile::ReadOnly);
+    QString styleSheet = QString::fromLatin1(file.readAll());
+    styleSheet += "\nQPushButton { border-radius: 0px; }\nQWidget:focus "
+                  "{border: 1px solid #1A72BB; }";
+    qApp->setStyleSheet(styleSheet);
 }
 
 int main(int argc, char *argv[])
 {
     slog::InitConsole();
-    
-    qRegisterMetaType<std::string>("std::string");
-    qRegisterMetaType<uint16_t>("uint16_t");
+    loadConfig("");
 
-    QSurfaceFormat fmt;
-    QSurfaceFormat::setDefaultFormat(fmt);
+    //
+    // Add devices
+    //
+    DeviceHub hub;
+    Hamamatsu::DCam *dcam;
+    try {
+        hub.AddDevice("NikonTi", new NikonTi::Microscope);
+        hub.AddDevice("PriorProScan",
+                      new PriorProscan::Proscan("ASRL1::INSTR"));
+        dcam = new Hamamatsu::DCam;
+        hub.AddDevice("Hamamatsu", dcam);
+        // hub.AddDevice("FLIR", new FLIR::Camera);
 
+    } catch (std::exception &e) {
+        LOG_ERROR("Failed to add device: ", e.what());
+    }
+
+    ImagingControl imaging_control(&hub, dcam);
+
+    imaging_control.SampleManager()->NewSample("1", "test sample 1");
+
+    SampleArray *plate1 = imaging_control.SampleManager()->NewSampleArray(
+        "plate1", "test plate", SampleArrayLayout::Wellplate96);
+    plate1->CreateSamplesRange("B01", 5, 2);
+    // Create sites
+    for (Sample *sample : plate1->GetSamples()) {
+        sample->CreateSitesOnCenteredGrid(3, 2, -250, -250);
+    }
+
+    // Set up channels
+    std::vector<Channel> channels = {
+        {"BF", 25},
+        {"YFP", 40, 50},
+    };
+    plate1->SetChannels(channels);
+
+    //
+    // Start API Server
+    //
+    APIServer api_server(api_listen_addr, &hub, &imaging_control);
+    auto api_server_future =
+        std::async(std::launch::async, &APIServer::Wait, &api_server);
+    LOG_INFO("Listening {}...", api_listen_addr);
+
+    //
+    // Init and show UI window
+    //
     QApplication app(argc, argv);
-    std::signal(SIGINT,  sigHandler);
+    configApp();
+    MainWindow w;
+    w.setDeviceHub(&hub);
+    w.setImagingControl(&imaging_control);
+    w.showMaximized();
+    LOG_INFO("window shown");
+    utils::StopWatch sw;
+
+    //
+    // Print events for debugging
+    //
+    EventStream event_stream;
+    auto print_event_future =
+        std::async(std::launch::async, printEvents, &event_stream);
+    hub.SubscribeEvents(&event_stream);
+
+    //
+    // Connect devices
+    //
+    std::future<void> connect_devices_future =
+        std::async(std::launch::async, [&] {
+            absl::Status status = hub.ConnectAll();
+            if (!status.ok()) {
+                LOG_ERROR("Connect: {}", status.ToString());
+            } else {
+                LOG_INFO("All connected");
+            }
+
+            // Init properties
+            status = hub.SetProperty("/Hamamatsu/BIT PER CHANNEL", "16");
+            if (!status.ok()) {
+                LOG_ERROR("Init device properties: {}", status.ToString());
+            } else {
+                LOG_INFO("Device initialized");
+            }
+        });
+
+    //
+    // Handle exit signal
+    //
+    std::signal(SIGINT, sigHandler);
     std::signal(SIGTERM, sigHandler);
 
     //
-    // Find directories for config and log
+    // Start UI event loop
     //
-    
-    // C:/ProgramData
-    auto program_data_dir = fs::path(std::getenv("ALLUSERSPROFILE"));
-    if (program_data_dir.empty()) {
-        std::string error_msg = "failed to get ALLUSERSPROFILE path from environment variables";
-        LOG_FATAL(error_msg);
-        showStartupFatalError(error_msg);
-        return 1;
-    }
-    // C:/ProgramData/NikonTiControl
-    fs::path app_dir = program_data_dir / "NikonTiControl";
-    if (!fs::exists(app_dir)) {
-        std::string error_msg = fmt::format("Directory {} does not exists. It needs to be created manually and assigned with the correct permission.", app_dir.string());
-        LOG_FATAL(error_msg);
-        showStartupFatalError(error_msg);
-        return 1;
-    }
-    // C:/Users/<username>/AppData/Roaming
-    fs::path user_app_data_dir = fs::path(std::getenv("APPDATA"));
-    if (user_app_data_dir.empty()) {
-        std::string error_msg = "failed to get APPDATA path from environment variables";
-        LOG_FATAL(error_msg);
-        showStartupFatalError(error_msg);
-        return 1;
-    }
-    // C:/Users/<username>/AppData/Roaming/NikonTiControl
-    fs::path user_app_dir = user_app_data_dir / "NikonTiControl";
-    if (!fs::exists(user_app_dir)) {
-        fs::create_directory(user_app_dir);
-    }
+    int returnCode = app.exec();
 
-    //
-    // init logger
-    //
-    fs::path log_dir = app_dir / "log";
-    if (!fs::exists(log_dir)) {
-        fs::create_directory(log_dir);
-    }
-    std::string log_filename = fmt::format("nikon_ti_ctrl-{:%Y%m%d-%H%M%S}.log", utils::Now().Local());
-    slog::DefaultLogger().SetFilename(log_dir / log_filename);
-    slog::DefaultLogger().SetFlushLevel(slog::level::debug);
+    LOG_INFO("Disconnecting devices...");
+    hub.DisconnectAll();
+    LOG_INFO("Disconnected");
 
-    LOG_INFO("Welcome to NikonTiControl {}", gitTagVersion);
+    LOG_INFO("Shutting down API Server...");
+    api_server.Shutdown();
+    api_server_future.wait();
 
-    //
-    // load config and print to log
-    //
-    fs::path config_dir = app_dir;
-    fs::path config_file = config_dir / "config.json";
-    fs::path user_config_dir = user_app_dir;
-    fs::path user_config_file = user_config_dir / "user.json";
-   
-    loadConfig(config_file);
-    LOG_INFO("Configuration loaded from {}", config_file.string());
-    LOG_INFO("Configurated Labels:");
-    for (const auto& [property, labelMap]: configLabel) {
-        LOG_INFO("    {}", property);
-        for (const auto& [value, label]: labelMap) {
-            LOG_INFO("        {}={} ({})", value, label.name, label.description);
-        }
-    }
-
-    LOG_INFO("Configurated Channels:");
-    for (const auto& [name, channelPropertyValue]: configChannel) {
-        LOG_INFO("    {}", name);
-    }
-    
-    if (fs::exists(user_config_file)) {
-        loadUserConfig(user_config_file);
-        LOG_INFO("User configuration loaded from {}", user_config_file.string());
-        LOG_INFO("Current User: {} <{}>", configUser.name, configUser.email);
-    } else {
-        LOG_INFO("User configuration not found.");
-        std::string username = std::string(std::getenv("USERNAME"));
-        configUser.name = username;
-        LOG_INFO("Current User: {}", username);
-    }
-    
-    //
-    // Init DataManager
-    //
-    fs::path userprofile_dir = fs::path(std::getenv("USERPROFILE"));
-    if (userprofile_dir.empty()) {
-        std::string error_msg = "failed to get USERPROFILE path from environment variables";
-        LOG_FATAL(error_msg);
-        showStartupFatalError(error_msg);
-        return 1;
-    }
-    fs::path data_root = userprofile_dir / "Data";
-    DataManager *dataManager = new DataManager(data_root);
-
-    DeviceControl *dev = new DeviceControl;
-    dev->setDataManager(dataManager);
-
-    TaskControl *taskControl = new TaskControl;
-    taskControl->setDeviceControl(dev);
-    taskControl->setDataManager(dataManager);
-
-    APIServer *apiServer;
-    try {
-        apiServer = new APIServer;
-    } catch (std::runtime_error &e) {
-        std::string error_msg = fmt::format("API server failed to start: {}. Another NikonTiControl process may be running.", e.what());
-        LOG_FATAL(error_msg);
-        showStartupFatalError(error_msg);
-        return 1;
-    }
-    
-    apiServer->setDeviceControl(dev);
-    apiServer->setDataManager(dataManager);
-    apiServer->setTaskControl(taskControl);
-
-    MainWindow *w = new MainWindow;
-    QObject::connect(w, &MainWindow::requestDevicePropertyGet, [dev](std::string name){
-        dev->getDeviceProperty(name);
-    });
-    QObject::connect(w, &MainWindow::requestDevicePropertySet, dev, &DeviceControl::setDeviceProperty);
-    QObject::connect(dev, &DeviceControl::propertyUpdated, w, &MainWindow::updateDeviceProperty);
-
-    w->setTaskControl(taskControl);
-    w->setDataManager(dataManager);
-    w->show();
-    QtConcurrent::run(dev, &DeviceControl::connectAll);
-
-    int return_code = app.exec();
-    LOG_INFO("Exiting...");
-    
-    delete apiServer;
-    delete dataManager;
-    delete dev;
-    delete w;
-    
-    LOG_INFO("Exit {}", return_code);
-    return return_code;
+    event_stream.Close();
+    print_event_future.wait();
+    return returnCode;
 }
