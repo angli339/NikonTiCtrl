@@ -30,11 +30,12 @@ add_compile_definitions(_HAS_DEPRECATED_RESULT_OF=1)
 find_package(fmt CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(Protobuf CONFIG REQUIRED)
+get_target_property(Protobuf_PROTOC_EXECUTABLE protobuf::protoc IMPORTED_LOCATION_RELEASE)
 find_package(TIFF REQUIRED)
 find_package(OpenCV REQUIRED COMPONENTS core imgproc)
 
 find_package(gRPC CONFIG REQUIRED)
-find_program(_GRPC_CPP_PLUGIN_EXECUTABLE grpc_cpp_plugin REQUIRED)
+get_target_property(gRPC_CPP_PLUGIN_EXECUTABLE gRPC::grpc_cpp_plugin IMPORTED_LOCATION_RELEASE)
 
 ################################
 #  Add Device Interface DLLs
@@ -86,7 +87,7 @@ add_custom_command(
       ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}/proto"
         --cpp_out "${CMAKE_CURRENT_BINARY_DIR}/proto"
         -I "${hw_proto_path}"
-        --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
+        --plugin=protoc-gen-grpc="${gRPC_CPP_PLUGIN_EXECUTABLE}"
         "${hw_proto}"
       DEPENDS "${hw_proto}")
 
@@ -162,7 +163,7 @@ add_custom_command(
         --cpp_out "${CMAKE_CURRENT_BINARY_DIR}/proto"
         -I "${CMAKE_CURRENT_SOURCE_DIR}/third_party/tensorflow"
         -I "${CMAKE_CURRENT_SOURCE_DIR}/third_party/serving"
-        --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
+        --plugin=protoc-gen-grpc="${gRPC_CPP_PLUGIN_EXECUTABLE}"
         ${tf_serving_grpc_proto}
         ${tf_serving_proto}
       DEPENDS ${tf_serving_grpc_path}
