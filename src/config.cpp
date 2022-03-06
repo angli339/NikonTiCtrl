@@ -20,10 +20,24 @@ void loadConfig(std::filesystem::path filename)
                 {
                     {"/PriorProScan/LumenShutter", "Off"},
                     {"/NikonTi/FilterBlock1", "2"},
-                    {"/PriorProScan/FilterWheel3", "10"},
+                    {"/PriorProScan/FilterWheel3", "6"},
                 },
             .shutter_property = "/NikonTi/DiaShutter",
             .default_exposure_ms = 25,
+        },
+        {
+            .name = "YFP",
+            .property_value =
+                {
+                    {"/NikonTi/DiaShutter", "Off"},
+                    {"/NikonTi/FilterBlock1", "2"},
+                    {"/PriorProScan/FilterWheel1", "5"},
+                    {"/PriorProScan/FilterWheel3", "4"},
+                },
+            .shutter_property = "/PriorProScan/LumenShutter",
+            .illumination_property = "/PriorProScan/LumenOutputIntensity",
+            .default_exposure_ms = 50,
+            .default_illumination_intensity = 40,
         },
         {
             .name = "RFP",
@@ -31,8 +45,8 @@ void loadConfig(std::filesystem::path filename)
                 {
                     {"/NikonTi/DiaShutter", "Off"},
                     {"/NikonTi/FilterBlock1", "2"},
-                    {"/PriorProScan/FilterWheel1", "2"},
-                    {"/PriorProScan/FilterWheel3", "1"},
+                    {"/PriorProScan/FilterWheel1", "4"},
+                    {"/PriorProScan/FilterWheel3", "3"},
                 },
             .shutter_property = "/PriorProScan/LumenShutter",
             .illumination_property = "/PriorProScan/LumenOutputIntensity",
@@ -54,18 +68,15 @@ void loadConfig(std::filesystem::path filename)
             .default_illumination_intensity = 25,
         },
         {
-            .name = "YFP",
+            .name = "CFP_BF",
             .property_value =
                 {
-                    {"/NikonTi/DiaShutter", "Off"},
-                    {"/NikonTi/FilterBlock1", "2"},
-                    {"/PriorProScan/FilterWheel1", "4"},
-                    {"/PriorProScan/FilterWheel3", "3"},
+                    {"/PriorProScan/LumenShutter", "Off"},
+                    {"/NikonTi/FilterBlock1", "3"},
+                    {"/PriorProScan/FilterWheel3", "6"},
                 },
-            .shutter_property = "/PriorProScan/LumenShutter",
-            .illumination_property = "/PriorProScan/LumenOutputIntensity",
-            .default_exposure_ms = 50,
-            .default_illumination_intensity = 40,
+            .shutter_property = "/NikonTi/DiaShutter",
+            .default_exposure_ms = 25,
         },
         {
             .name = "CFP",
@@ -73,27 +84,103 @@ void loadConfig(std::filesystem::path filename)
                 {
                     {"/NikonTi/DiaShutter", "Off"},
                     {"/NikonTi/FilterBlock1", "3"},
-                    {"/PriorProScan/FilterWheel1", "1"},
+                    {"/PriorProScan/FilterWheel1", "6"},
+                    {"/PriorProScan/FilterWheel3", "5"},
+                },
+            .shutter_property = "/PriorProScan/LumenShutter",
+            .illumination_property = "/PriorProScan/LumenOutputIntensity",
+            .default_exposure_ms = 150,
+            .default_illumination_intensity = 10,
+        },
+        {
+            .name = "CFP_YFP_FRET",
+            .property_value =
+                {
+                    {"/NikonTi/DiaShutter", "Off"},
+                    {"/NikonTi/FilterBlock1", "3"},
+                    {"/PriorProScan/FilterWheel1", "6"},
                     {"/PriorProScan/FilterWheel3", "4"},
                 },
             .shutter_property = "/PriorProScan/LumenShutter",
             .illumination_property = "/PriorProScan/LumenOutputIntensity",
-            .default_exposure_ms = 100,
-            .default_illumination_intensity = 25,
+            .default_exposure_ms = 150,
+            .default_illumination_intensity = 10,
+        },
+        {
+            .name = "BCYR_CFP",
+            .property_value =
+                {
+                    {"/NikonTi/DiaShutter", "Off"},
+                    {"/NikonTi/FilterBlock1", "2"},
+                    {"/PriorProScan/FilterWheel1", "6"},
+                    {"/PriorProScan/FilterWheel3", "5"},
+                },
+            .shutter_property = "/PriorProScan/LumenShutter",
+            .illumination_property = "/PriorProScan/LumenOutputIntensity",
+            .default_exposure_ms = 150,
+            .default_illumination_intensity = 10,
+        },
+        {
+            .name = "BCYR_CFP_YFP_FRET",
+            .property_value =
+                {
+                    {"/NikonTi/DiaShutter", "Off"},
+                    {"/NikonTi/FilterBlock1", "2"},
+                    {"/PriorProScan/FilterWheel1", "6"},
+                    {"/PriorProScan/FilterWheel3", "4"},
+                },
+            .shutter_property = "/PriorProScan/LumenShutter",
+            .illumination_property = "/PriorProScan/LumenOutputIntensity",
+            .default_exposure_ms = 150,
+            .default_illumination_intensity = 10,
+        },
+        {
+            .name = "GFP_BF",
+            .property_value =
+                {
+                    {"/PriorProScan/LumenShutter", "Off"},
+                    {"/NikonTi/FilterBlock1", "4"},
+                    {"/PriorProScan/FilterWheel3", "1"},
+                },
+            .shutter_property = "/NikonTi/DiaShutter",
+            .default_exposure_ms = 25,
         },
         {
             .name = "GFP",
             .property_value =
                 {
                     {"/NikonTi/DiaShutter", "Off"},
-                    {"/NikonTi/FilterBlock1", "1"},
-                    {"/PriorProScan/FilterWheel1", "4"},
-                    {"/PriorProScan/FilterWheel3", "5"},
+                    {"/NikonTi/FilterBlock1", "4"},
+                    {"/PriorProScan/FilterWheel1", "2"},
+                    {"/PriorProScan/FilterWheel3", "1"},
                 },
             .shutter_property = "/PriorProScan/LumenShutter",
             .illumination_property = "/PriorProScan/LumenOutputIntensity",
             .default_exposure_ms = 50,
             .default_illumination_intensity = 25,
         },
-    };
+        {
+            .name = "GFP_390Ex",
+            .property_value =
+                {
+                    {"/NikonTi/DiaShutter", "Off"},
+                    {"/NikonTi/FilterBlock1", "4"},
+                    {"/PriorProScan/FilterWheel1", "3"},
+                    {"/PriorProScan/FilterWheel3", "1"},
+                },
+            .shutter_property = "/PriorProScan/LumenShutter",
+            .illumination_property = "/PriorProScan/LumenOutputIntensity",
+            .default_exposure_ms = 50,
+            .default_illumination_intensity = 25,
+        },
+        {
+            .name = "DarkFrame",
+            .property_value =
+                {
+                    {"/NikonTi/DiaShutter", "Off"},
+                    {"/PriorProScan/LumenShutter", "Off"},
+                    {"/PriorProScan/FilterWheel3", "7"},
+                },
+            .default_exposure_ms = 200,
+        }};
 }
