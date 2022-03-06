@@ -83,7 +83,17 @@ std::map<PropertyPath, std::string> MultiChannelTask::ExposeFrame(int i_ch)
 
     utils::StopWatch sw;
 
-    channel_control->OpenCurrentShutter();
+    Status status = channel_control->OpenCurrentShutter();
+    if (!status.ok()) {
+        LOG_ERROR("[{}][{}] Shutter failed to turn on: {} [{:.1f} ms]",
+                  ndimage_name, i_ch + 1, status.ToString(), sw.Milliseconds());
+    }
+    status = channel_control->WaitShutter();
+    if (!status.ok()) {
+        LOG_ERROR(
+            "[{}][{}] Shutter failed to turn on after waiting: {} [{:.1f} ms]",
+            ndimage_name, i_ch + 1, status.ToString(), sw.Milliseconds());
+    }
     LOG_DEBUG("[{}][{}] Shutter turned on [{:.1f} ms]", ndimage_name, i_ch + 1,
               sw.Milliseconds());
 
@@ -104,9 +114,20 @@ std::map<PropertyPath, std::string> MultiChannelTask::ExposeFrame(int i_ch)
               sw.Milliseconds());
 
     sw.Reset();
-    channel_control->CloseCurrentShutter();
+    status = channel_control->CloseCurrentShutter();
+    if (!status.ok()) {
+        LOG_ERROR("[{}][{}] Shutter failed to turn off: {} [{:.1f} ms]",
+                  ndimage_name, i_ch + 1, status.ToString(), sw.Milliseconds());
+    }
+    status = channel_control->WaitShutter();
+    if (!status.ok()) {
+        LOG_ERROR(
+            "[{}][{}] Shutter failed to turn off after waiting: {} [{:.1f} ms]",
+            ndimage_name, i_ch + 1, status.ToString(), sw.Milliseconds());
+    }
     LOG_DEBUG("[{}][{}] Shutter turned off [{:.1f} ms]", ndimage_name, i_ch + 1,
               sw.Milliseconds());
+
 
     return property_snapshot;
 }

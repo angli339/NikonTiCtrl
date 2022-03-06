@@ -166,6 +166,16 @@ Status ChannelControl::CloseCurrentShutter()
     return hub->SetProperty(current_shutter, "Off");
 }
 
+Status ChannelControl::WaitShutter()
+{
+    std::shared_lock<std::shared_mutex> lk(shutter_mutex);
+    if (current_shutter.empty()) {
+        return absl::OkStatus();
+    }
+    return hub->WaitPropertyFor({current_shutter},
+                                std::chrono::milliseconds(300));
+}
+
 std::map<PropertyPath, std::string> ChannelControl::getChannelPropertyValue(
     ChannelPreset preset, double exposure_ms, double illumination_intensity)
 {

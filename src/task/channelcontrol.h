@@ -28,6 +28,7 @@ public:
     StatusOr<bool> IsCurrentShutterClose();
     Status OpenCurrentShutter();
     Status CloseCurrentShutter();
+    Status WaitShutter();
 
 private:
     DeviceHub *hub;

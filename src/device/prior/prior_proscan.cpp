@@ -224,8 +224,9 @@ Status Proscan::Connect()
     // Start polling
     polling = true;
     polling_thread = std::thread([this] {
+        std::chrono::duration polling_interval = std::chrono::milliseconds(30);
         while (polling) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            std::this_thread::sleep_for(polling_interval);
             StatusOr<std::string> value;
             value = node_map["XYPosition"]->GetValue();
             if (!value.ok()) {
@@ -239,6 +240,22 @@ Status Proscan::Connect()
                 return;
             }
             // TODO: get value of nodes with pending set operation
+            //
+            // rework the code below to get real dynamic polling interval when
+            // an operation is pending (maybe use condition_variable::sleep_for
+            // to wake up this thread before timer tick)
+            {
+                std::shared_lock<std::shared_mutex> lk(
+                    node_map["LumenShutter"]->mutex_set);
+                if (node_map["LumenShutter"]->pending_set_value.has_value()) {
+                    LOG_DEBUG(
+                        "[Polling] Pending Op: LumenShutter. MotionStatus={}",
+                        value.value());
+                    polling_interval = std::chrono::milliseconds(5);
+                } else {
+                    polling_interval = std::chrono::milliseconds(30);
+                }
+            }
         }
     });
 
@@ -733,6 +750,7 @@ Status PropertyNode::SetValue(std::string value)
     // record the set operation as pending
     std::unique_lock<std::shared_mutex> lk(mutex_set);
     pending_set_value = value;
+    LOG_DEBUG("[Pending Set Op] {}={}", name, pending_set_value.value());
     return absl::OkStatus();
 }
 
@@ -796,6 +814,12 @@ void Proscan::handleMotionStatusUpdate(std::string motion_status_str)
         auto node = node_map[node_name];
 
         std::unique_lock<std::shared_mutex> lk(node->mutex_set);
+        // for debuging LumenShutter bug
+        if ((node_name == "LumenShutter") &&
+            (node->pending_set_value.has_value())) {
+            LOG_DEBUG("LumenShutter: Pending... MotionStatus={}",
+                      motion_status);
+        }
 
         // save the status for sending events and notifications later
         bool value_updated = false;
@@ -821,6 +845,7 @@ void Proscan::handleMotionStatusUpdate(std::string motion_status_str)
             // mark operation as complete by reseting pending_set_value
             node->pending_set_value.reset();
             operation_completed = true;
+            LOG_DEBUG("[Set Op Complete] {}={}", node_name, previous_set_value);
         }
 
         // unlock and notify
@@ -859,13 +884,14 @@ void PropertyNode::handleValueUpdate(std::string value)
         (!previous_value.has_value()) || (value != previous_value.value());
 
     if (name == "MotionStatus") {
-        if (value_changed) {
-            // we do not send DevicePropertyValueUpdate event of MotionStatus
-            // itself handleMotionStatusUpdate will notify operation complete of
-            // motion properties
-            dev->handleMotionStatusUpdate(value);
-            return;
-        }
+        // do not check for value_changed, because MotionStatus may not be set
+        // before changing back to 0, if the motion stops too fast (shutter)
+        //
+        // we do not send DevicePropertyValueUpdate event of MotionStatus
+        // itself handleMotionStatusUpdate will notify operation complete of
+        // motion properties
+        dev->handleMotionStatusUpdate(value);
+        return;
     }
 
     // find out whether set operation exists and is completed
