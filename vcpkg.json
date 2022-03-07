@@ -1,6 +1,6 @@
 {
     "name": "nikon-ti-ctrl",
-    "version": "0.1.2",
+    "version": "0.2.1",
     "builtin-baseline": "bd602277bf7fc3188b3d086b302c6840464db900",
     "dependencies": [
         "fmt",
