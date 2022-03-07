@@ -15,7 +15,7 @@ Graphical user interface and API for controlling a Nikon Ti-E widefield fluoresc
 * NI-VISA 21.5
 
 ### Runtime Dependencies
-* NI-VISA Runtime 20.0
+* NI-VISA Runtime 21.5
 * [DCAM-API](https://dcam-api.com) 22.2.6391 (Camera driver)
 * [Ti Control](https://www.nikon.com/products/microscope-solutions/support/download/software/biological/index.htm#toc02) 4.4.6 (Microscope driver) 
 * [Nikon Ti SDK Redistributable](https://micro-manager.org/wiki/NikonTI) 4.4.1.714
