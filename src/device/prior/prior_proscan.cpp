@@ -145,11 +145,14 @@ Status Proscan::Connect()
     // Establish communication
     Status status = checkCommunication(2);
     if (!status.ok()) {
-        SendEvent({
-            .type = EventType::DeviceConnectionStateChanged,
-            .value = DeviceConnectionState::NotConnected,
-        });
-        return status;
+        status = switchBaudrate();
+        if (!status.ok()) {
+            SendEvent({
+                .type = EventType::DeviceConnectionStateChanged,
+                .value = DeviceConnectionState::NotConnected,
+            });
+            return status;
+        }
     }
 
     // Init properties
