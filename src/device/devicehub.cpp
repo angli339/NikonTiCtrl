@@ -192,7 +192,7 @@ Status DeviceHub::SetProperty(PropertyPath path, std::string value)
 }
 
 Status
-DeviceHub::SetProperty(std::map<PropertyPath, std::string> path_value_map)
+DeviceHub::SetProperty(PropertyValueMap path_value_map)
 {
     // Check all paths for existence and sort them by device
     std::map<std::string, std::map<std::string, std::string>>
@@ -269,9 +269,9 @@ DeviceHub::WaitPropertyUntil(std::vector<PropertyPath> path_list,
     return absl::OkStatus();
 }
 
-std::map<PropertyPath, std::string> DeviceHub::GetPropertySnapshot()
+PropertyValueMap DeviceHub::GetPropertySnapshot()
 {
-    std::map<PropertyPath, std::string> path_value_map;
+    PropertyValueMap path_value_map;
 
     for (const auto &[dev_name, dev] : dev_map) {
         if (!dev->IsConnected()) {
@@ -284,10 +284,10 @@ std::map<PropertyPath, std::string> DeviceHub::GetPropertySnapshot()
     return path_value_map;
 }
 
-std::map<PropertyPath, std::string>
+PropertyValueMap
 DeviceHub::GetPropertySnapshot(std::set<std::string> dev_name_set)
 {
-    std::map<PropertyPath, std::string> path_value_map;
+    PropertyValueMap path_value_map;
 
     for (const auto &[dev_name, dev] : dev_map) {
         if (!dev_name_set.contains(dev_name)) {

@@ -58,11 +58,21 @@ std::string PropertyPath::ToString() const
     }    
 }
 
-std::vector<PropertyPath> PropertyPathList(std::map<PropertyPath, std::string> path_value_map)
+std::vector<PropertyPath> PropertyPathList(PropertyValueMap path_value_map)
 {
     std::vector<PropertyPath> path_list;
     for (const auto &[path, value] : path_value_map) {
         path_list.push_back(path);
     }
     return path_list;
+}
+
+void from_json(const nlohmann::json &j, PropertyValueMap &pv)
+{
+    std::map<std::string, std::string> m;
+    j.get_to(m);
+
+    for (const auto &[p, v] : m) {
+        pv[p] = v;
+    }
 }

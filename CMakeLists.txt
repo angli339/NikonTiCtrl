@@ -246,6 +246,7 @@ set(QT_SOURCES
 
 add_executable(NikonTiControl
     src/main.cpp
+    src/channel.cpp
     src/config.cpp
     src/eventstream.cpp
     src/logging.cpp

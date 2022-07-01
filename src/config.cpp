@@ -1,186 +1,76 @@
 #include "config.h"
 
+#include <fstream>
+
 Config config;
 
-void loadConfig(std::filesystem::path filename)
+std::filesystem::path getSystemConfigPath()
 {
-    config.unet_grpc_addr = "10.119.89.80:8500";
+    // C:/ProgramData
+    std::filesystem::path program_data_dir = std::getenv("ALLUSERSPROFILE");
+    if (program_data_dir.empty()) {
+        throw std::runtime_error("failed to get ALLUSERSPROFILE path from environment variables");
+    }
 
-    config.data_root = "C:/Users/Ang/Data";
+    // C:/ProgramData/NikonTiControl
+    std::filesystem::path app_dir = program_data_dir / "NikonTiControl";
+    if (!std::filesystem::exists(app_dir)) {
+        throw std::runtime_error(fmt::format("Directory {} does not exists. It needs to be created manually and assigned with the correct permission.", app_dir.string()));
+    }
 
-    config.user = {
-        .name = "Ang Li",
-        .email = "angli01@g.harvard.edu",
-    };
+    return app_dir / "config.json";
+}
 
-    config.presets = {
-        {
-            .name = "BF",
-            .property_value =
-                {
-                    {"/PriorProScan/LumenShutter", "Off"},
-                    {"/NikonTi/FilterBlock1", "2"},
-                    {"/PriorProScan/FilterWheel3", "6"},
-                },
-            .shutter_property = "/NikonTi/DiaShutter",
-            .default_exposure_ms = 25,
-        },
-        {
-            .name = "YFP",
-            .property_value =
-                {
-                    {"/NikonTi/DiaShutter", "Off"},
-                    {"/NikonTi/FilterBlock1", "2"},
-                    {"/PriorProScan/FilterWheel1", "5"},
-                    {"/PriorProScan/FilterWheel3", "4"},
-                },
-            .shutter_property = "/PriorProScan/LumenShutter",
-            .illumination_property = "/PriorProScan/LumenOutputIntensity",
-            .default_exposure_ms = 50,
-            .default_illumination_intensity = 40,
-        },
-        {
-            .name = "RFP",
-            .property_value =
-                {
-                    {"/NikonTi/DiaShutter", "Off"},
-                    {"/NikonTi/FilterBlock1", "2"},
-                    {"/PriorProScan/FilterWheel1", "4"},
-                    {"/PriorProScan/FilterWheel3", "3"},
-                },
-            .shutter_property = "/PriorProScan/LumenShutter",
-            .illumination_property = "/PriorProScan/LumenOutputIntensity",
-            .default_exposure_ms = 40,
-            .default_illumination_intensity = 25,
-        },
-        {
-            .name = "BFP",
-            .property_value =
-                {
-                    {"/NikonTi/DiaShutter", "Off"},
-                    {"/NikonTi/FilterBlock1", "2"},
-                    {"/PriorProScan/FilterWheel1", "3"},
-                    {"/PriorProScan/FilterWheel3", "2"},
-                },
-            .shutter_property = "/PriorProScan/LumenShutter",
-            .illumination_property = "/PriorProScan/LumenOutputIntensity",
-            .default_exposure_ms = 200,
-            .default_illumination_intensity = 25,
-        },
-        {
-            .name = "CFP_BF",
-            .property_value =
-                {
-                    {"/PriorProScan/LumenShutter", "Off"},
-                    {"/NikonTi/FilterBlock1", "3"},
-                    {"/PriorProScan/FilterWheel3", "6"},
-                },
-            .shutter_property = "/NikonTi/DiaShutter",
-            .default_exposure_ms = 25,
-        },
-        {
-            .name = "CFP",
-            .property_value =
-                {
-                    {"/NikonTi/DiaShutter", "Off"},
-                    {"/NikonTi/FilterBlock1", "3"},
-                    {"/PriorProScan/FilterWheel1", "6"},
-                    {"/PriorProScan/FilterWheel3", "5"},
-                },
-            .shutter_property = "/PriorProScan/LumenShutter",
-            .illumination_property = "/PriorProScan/LumenOutputIntensity",
-            .default_exposure_ms = 150,
-            .default_illumination_intensity = 10,
-        },
-        {
-            .name = "CFP_YFP_FRET",
-            .property_value =
-                {
-                    {"/NikonTi/DiaShutter", "Off"},
-                    {"/NikonTi/FilterBlock1", "3"},
-                    {"/PriorProScan/FilterWheel1", "6"},
-                    {"/PriorProScan/FilterWheel3", "4"},
-                },
-            .shutter_property = "/PriorProScan/LumenShutter",
-            .illumination_property = "/PriorProScan/LumenOutputIntensity",
-            .default_exposure_ms = 150,
-            .default_illumination_intensity = 10,
-        },
-        {
-            .name = "BCYR_CFP",
-            .property_value =
-                {
-                    {"/NikonTi/DiaShutter", "Off"},
-                    {"/NikonTi/FilterBlock1", "2"},
-                    {"/PriorProScan/FilterWheel1", "6"},
-                    {"/PriorProScan/FilterWheel3", "5"},
-                },
-            .shutter_property = "/PriorProScan/LumenShutter",
-            .illumination_property = "/PriorProScan/LumenOutputIntensity",
-            .default_exposure_ms = 150,
-            .default_illumination_intensity = 10,
-        },
-        {
-            .name = "BCYR_CFP_YFP_FRET",
-            .property_value =
-                {
-                    {"/NikonTi/DiaShutter", "Off"},
-                    {"/NikonTi/FilterBlock1", "2"},
-                    {"/PriorProScan/FilterWheel1", "6"},
-                    {"/PriorProScan/FilterWheel3", "4"},
-                },
-            .shutter_property = "/PriorProScan/LumenShutter",
-            .illumination_property = "/PriorProScan/LumenOutputIntensity",
-            .default_exposure_ms = 150,
-            .default_illumination_intensity = 10,
-        },
-        {
-            .name = "GFP_BF",
-            .property_value =
-                {
-                    {"/PriorProScan/LumenShutter", "Off"},
-                    {"/NikonTi/FilterBlock1", "4"},
-                    {"/PriorProScan/FilterWheel3", "1"},
-                },
-            .shutter_property = "/NikonTi/DiaShutter",
-            .default_exposure_ms = 25,
-        },
-        {
-            .name = "GFP",
-            .property_value =
-                {
-                    {"/NikonTi/DiaShutter", "Off"},
-                    {"/NikonTi/FilterBlock1", "4"},
-                    {"/PriorProScan/FilterWheel1", "2"},
-                    {"/PriorProScan/FilterWheel3", "1"},
-                },
-            .shutter_property = "/PriorProScan/LumenShutter",
-            .illumination_property = "/PriorProScan/LumenOutputIntensity",
-            .default_exposure_ms = 50,
-            .default_illumination_intensity = 25,
-        },
-        {
-            .name = "GFP_390Ex",
-            .property_value =
-                {
-                    {"/NikonTi/DiaShutter", "Off"},
-                    {"/NikonTi/FilterBlock1", "4"},
-                    {"/PriorProScan/FilterWheel1", "3"},
-                    {"/PriorProScan/FilterWheel3", "1"},
-                },
-            .shutter_property = "/PriorProScan/LumenShutter",
-            .illumination_property = "/PriorProScan/LumenOutputIntensity",
-            .default_exposure_ms = 50,
-            .default_illumination_intensity = 25,
-        },
-        {
-            .name = "DarkFrame",
-            .property_value =
-                {
-                    {"/NikonTi/DiaShutter", "Off"},
-                    {"/PriorProScan/LumenShutter", "Off"},
-                    {"/PriorProScan/FilterWheel3", "7"},
-                },
-            .default_exposure_ms = 200,
-        }};
+std::filesystem::path getUserConfigPath()
+{
+    // C:/Users/<username>/AppData/Roaming
+    std::filesystem::path user_app_data_dir = std::getenv("APPDATA");
+    if (user_app_data_dir.empty()) {
+        throw std::runtime_error("failed to get APPDATA path from environment variables");
+    }
+
+    // C:/Users/<username>/AppData/Roaming/NikonTiControl
+    std::filesystem::path user_app_dir = user_app_data_dir / "NikonTiControl";
+    if (!std::filesystem::exists(user_app_dir)) {
+        std::filesystem::create_directory(user_app_dir);
+    }
+
+    return user_app_dir / "user.json";
+}
+
+void loadSystemConfig(std::filesystem::path filename)
+{
+    std::ifstream ifs(filename.string());
+    nlohmann::json j = nlohmann::json::parse(ifs);
+
+    j.at("unet_grpc_addr").get_to(config.system.unet_grpc_addr);
+    j.at("pixel_size").get_to(config.system.pixel_size);
+
+    try {
+        std::map<std::string, std::map<std::string, Label>> m_labels;
+        j.at("labels").get_to(m_labels);
+        for (const auto& [k, v] : m_labels) {
+            config.system.labels[k] = v;
+        }
+    } catch (std::exception &e) {
+        throw std::runtime_error(fmt::format("labels: {}", e.what()));
+    }
+    
+    try {
+        j.at("presets").get_to(config.system.presets);
+    } catch (std::exception &e) {
+        throw std::runtime_error(fmt::format("presets: {}", e.what()));
+    }
+
+    return;
+}
+
+void loadUserConfig(std::filesystem::path filename)
+{
+    std::ifstream ifs(filename.string());
+    json j = json::parse(ifs);
+
+    config.user.name = j.at("name").get<std::string>();
+    config.user.email = j.at("email").get<std::string>();
+    config.user.data_root = j.at("data_root").get<std::string>();
 }

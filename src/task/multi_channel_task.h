@@ -28,7 +28,7 @@ protected:
     Status EnableTrigger();
     Status PrepareBuffer();
     Status StartAcqusition();
-    std::map<PropertyPath, std::string> ExposeFrame(int i_ch);
+    PropertyValueMap ExposeFrame(int i_ch);
     ImageData GetFrame(int i_ch,
                        std::chrono::system_clock::time_point *timestamp);
     Status StopAcqusition();

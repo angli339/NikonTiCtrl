@@ -48,7 +48,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(navBar->ButtonData, &QPushButton::clicked, this,
             &MainWindow::showDataPage);
 
-    testData();
+    updateLabels();
 }
 
 MainWindow::~MainWindow()
@@ -88,69 +88,14 @@ void MainWindow::showDataPage()
 }
 
 
-void MainWindow::testData()
-{
-
-    //     emit devicePropertyUpdate("/NikonTi/ZDrivePosition", "501.675");
-    //     emit devicePropertyUpdate("/PriorProScan/FilterWheel1", "3");
-    //     emit devicePropertyUpdate("/PriorProScan/FilterWheel3", "10");
-    //     emit devicePropertyUpdate("/PriorProScan/XYPosition",
-    //     "14937.5,-11022.5"); emit
-    //     devicePropertyUpdate("/NikonTi/FilterBlock1", "2"); emit
-    //     devicePropertyUpdate("/NikonTi/NosePiece", "3"); emit
-    //     devicePropertyUpdate("/NikonTi/LightPath", "2"); emit
-    //     devicePropertyUpdate("/NikonTi/PFSOffset", "55.2"); emit
-    //     devicePropertyUpdate("/NikonTi/PFSState", "Off"); emit
-    //     devicePropertyUpdate("/NikonTi/DiaShutter", "On"); emit
-    //     devicePropertyUpdate("/PriorProScan/LumenShutter", "Off");
-
-    QMap<QString, QMap<QString, QString>> propertyValueLabels = {
-        {"/NikonTi/NosePiece",
-         {{"1", "20x"},
-          {"2", "---"},
-          {"3", "60xO"},
-          {"4", "100xO"},
-          {"5", "---"},
-          {"6", "---"}}},
-        {"/NikonTi/FilterBlock1",
-         {
-             {"1", "---"},
-             {"2", "BCYR"},
-             {"3", "CFP"},
-             {"4", "GFP"},
-             {"5", "YFP"},
-             {"6", "RFP"},
-         }},
-        {"/PriorProScan/FilterWheel1",
-         {
-             {"1", "---"},
-             {"2", "GFP"},
-             {"3", "BFP"},
-             {"4", "RFP"},
-             {"5", "YFP"},
-             {"6", "CFP"},
-         }},
-        {"/PriorProScan/FilterWheel3",
-         {
-             {"1", "GFP"},
-             {"2", "BFP"},
-             {"3", "RFP"},
-             {"4", "YFP"},
-             {"5", "CFP"},
-             {"6", "---"},
-             {"7", "Dark"},
-             {"8", "---"},
-             {"9", "---"},
-             {"10", "---"},
-         }},
-        {"/NikonTi/LightPath",
-         {
-             {"1", "E100"},
-             {"2", "L100"},
-             {"3", "R100"},
-             {"4", "L80"},
-         }}};
-
+void MainWindow::updateLabels()
+{   
+    QMap<QString, QMap<QString, QString>> propertyValueLabels;
+    for (const auto &[property_path, value_label_map] : config.system.labels)  {
+        for (const auto &[value, label] : value_label_map) {
+            propertyValueLabels[property_path.ToString().c_str()][value.c_str()] = label.name.c_str();
+        }
+    }
     acquirePage->deviceControlView->setPropertyValueLabels(propertyValueLabels);
 }
 

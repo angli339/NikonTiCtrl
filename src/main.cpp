@@ -13,6 +13,7 @@
 #include "logging.h"
 #include "qt/mainwindow.h"
 #include "utils/time_utils.h"
+#include "version.h"
 
 #include "device/hamamatsu/hamamatsu_dcam.h"
 #include "device/nikon/nikon_ti.h"
@@ -66,8 +67,24 @@ void configApp()
 int main(int argc, char *argv[])
 {
     slog::InitConsole();
-    loadConfig("");
+    LOG_INFO("Welcome to NikonTiControl {}", gitTagVersion);
 
+    try {
+        std::filesystem::path systemConfigPath = getSystemConfigPath();
+        loadSystemConfig(systemConfigPath);
+        LOG_INFO("  System config loaded from {}", systemConfigPath.string());
+
+        std::filesystem::path userConfigPath = getUserConfigPath();
+        loadUserConfig(userConfigPath);
+        LOG_INFO("  User config loaded from {}", userConfigPath.string());
+
+    } catch (std::exception &e) {
+        LOG_FATAL("Failed to load config: {}", e.what());
+        return 1;
+    }
+
+    LOG_INFO("Current user: {}<{}>", config.user.name, config.user.email);
+    
     //
     // Add devices
     //
@@ -82,7 +99,7 @@ int main(int argc, char *argv[])
         // hub.AddDevice("FLIR", new FLIR::Camera);
 
     } catch (std::exception &e) {
-        LOG_ERROR("Failed to add device: ", e.what());
+        LOG_ERROR("Failed to add device: {}", e.what());
     }
 
     ImagingControl imaging_control(&hub, dcam);

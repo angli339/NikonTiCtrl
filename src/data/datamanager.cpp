@@ -7,7 +7,7 @@
 #include "config.h"
 #include "logging.h"
 
-DataManager::DataManager() : unet(config.unet_grpc_addr) {}
+DataManager::DataManager() : unet(config.system.unet_grpc_addr) {}
 
 void DataManager::SetLiveViewFrame(ImageData new_frame)
 {
@@ -36,7 +36,7 @@ void DataManager::SetExperimentPath(std::filesystem::path path)
     if (path.empty()) {
         std::time_t t = std::time(nullptr);
         std::string exp_name = fmt::format("{:%Y-%m-%d}", fmt::localtime(t));
-        path = std::filesystem::path(config.data_root) / exp_name;
+        path = std::filesystem::path(config.user.data_root) / exp_name;
     }
     if (!fs::exists(path)) {
         if (!fs::create_directories(path)) {

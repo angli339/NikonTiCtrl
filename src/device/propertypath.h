@@ -61,18 +61,12 @@ template <> struct fmt::formatter<PropertyPath> : formatter<string_view> {
     }
 };
 
-inline void to_json(json &j, const PropertyPath &path)
-{
-    j = path.ToString();
-}
+typedef std::map<PropertyPath, std::string> PropertyValueMap;
 
-inline void from_json(const json &j, PropertyPath &path)
-{
-    path = PropertyPath(j.get<std::string>());
-}
+void from_json(const nlohmann::json &j, PropertyValueMap &pv);
 
 // Helper functions
 std::vector<PropertyPath>
-PropertyPathList(std::map<PropertyPath, std::string> path_value_map);
+PropertyPathList(PropertyValueMap path_value_map);
 
 #endif

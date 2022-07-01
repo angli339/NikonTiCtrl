@@ -28,14 +28,14 @@ public:
 
     StatusOr<std::string> GetProperty(PropertyPath path);
     Status SetProperty(PropertyPath path, std::string value);
-    Status SetProperty(std::map<PropertyPath, std::string> path_value_map);
+    Status SetProperty(PropertyValueMap path_value_map);
     Status WaitPropertyFor(std::vector<PropertyPath> path_list,
                            std::chrono::milliseconds timeout);
     Status WaitPropertyUntil(std::vector<PropertyPath> path_list,
                              std::chrono::steady_clock::time_point timepoint);
 
-    std::map<PropertyPath, std::string> GetPropertySnapshot();
-    std::map<PropertyPath, std::string>
+    PropertyValueMap GetPropertySnapshot();
+    PropertyValueMap
     GetPropertySnapshot(std::set<std::string> dev_name_set);
 
     void SubscribeEvents(EventStream *channel);

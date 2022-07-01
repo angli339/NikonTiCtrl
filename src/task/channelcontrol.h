@@ -47,13 +47,13 @@ private:
     std::future<Status> switch_channel_future;
 
     // helper functions:
-    std::map<PropertyPath, std::string>
+    PropertyValueMap
     getChannelPropertyValue(ChannelPreset preset, double exposure_ms,
                             double illumination_intensity);
 
-    std::map<PropertyPath, std::string> diffSnapshotPropertyValue(
-        std::map<PropertyPath, std::string> snapshot,
-        std::map<PropertyPath, std::string> propery_value);
+    PropertyValueMap diffSnapshotPropertyValue(
+        PropertyValueMap snapshot,
+        PropertyValueMap propery_value);
 };
 
 #endif

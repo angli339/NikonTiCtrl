@@ -26,7 +26,7 @@ public:
 
     void setDeviceHub(DeviceHub *hub);
     void setImagingControl(ImagingControl *imagingControl);
-    void testData();
+    void updateLabels();
 
 public slots:
     void showSetupPage();

@@ -6,7 +6,7 @@
 ChannelControl::ChannelControl(DeviceHub *hub)
 {
     this->hub = hub;
-    for (const auto &preset : config.presets) {
+    for (const auto &preset : config.system.presets) {
         preset_names.push_back(preset.name);
         preset_map[preset.name] = preset;
 
@@ -176,7 +176,7 @@ Status ChannelControl::WaitShutter()
                                 std::chrono::milliseconds(300));
 }
 
-std::map<PropertyPath, std::string> ChannelControl::getChannelPropertyValue(
+PropertyValueMap ChannelControl::getChannelPropertyValue(
     ChannelPreset preset, double exposure_ms, double illumination_intensity)
 {
     auto channel_property_value = preset.property_value;
@@ -191,11 +191,11 @@ std::map<PropertyPath, std::string> ChannelControl::getChannelPropertyValue(
     return channel_property_value;
 }
 
-std::map<PropertyPath, std::string> ChannelControl::diffSnapshotPropertyValue(
-    std::map<PropertyPath, std::string> snapshot,
-    std::map<PropertyPath, std::string> propery_value)
+PropertyValueMap ChannelControl::diffSnapshotPropertyValue(
+    PropertyValueMap snapshot,
+    PropertyValueMap propery_value)
 {
-    std::map<PropertyPath, std::string> diff;
+    PropertyValueMap diff;
     for (const auto &[property, value] : propery_value) {
         auto it = snapshot.find(property);
         if (it == snapshot.end()) {

@@ -77,7 +77,7 @@ Status MultiChannelTask::StartAcqusition()
     return absl::OkStatus();
 }
 
-std::map<PropertyPath, std::string> MultiChannelTask::ExposeFrame(int i_ch)
+PropertyValueMap MultiChannelTask::ExposeFrame(int i_ch)
 {
     Channel channel = channels[i_ch];
 

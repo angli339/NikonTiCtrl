@@ -8,7 +8,7 @@
 
 struct ChannelPreset {
     std::string name;
-    std::map<PropertyPath, std::string> property_value;
+    PropertyValueMap property_value;
     PropertyPath shutter_property;
     PropertyPath illumination_property;
     double default_exposure_ms;
@@ -20,5 +20,7 @@ struct Channel {
     double exposure_ms;
     double illumination_intensity;
 };
+
+void from_json(const nlohmann::json& j, ChannelPreset& p);
 
 #endif

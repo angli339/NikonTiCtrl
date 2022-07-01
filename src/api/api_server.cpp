@@ -136,7 +136,7 @@ grpc::Status APIServer::SetProperty(ServerContext *context,
                                     const api::SetPropertyRequest *req,
                                     google::protobuf::Empty *resp)
 {
-    std::map<PropertyPath, std::string> property_value_map;
+    PropertyValueMap property_value_map;
     for (const auto &property : req->property()) {
         std::string name = property.name();
         std::string value = property.value();
@@ -348,7 +348,7 @@ APIServer::GetSegmentationScore(ServerContext *context,
 
     ImageData score;
     try {
-        im::UNet unet(config.unet_grpc_addr);
+        im::UNet unet(config.system.unet_grpc_addr);
         score = unet.GetScore(im);
     } catch (std::exception &e) {
         return grpc::Status(grpc::StatusCode::INTERNAL,
