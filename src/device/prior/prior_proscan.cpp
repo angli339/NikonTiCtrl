@@ -817,12 +817,6 @@ void Proscan::handleMotionStatusUpdate(std::string motion_status_str)
         auto node = node_map[node_name];
 
         std::unique_lock<std::shared_mutex> lk(node->mutex_set);
-        // for debuging LumenShutter bug
-        if ((node_name == "LumenShutter") &&
-            (node->pending_set_value.has_value())) {
-            LOG_DEBUG("LumenShutter: Pending... MotionStatus={}",
-                      motion_status);
-        }
 
         // save the status for sending events and notifications later
         bool value_updated = false;
