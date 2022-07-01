@@ -304,11 +304,19 @@ add_custom_command(TARGET NikonTiControl POST_BUILD
 )
 
 # Run windeployqt
-add_custom_command(TARGET NikonTiControl POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/windeployqt"
-    COMMAND "${WINDEPLOYQT_EXECUTABLE}" --release --dir "${CMAKE_CURRENT_BINARY_DIR}/windeployqt" --no-translations "$<TARGET_FILE:NikonTiControl>"
-    COMMAND "${WINDEPLOYQT_EXECUTABLE}" --release --dir "${CMAKE_CURRENT_BINARY_DIR}" --no-translations "$<TARGET_FILE:NikonTiControl>"
-)
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+    add_custom_command(TARGET NikonTiControl POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/windeployqt"
+        COMMAND "${WINDEPLOYQT_EXECUTABLE}" --debug --dir "${CMAKE_CURRENT_BINARY_DIR}/windeployqt" --no-translations "$<TARGET_FILE:NikonTiControl>"
+        COMMAND "${WINDEPLOYQT_EXECUTABLE}" --debug --dir "${CMAKE_CURRENT_BINARY_DIR}" --no-translations "$<TARGET_FILE:NikonTiControl>"
+    )
+else()
+    add_custom_command(TARGET NikonTiControl POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/windeployqt"
+        COMMAND "${WINDEPLOYQT_EXECUTABLE}" --release --dir "${CMAKE_CURRENT_BINARY_DIR}/windeployqt" --no-translations "$<TARGET_FILE:NikonTiControl>"
+        COMMAND "${WINDEPLOYQT_EXECUTABLE}" --release --dir "${CMAKE_CURRENT_BINARY_DIR}" --no-translations "$<TARGET_FILE:NikonTiControl>"
+    )
+endif()
 
 # Copy files from windeployqt during installation
 install(
