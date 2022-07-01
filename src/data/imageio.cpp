@@ -25,7 +25,7 @@ void ImageWrite(std::filesystem::path filepath, ImageData data,
     TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, data.Height());
     TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
     TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
-    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
+    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_ZSTD);
 
     if (data.ColorType() == ColorType::Mono16) {
         TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
