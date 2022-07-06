@@ -51,27 +51,41 @@ void load_MMCoreC()
                 "missing MM_GetAPIVersionInfo in MMCoreC.dll");
         }
 
+        mmcore->MM_GetDeviceAdapterNames =
+            (MM_Status (*)(MM_Session, char ***))GetProcAddress(hModule,
+                                                          "MM_GetDeviceAdapterNames");
+        if (mmcore->MM_GetDeviceAdapterNames == nullptr) {
+            throw std::runtime_error(
+                "missing MM_GetDeviceAdapterNames in MMCoreC.dll");
+        }
+
         mmcore->MM_StringFree =
             (void (*)(char *))GetProcAddress(hModule, "MM_StringFree");
         if (mmcore->MM_StringFree == nullptr) {
             throw std::runtime_error("missing MM_StringFree in MMCoreC.dll");
         }
 
+        mmcore->MM_StringListFree =
+            (void (*)(char **))GetProcAddress(hModule, "MM_StringListFree");
+        if (mmcore->MM_StringListFree == nullptr) {
+            throw std::runtime_error("missing MM_StringListFree in MMCoreC.dll");
+        }
+
         mmcore->MM_LoadDevice =
-            (MM_Error(*)(MM_Session, const char *, const char *,
+            (MM_Status(*)(MM_Session, const char *, const char *,
                          const char *))GetProcAddress(hModule, "MM_LoadDevice");
         if (mmcore->MM_LoadDevice == nullptr) {
             throw std::runtime_error("missing MM_LoadDevice in MMCoreC.dll");
         }
 
         mmcore->MM_UnloadDevice =
-            (MM_Error(*)(MM_Session, const char *))GetProcAddress(
+            (MM_Status(*)(MM_Session, const char *))GetProcAddress(
                 hModule, "MM_UnloadDevice");
         if (mmcore->MM_UnloadDevice == nullptr) {
             throw std::runtime_error("missing MM_UnloadDevice in MMCoreC.dll");
         }
 
-        mmcore->MM_UnloadAllDevices = (MM_Error(*)(MM_Session))GetProcAddress(
+        mmcore->MM_UnloadAllDevices = (MM_Status(*)(MM_Session))GetProcAddress(
             hModule, "MM_UnloadAllDevices");
         if (mmcore->MM_UnloadAllDevices == nullptr) {
             throw std::runtime_error(
@@ -79,7 +93,7 @@ void load_MMCoreC()
         }
 
         mmcore->MM_InitializeDevice =
-            (MM_Error(*)(MM_Session, const char *))GetProcAddress(
+            (MM_Status(*)(MM_Session, const char *))GetProcAddress(
                 hModule, "MM_InitializeDevice");
         if (mmcore->MM_InitializeDevice == nullptr) {
             throw std::runtime_error(
@@ -95,14 +109,14 @@ void load_MMCoreC()
         }
 
         mmcore->MM_GetProperty =
-            (MM_Error(*)(MM_Session, const char *, const char *,
+            (MM_Status(*)(MM_Session, const char *, const char *,
                          char **))GetProcAddress(hModule, "MM_GetProperty");
         if (mmcore->MM_GetProperty == nullptr) {
             throw std::runtime_error("missing MM_GetProperty in MMCoreC.dll");
         }
 
         mmcore->MM_SetPropertyString =
-            (MM_Error(*)(MM_Session, const char *, const char *, const char *))
+            (MM_Status(*)(MM_Session, const char *, const char *, const char *))
                 GetProcAddress(hModule, "MM_SetPropertyString");
         if (mmcore->MM_SetPropertyString == nullptr) {
             throw std::runtime_error(
@@ -110,7 +124,7 @@ void load_MMCoreC()
         }
 
         mmcore->MM_SetFocusDevice =
-            (MM_Error(*)(MM_Session, const char *))GetProcAddress(
+            (MM_Status(*)(MM_Session, const char *))GetProcAddress(
                 hModule, "MM_SetFocusDevice");
         if (mmcore->MM_SetFocusDevice == nullptr) {
             throw std::runtime_error(
@@ -118,14 +132,14 @@ void load_MMCoreC()
         }
 
         mmcore->MM_SetPosition =
-            (MM_Error(*)(MM_Session, const char *, double))GetProcAddress(
+            (MM_Status(*)(MM_Session, const char *, double))GetProcAddress(
                 hModule, "MM_SetPosition");
         if (mmcore->MM_SetPosition == nullptr) {
             throw std::runtime_error("missing MM_SetPosition in MMCoreC.dll");
         }
 
         mmcore->MM_GetPosition =
-            (MM_Error(*)(MM_Session, const char *, double *))GetProcAddress(
+            (MM_Status(*)(MM_Session, const char *, double *))GetProcAddress(
                 hModule, "MM_GetPosition");
         if (mmcore->MM_GetPosition == nullptr) {
             throw std::runtime_error("missing MM_GetPosition in MMCoreC.dll");
@@ -137,7 +151,7 @@ void load_MMCoreC()
     }
 }
 
-std::string MM_ErrorToString(MM_Error error)
+std::string MM_StatusToString(MM_Status error)
 {
     switch (error) {
     case 1:

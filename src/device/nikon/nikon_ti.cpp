@@ -1,5 +1,6 @@
 #include "device/nikon/nikon_ti.h"
 
+#include <set>
 #include <fmt/format.h>
 
 #include "device/nikon/mm_api.h"
@@ -41,9 +42,40 @@ Microscope::Microscope()
 {
     try {
         load_MMCoreC();
-        LOG_DEBUG("MMCoreC loaded");
     } catch (std::exception &e) {
         throw std::runtime_error(fmt::format("load MMCoreC.dll: {}", e.what()));
+    }
+
+    try {
+        mmcore->MM_Open(&mmc);
+        
+        char *info;
+        mmcore->MM_GetVersionInfo(mmc, &info);
+        std::string mm_version = std::string(info);
+        mmcore->MM_StringFree(info);
+
+        mmcore->MM_GetAPIVersionInfo(mmc, &info);
+        std::string mm_api_version = std::string(info);
+        mmcore->MM_StringFree(info);
+
+        char **adapters_c;        
+        MM_Status status = mmcore->MM_GetDeviceAdapterNames(mmc, &adapters_c);
+        if (status != MM_ErrOK) {
+            throw std::runtime_error(fmt::format("MM_GetDeviceAdapterNames: {}({})", (int)status, MM_StatusToString(status)));
+        }
+        std::set<std::string> adapters;
+        for(int i = 0; adapters_c[i]; i++) {
+            adapters.insert(std::string( adapters_c[i]));
+        }
+        mmcore->MM_StringListFree(adapters_c);
+        if (adapters.contains("NikonTI")) {
+            LOG_DEBUG("MMCoreC loaded: {}, {}, found NikonTI device adapter.", mm_version, mm_api_version);
+        } else {
+            LOG_ERROR("MMCoreC loaded: {}, {}. Device adapters: {}. NikonTI device adapter not found.", mm_version, mm_api_version, fmt::join(adapters, ", "));
+            throw std::runtime_error("NikonTI device adapter not found");
+        }
+    } catch (std::exception &e) {
+        throw std::runtime_error(fmt::format("call MMCoreC.dll: {}", e.what()));
     }
 
     for (const auto &[name, info] : prop_info) {
@@ -108,9 +140,7 @@ Status Microscope::Connect()
         .value = DeviceConnectionState::Connecting,
     });
 
-    MM_Error mm_err;
-    mmcore->MM_Open(&mmc);
-
+    MM_Status mm_err;
     //
     // Initialize microscope hub
     //
@@ -125,7 +155,7 @@ Status Microscope::Connect()
             .value = DeviceConnectionState::NotConnected,
         });
         return absl::UnavailableError(
-            fmt::format("load TIScope: {}", MM_ErrorToString(mm_err)));
+            fmt::format("load TIScope: {}", MM_StatusToString(mm_err)));
     }
     mm_err = mmcore->MM_InitializeDevice(mmc, "TIScope");
     if (mm_err != MM_ErrOK) {
@@ -136,7 +166,7 @@ Status Microscope::Connect()
             .value = DeviceConnectionState::NotConnected,
         });
         return absl::UnavailableError(
-            fmt::format("init TIScope: {}", MM_ErrorToString(mm_err)));
+            fmt::format("init TIScope: {}", MM_StatusToString(mm_err)));
     }
     loaded_modules.push_back("TIScope");
 
@@ -154,13 +184,13 @@ Status Microscope::Connect()
                                        module.c_str());
         if (mm_err != MM_ErrOK) {
             module_err_msgs.push_back(fmt::format("{}(LoadDevice: {})", module,
-                                                  MM_ErrorToString(mm_err)));
+                                                  MM_StatusToString(mm_err)));
             continue;
         }
         mm_err = mmcore->MM_InitializeDevice(mmc, module.c_str());
         if (mm_err != MM_ErrOK) {
             module_err_msgs.push_back(fmt::format(
-                "{}(InitializeDevice: {})", module, MM_ErrorToString(mm_err)));
+                "{}(InitializeDevice: {})", module, MM_StatusToString(mm_err)));
             continue;
         }
         loaded_modules.push_back(module);
@@ -171,14 +201,14 @@ Status Microscope::Connect()
             if (mm_err != MM_ErrOK) {
                 module_err_msgs.push_back(
                     fmt::format("{}(SetFocusDevice: {})", module,
-                                MM_ErrorToString(mm_err)));
+                                MM_StatusToString(mm_err)));
                 mm_err = mmcore->MM_UnloadDevice(mmc, module.c_str());
                 if (mm_err == MM_ErrOK) {
                     loaded_modules.pop_back();
                 } else {
                     module_err_msgs.push_back(
                         fmt::format("{}(UnloadDevice: {})", module,
-                                    MM_ErrorToString(mm_err)));
+                                    MM_StatusToString(mm_err)));
                 }
             }
         }
@@ -354,7 +384,7 @@ StatusOr<std::string> PropertyNode::GetValue()
     std::string value;
 
     if (name == "ZDrivePosition") {
-        MM_Error mm_err;
+        MM_Status mm_err;
         double mm_value = 0;
         {
             std::lock_guard<std::mutex> lk(dev->mmc_mutex);
@@ -363,11 +393,11 @@ StatusOr<std::string> PropertyNode::GetValue()
         }
         if (mm_err != 0) {
             return absl::UnavailableError(
-                fmt::format("MM_GetPosition: {}", MM_ErrorToString(mm_err)));
+                fmt::format("MM_GetPosition: {}", MM_StatusToString(mm_err)));
         }
         value = fmt::format("{:.3f}", mm_value);
     } else {
-        MM_Error mm_err;
+        MM_Status mm_err;
         char *mm_value_c_str = nullptr;
         {
             std::lock_guard<std::mutex> lk(dev->mmc_mutex);
@@ -377,7 +407,7 @@ StatusOr<std::string> PropertyNode::GetValue()
         }
         if (mm_err != 0) {
             return absl::UnavailableError(
-                fmt::format("MM_GetProperty: {}", MM_ErrorToString(mm_err)));
+                fmt::format("MM_GetProperty: {}", MM_StatusToString(mm_err)));
         }
         std::string mm_value = std::string(mm_value_c_str);
         mmcore->MM_StringFree(mm_value_c_str);
@@ -417,17 +447,17 @@ Status PropertyNode::SetValue(std::string value)
     // Set value
     if (name == "ZDrivePosition") {
         double mm_pos = std::stod(mm_value);
-        MM_Error mm_err;
+        MM_Status mm_err;
         {
             std::lock_guard<std::mutex> lk(dev->mmc_mutex);
             mm_err = mmcore->MM_SetPosition(dev->mmc, mm_label.c_str(), mm_pos);
         }
         if (mm_err != 0) {
             return absl::UnavailableError(
-                fmt::format("MM_SetPosition: {}", MM_ErrorToString(mm_err)));
+                fmt::format("MM_SetPosition: {}", MM_StatusToString(mm_err)));
         }
     } else {
-        MM_Error mm_err;
+        MM_Status mm_err;
         {
             std::lock_guard<std::mutex> lk(dev->mmc_mutex);
             mm_err = mmcore->MM_SetPropertyString(dev->mmc, mm_label.c_str(),
@@ -436,7 +466,7 @@ Status PropertyNode::SetValue(std::string value)
         }
         if (mm_err != 0) {
             return absl::UnavailableError(fmt::format(
-                "MM_SetPropertyString: {}", MM_ErrorToString(mm_err)));
+                "MM_SetPropertyString: {}", MM_StatusToString(mm_err)));
         }
     }
 

@@ -42,10 +42,10 @@ get_target_property(gRPC_CPP_PLUGIN_EXECUTABLE gRPC::grpc_cpp_plugin IMPORTED_LO
 ################################
 
 # ---------- MMCore API ----------
-set(MICROMANAGER14_DIR "C:/Program Files/Micro-Manager-1.4")
+set(MM_DEVICEADAPTER_DIR "C:/Program Files/Micro-Manager-2.0")
 install(FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/third_party/MMCoreAPI/lib/MMCoreC.dll"
-    "${MICROMANAGER14_DIR}/mmgr_dal_NikonTI.dll"
+    "${MM_DEVICEADAPTER_DIR}/mmgr_dal_NikonTI.dll"
     DESTINATION .
 )
 
@@ -300,7 +300,7 @@ install (TARGETS NikonTiControl
 add_custom_command(TARGET NikonTiControl POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy 
         "${CMAKE_CURRENT_SOURCE_DIR}/third_party/MMCoreAPI/lib/MMCoreC.dll"
-        "${MICROMANAGER14_DIR}/mmgr_dal_NikonTI.dll"
+        "${MM_DEVICEADAPTER_DIR}/mmgr_dal_NikonTI.dll"
         "${CMAKE_CURRENT_BINARY_DIR}"
 )
 

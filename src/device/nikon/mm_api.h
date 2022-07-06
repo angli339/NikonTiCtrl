@@ -60,9 +60,9 @@ typedef enum
     MM_ErrCreatePeripheralFailed = 50,
     MM_ErrPropertyNotInCache = 51,
     MM_ErrBadAffineTransform = 52
-} MM_Error;
+} MM_Status;
 
-std::string MM_ErrorToString(MM_Error error);
+std::string MM_StatusToString(MM_Status error);
 
 typedef enum
 {
@@ -116,23 +116,26 @@ struct MMCoreC {
     void (*MM_GetVersionInfo)(MM_Session mm, char **info);
     void (*MM_GetAPIVersionInfo)(MM_Session mm, char **info);
 
-    void (*MM_StringFree)(char *str);
+    MM_Status (*MM_GetDeviceAdapterNames)(MM_Session mm, char ***names);
 
-    MM_Error (*MM_LoadDevice)(MM_Session mm, const char *label,
+    void (*MM_StringFree)(char *str);
+    void (*MM_StringListFree)(char **str_list);
+
+    MM_Status (*MM_LoadDevice)(MM_Session mm, const char *label,
                               const char *module_name, const char *device_name);
-    MM_Error (*MM_UnloadDevice)(MM_Session mm, const char *label);
-    MM_Error (*MM_UnloadAllDevices)(MM_Session mm);
-    MM_Error (*MM_InitializeDevice)(MM_Session mm, const char *label);
+    MM_Status (*MM_UnloadDevice)(MM_Session mm, const char *label);
+    MM_Status (*MM_UnloadAllDevices)(MM_Session mm);
+    MM_Status (*MM_InitializeDevice)(MM_Session mm, const char *label);
     void (*MM_RegisterCallback)(MM_Session mm,
                                 struct MM_EventCallback *callback);
-    MM_Error (*MM_GetProperty)(MM_Session mm, const char *label,
+    MM_Status (*MM_GetProperty)(MM_Session mm, const char *label,
                                const char *prop_name, char **value);
-    MM_Error (*MM_SetPropertyString)(MM_Session mm, const char *label,
+    MM_Status (*MM_SetPropertyString)(MM_Session mm, const char *label,
                                      const char *prop_name, const char *value);
-    MM_Error (*MM_SetFocusDevice)(MM_Session mm, const char *label);
-    MM_Error (*MM_SetPosition)(MM_Session mm, const char *label,
+    MM_Status (*MM_SetFocusDevice)(MM_Session mm, const char *label);
+    MM_Status (*MM_SetPosition)(MM_Session mm, const char *label,
                                double position);
-    MM_Error (*MM_GetPosition)(MM_Session mm, const char *label,
+    MM_Status (*MM_GetPosition)(MM_Session mm, const char *label,
                                double *position);
 };
 
