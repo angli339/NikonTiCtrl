@@ -41,7 +41,7 @@ void ImageHistView::setVmax(int vmax)
 void ImageHistView::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
-    painter.setRenderHint(QPainter::HighQualityAntialiasing, true);
+    painter.setRenderHint(QPainter::Antialiasing, true);
 
     painter.setPen(histPen());
     painter.setBrush(Qt::NoBrush);

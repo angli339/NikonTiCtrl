@@ -15,7 +15,7 @@ void load_MMCoreC()
         return;
     }
 
-    HMODULE hModule = LoadLibrary("MMCoreC.dll");
+    HMODULE hModule = LoadLibraryA("MMCoreC.dll");
     if (hModule == NULL) {
         throw std::runtime_error("cannot load MMCoreC.dll");
     }

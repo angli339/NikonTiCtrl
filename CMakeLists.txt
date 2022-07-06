@@ -18,9 +18,9 @@ include_directories("src")
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
-set(CMAKE_PREFIX_PATH "C:/Qt/5.15.2/msvc2019_64/lib/cmake;${CMAKE_PREFIX_PATH}")
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
-get_target_property(_qmake_executable Qt5::qmake IMPORTED_LOCATION)
+set(CMAKE_PREFIX_PATH "C:/Qt/6.2.4/msvc2019_64/lib/cmake;${CMAKE_PREFIX_PATH}")
+find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGL OpenGLWidgets)
+get_target_property(_qmake_executable Qt6::qmake IMPORTED_LOCATION)
 get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
 find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}" REQUIRED)
 
@@ -329,7 +329,9 @@ target_link_libraries(NikonTiControl PRIVATE
     wbemuuid # WMI
     ole32    # UUID
 
-    Qt5::Widgets
+    Qt6::Widgets
+    Qt6::OpenGL
+    Qt6::OpenGLWidgets
 
     absl::statusor
     fmt::fmt
