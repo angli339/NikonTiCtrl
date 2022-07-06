@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 
-project(NikonTiControl LANGUAGES CXX)
+project(NikonTiControl CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -114,13 +114,14 @@ set (tf_proto
     "tensorflow/core/example/example.proto"
     "tensorflow/core/example/feature.proto"
     "tensorflow/core/framework/attr_value.proto"
+    "tensorflow/core/framework/full_type.proto"
     "tensorflow/core/framework/function.proto"
     "tensorflow/core/framework/graph.proto"
     "tensorflow/core/framework/node_def.proto"
     "tensorflow/core/framework/op_def.proto"
     "tensorflow/core/framework/resource_handle.proto"
-    "tensorflow/core/framework/tensor.proto"
     "tensorflow/core/framework/tensor_shape.proto"
+    "tensorflow/core/framework/tensor.proto"
     "tensorflow/core/framework/types.proto"
     "tensorflow/core/framework/variable.proto"
     "tensorflow/core/framework/versions.proto"
@@ -241,7 +242,7 @@ set(QT_SOURCES
 
     src/qt/imagehistview.cpp
     src/qt/cmap/cmap_data.cpp
-    third_party/QDarkStyleSheet/qdarkstyle/dark/style.qrc
+    third_party/QDarkStyleSheet/qdarkstyle/dark/darkstyle.qrc
 )
 
 add_executable(NikonTiControl

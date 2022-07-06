@@ -1,7 +1,7 @@
 {
     "name": "nikon-ti-ctrl",
     "version": "0.2.1",
-    "builtin-baseline": "b86c0c35b88e2bf3557ff49dc831689c2f085090",
+    "builtin-baseline": "cef0b3ec767df6e83806899fe9525f6cf8d7bc91",
     "dependencies": [
         "fmt",
         "nlohmann-json",
@@ -27,7 +27,8 @@
     ],
     "overrides": [
         {
-          "name": "fmt", "version": "7.1.3"
+            "name": "fmt",
+            "version": "7.1.3"
         }
     ]
 }

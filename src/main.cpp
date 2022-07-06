@@ -56,7 +56,7 @@ void sigHandler(int signal)
 
 void configApp()
 {
-    QFile file(":/qdarkstyle/dark/style.qss");
+    QFile file(":/qdarkstyle/dark/darkstyle.qss");
     file.open(QFile::ReadOnly);
     QString styleSheet = QString::fromLatin1(file.readAll());
     styleSheet += "\nQPushButton { border-radius: 0px; }\nQWidget:focus "
