@@ -4,6 +4,7 @@
         "VCPKG_TARGET_TRIPLET": "x64-windows-static",
         "CMAKE_TOOLCHAIN_FILE": "C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
     },
+    "cmake.installPrefix": "C:/Program Files/NikonTiCtrl",
     "cmake.configureOnOpen": true,
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "files.associations": {

@@ -43,11 +43,6 @@ get_target_property(gRPC_CPP_PLUGIN_EXECUTABLE gRPC::grpc_cpp_plugin IMPORTED_LO
 
 # ---------- MMCore API ----------
 set(MM_DEVICEADAPTER_DIR "C:/Program Files/Micro-Manager-2.0")
-install(FILES
-    "${CMAKE_CURRENT_SOURCE_DIR}/third_party/MMCoreAPI/lib/MMCoreC.dll"
-    "${MM_DEVICEADAPTER_DIR}/mmgr_dal_NikonTI.dll"
-    DESTINATION .
-)
 
 # ---------- VISA ----------
 include_directories("C:/Program Files/IVI Foundation/VISA/Win64/include")
@@ -293,38 +288,6 @@ add_executable(NikonTiControl
     ${tf_proto_hdrs}
 )
 
-install (TARGETS NikonTiControl
-    RUNTIME DESTINATION .
-)
-
-# Copy MMCore and device adapter dlls to build directory
-add_custom_command(TARGET NikonTiControl POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy 
-        "${CMAKE_CURRENT_SOURCE_DIR}/third_party/MMCoreAPI/lib/MMCoreC.dll"
-        "${MM_DEVICEADAPTER_DIR}/mmgr_dal_NikonTI.dll"
-        "${CMAKE_CURRENT_BINARY_DIR}"
-)
-
-# Run windeployqt
-if(CMAKE_BUILD_TYPE MATCHES "Debug")
-    add_custom_command(TARGET NikonTiControl POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/windeployqt"
-        COMMAND "${WINDEPLOYQT_EXECUTABLE}" --debug --dir "${CMAKE_CURRENT_BINARY_DIR}/windeployqt" --no-translations "$<TARGET_FILE:NikonTiControl>"
-        COMMAND "${WINDEPLOYQT_EXECUTABLE}" --debug --dir "${CMAKE_CURRENT_BINARY_DIR}" --no-translations "$<TARGET_FILE:NikonTiControl>"
-    )
-else()
-    add_custom_command(TARGET NikonTiControl POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/windeployqt"
-        COMMAND "${WINDEPLOYQT_EXECUTABLE}" --release --dir "${CMAKE_CURRENT_BINARY_DIR}/windeployqt" --no-translations "$<TARGET_FILE:NikonTiControl>"
-        COMMAND "${WINDEPLOYQT_EXECUTABLE}" --release --dir "${CMAKE_CURRENT_BINARY_DIR}" --no-translations "$<TARGET_FILE:NikonTiControl>"
-    )
-endif()
-
-# Copy files from windeployqt during installation
-install(
-    DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/windeployqt/" DESTINATION .
-)
-
 target_link_libraries(NikonTiControl PRIVATE
     wbemuuid # WMI
     ole32    # UUID
@@ -346,7 +309,55 @@ target_link_libraries(NikonTiControl PRIVATE
     # Device Interface
     DCAMAPI
     VISA
+)
 
+# --------------- Copy to binary dir for debugging ---------------
+# Copy MMCore and device adapter dlls to build directory
+add_custom_command(TARGET NikonTiControl POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different 
+        "${CMAKE_CURRENT_SOURCE_DIR}/third_party/MMCoreAPI/lib/MMCoreC.dll"
+        "${MM_DEVICEADAPTER_DIR}/mmgr_dal_NikonTI.dll"
+        "${CMAKE_CURRENT_BINARY_DIR}"
+)
+
+# Run windeployqt
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+    set(WINDEPLOYQT_FLAG "--debug")
+else()
+    set(WINDEPLOYQT_FLAG "--release")
+endif()
+
+add_custom_command(TARGET NikonTiControl POST_BUILD
+    # for installing
+    COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/windeployqt"
+    COMMAND "${WINDEPLOYQT_EXECUTABLE}" "${WINDEPLOYQT_FLAG}" --dir "${CMAKE_CURRENT_BINARY_DIR}/windeployqt" --no-translations "$<TARGET_FILE:NikonTiControl>"
+    # for debugging
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_BINARY_DIR}/windeployqt/" "${CMAKE_CURRENT_BINARY_DIR}"
+)
+
+# ---------------  Install ---------------
+# Install binary and runtime
+install (TARGETS NikonTiControl
+    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}
+)
+
+install(FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/third_party/MMCoreAPI/lib/MMCoreC.dll"
+    "${MM_DEVICEADAPTER_DIR}/mmgr_dal_NikonTI.dll"
+    DESTINATION ${CMAKE_INSTALL_PREFIX}
+)
+
+# Install files from windeployqt
+install(
+    DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/windeployqt/" DESTINATION ${CMAKE_INSTALL_PREFIX}
+)
+
+# Install python API
+install(
+    DIRECTORY "python" DESTINATION ${CMAKE_INSTALL_PREFIX}
+    FILES_MATCHING
+    PATTERN "*.py"
+    PATTERN "__pycache__" EXCLUDE
 )
 
 ################################
