@@ -12,6 +12,8 @@ from google.protobuf import empty_pb2
 from typing import Dict, List, Tuple, Union
 Channel = Union[Tuple[str, int], Tuple[str, int, int]]
 
+import napari
+
 dtype_to_pb = {
     np.bool8: api_pb2.DataType.BOOL8,
     np.uint8: api_pb2.DataType.UINT8,
@@ -119,6 +121,33 @@ class API():
         data_dtype = dtype_from_pb[resp.data.dtype]
         return np.frombuffer(resp.data.buf, dtype=data_dtype).reshape(resp.data.height, resp.data.width)
 
+    def get_ndimage(self, ndimage_name: str):
+        ndinfo = [info for info in self.list_ndimage() if info['name'] == ndimage_name]
+        if len(ndinfo) == 1:
+            ndinfo = ndinfo[0]
+        else:
+            raise RuntimeError("multiple images with the same name found in ndinfo")
+
+        n_t = ndinfo['n_t']
+        n_z = ndinfo['n_z']
+        ch_info = ndinfo['channel_info']
+        ch_list = [ch['name'] for ch in ch_info]
+        im_width = ch_info[0]['width']
+        im_height = ch_info[0]['height']
+        for ch in ch_info:
+            if ch['width'] != im_width or ch['height'] != im_height:
+                print("channel {} has different width or height".format(ch['name']))
+        ims = []
+        for i_t in range(ndinfo['n_t']):
+            for i_z in range(ndinfo['n_z']):
+                for ch in ch_list:
+                    im = self.get_image(ndimage_name, ch, i_z, i_t)
+                    ims.append(im)
+        ims = np.array(ims)
+        ims = ims.reshape([n_t, n_z, len(ch_list), ims.shape[1], ims.shape[2]])
+
+        return NDImage(ndimage_name, ims, ch_list)
+
     def get_segmentation_score(self, im: npt.ArrayLike):
         if len(im.shape) != 2:
             raise ValueError("expecting 2d image")
@@ -197,3 +226,12 @@ class API():
                 pass
 
         raise RuntimeError("Focus search failed")
+
+class NDImage():
+    def __init__(self, name, data, ch_names):
+        self.name = name
+        self.data = data
+        self.ch_names = ch_names
+    
+    def view_napari(self):
+        napari.view_image(self.data, channel_axis=2, name=self.ch_names)
