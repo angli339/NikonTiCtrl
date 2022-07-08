@@ -1,6 +1,6 @@
 [submodule "third_party/MMCoreAPI"]
 	path = third_party/MMCoreAPI
-	url = https://github.com/Andeling/MMCoreAPI
+	url = https://github.com/angli232/MMCoreAPI
 [submodule "third_party/QDarkStyleSheet"]
 	path = third_party/QDarkStyleSheet
 	url = https://github.com/ColinDuquesnoy/QDarkStyleSheet.git
