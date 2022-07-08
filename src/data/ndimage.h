@@ -33,6 +33,7 @@ public:
     int NDimZ();
     int NDimT();
     std::vector<NDImageChannel> ChannelInfo();
+    std::string ChannelName(int i_ch);
     int ChannelIndex(std::string);
 
     void SetFolder(std::filesystem::path folder);

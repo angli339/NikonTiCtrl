@@ -35,9 +35,15 @@ int NDImage::NDimT()
 {
     return n_t;
 }
+
 std::vector<NDImageChannel> NDImage::ChannelInfo()
 {
     return channel_info;
+}
+
+std::string NDImage::ChannelName(int i_ch)
+{
+    return channel_info[i_ch].name;
 }
 
 int NDImage::ChannelIndex(std::string channel_name)

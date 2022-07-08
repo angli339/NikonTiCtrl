@@ -153,6 +153,7 @@ void AcquirePage::displayNDImage(QString name)
         if (im->HasData(i_ch, i_z, i_t)) {
             ImageData d = im->GetData(i_ch, i_z, i_t);
             ndImageView->setFrameData(i_ch, d);
+            ndImageView->setChannelName(i_ch, im->ChannelName(i_ch).c_str());
         }
     }
 }
