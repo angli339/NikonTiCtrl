@@ -308,7 +308,7 @@ class Wellplate():
             
             selected_cols = []
             if isinstance(index_col, int):
-                col_id = str(index_col)
+                col_id = "{:02d}".format(index_col)
                 if col_id not in self._cols:
                     raise ValueError("invalid col")
                 else:
@@ -380,18 +380,20 @@ class Wellplate():
         
         # ------ generate the dataframe 
         df = []
-        df_columns = ["well", "site", "pos_x", "pos_y", "preset_name"]
+        df_columns = ["well", "row", "col", "site", "pos_x", "pos_y", "preset_name"]
 
         well_missing_preset = set()
         for well_id in well_ids_routed:
             well = self._wells[well_id]
+            row = well_id[0]
+            col = int(well_id[1:])
             for site in well.sites:
                 if not well.preset_name:
-                    well_missing_preset.add(well.id)
+                    well_missing_preset.add(well_id)
                 if self._pos_origin is None:
-                    df_row = [well.id, site.id, float('nan'), float('nan'), well.preset_name or '']
+                    df_row = [well_id, row, col, site.id, float('nan'), float('nan'), well.preset_name or '']
                 else:
-                    df_row = [well.id, site.id, site.pos[0], site.pos[1], well.preset_name or '']
+                    df_row = [well_id, row, col, site.id, site.pos[0], site.pos[1], well.preset_name or '']
                 
                 for k in metadata_columns:
                     if k in well.metadata:
@@ -467,5 +469,5 @@ class WellplateSliceMetadata():
         self._wellplate_slice = wellplate_slice
 
     def __setitem__(self, key, value):
-        for well in self._wellplate_slice.well_list():
+        for well in self._wellplate_slice.wells():
             well.metadata[key] = value
