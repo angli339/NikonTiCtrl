@@ -5,7 +5,7 @@
 
 #include <QGridLayout>
 #include <QWidget>
-#include <QSlider>
+#include <QScrollBar>
 #include <QLabel>
 
 #include "qt/glimageview.h"
@@ -30,11 +30,11 @@ public:
     QGridLayout *imGridLayout = nullptr;
     std::vector<NDImageChannelView *> channelViewList;
 
-    QSlider *zSlider;
+    QScrollBar *zSlider;
     QLabel *zLabelCurrent;
     QLabel *zLabelTotal;
 
-    QSlider *tSlider;
+    QScrollBar *tSlider;
     QLabel *tLabelCurrent;
     QLabel *tLabelTotal;
 };

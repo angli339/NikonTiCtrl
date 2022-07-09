@@ -15,7 +15,10 @@ NDImageView::NDImageView(QWidget *parent) : QWidget(parent)
     imGridLayout->setContentsMargins(0, 0, 0, 0);
 
     QHBoxLayout *zSliderLayout = new QHBoxLayout;
-    zSlider = new QSlider(Qt::Horizontal);
+    zSlider = new QScrollBar(Qt::Horizontal);
+    zSlider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    zSlider->setPageStep(1);
+    zSlider->setSingleStep(1);
     zLabelCurrent = new QLabel;
     zLabelTotal = new QLabel;
     zSliderLayout->addWidget(new QLabel("Z"));
@@ -25,7 +28,10 @@ NDImageView::NDImageView(QWidget *parent) : QWidget(parent)
     zSliderLayout->addWidget(zLabelTotal);
 
     QHBoxLayout *tSliderLayout = new QHBoxLayout;
-    tSlider = new QSlider(Qt::Horizontal);
+    tSlider = new QScrollBar(Qt::Horizontal);
+    tSlider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    tSlider->setPageStep(1);
+    tSlider->setSingleStep(1);
     tLabelCurrent = new QLabel;
     tLabelTotal = new QLabel;
     tSliderLayout->addWidget(new QLabel("T"));
