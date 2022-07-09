@@ -1,9 +1,10 @@
 import string
-from typing import Tuple, Optional
 import warnings
 
 import pandas as pd
 
+from typing import Tuple, Optional
+from .api import API
 
 WELLPLATE_CONFIG = {
     "wellplate96": {
@@ -58,9 +59,9 @@ class Site():
         pos_y = self._well.pos_origin[1] + self._rel_pos[1]
         return (pos_x, pos_y)
 
-
 class Well():
-    def __init__(self, id: str):
+    def __init__(self, wellplate, id: str):
+        self._wellplate = wellplate
         self._id = id
         self._enabled = False
         self._preset_name = None
@@ -127,8 +128,9 @@ class Well():
 
 
 class Wellplate():
-    def __init__(self, type: str, id: str):
+    def __init__(self, type: str, id: str, api: API=None):
         self._id = id
+        self._api = api
 
         if type not in WELLPLATE_CONFIG:
             raise ValueError("unknown type {}".format(type))
@@ -149,7 +151,7 @@ class Wellplate():
         for row_id in self._rows:
             for col_id in self._cols:
                 well_id = row_id + col_id
-                self._wells[well_id] = Well(well_id)
+                self._wells[well_id] = Well(self, well_id)
 
         self._pos_origin = None
     
@@ -220,14 +222,24 @@ class Wellplate():
                 well_id = self.rowcol_to_id(i_row, i_col)
                 self._wells[well_id].pos_origin = (well_pos_x, well_pos_y)
 
-    def define_origin(self, current_well_id: str, pos=None):
+    def define_origin(self, current_well_id: str, pos:Optional[Tuple[float, float]]=None):
         if pos is None:
-            pass
+            pos = self._api.get_xy_stage_position()
         i_row, i_col = self.id_to_rowcol(current_well_id)
-        pos_origin_x = pos[0] + self._spacing[0] * i_col
-        pos_origin_y = pos[1] + self._spacing[1] * i_row
+        pos_origin_x = pos[0] - self._spacing[0] * i_col
+        pos_origin_y = pos[1] - self._spacing[1] * i_row
         self.pos_origin = (pos_origin_x, pos_origin_y)
 
+    def move_to_position(self, well_id: str, i_x: int, i_y: int, grid_spacing=-250, wait=True):
+        # TODO validate i_x, i_y
+        well = self._wells[well_id]
+        well_pos_x, well_pos_y = well.pos_origin
+        pos_x = well_pos_x + i_x * grid_spacing
+        pos_y = well_pos_y + i_y * grid_spacing
+        self._api.set_xy_stage_position(pos_x, pos_y)
+        if wait:
+            self._api.wait_xy_stage()
+    
     def enabled_wells(self):
         selected_well_ids = []
         for well_id in self._wells:

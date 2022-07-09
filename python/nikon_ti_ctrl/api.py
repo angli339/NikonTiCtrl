@@ -1,6 +1,3 @@
-import time
-import math
-
 import numpy as np
 import numpy.typing as npt
 
@@ -12,7 +9,7 @@ from google.protobuf import empty_pb2
 from typing import Dict, List, Tuple, Union
 Channel = Union[Tuple[str, int], Tuple[str, int, int]]
 
-import napari
+from .data import NDImage
 
 dtype_to_pb = {
     np.bool8: api_pb2.DataType.BOOL8,
@@ -181,57 +178,3 @@ class API():
 
     def wait_z_stage(self):
         self.wait_property("/NikonTi/ZDrivePosition")
-
-    def enable_pfs(self):
-        while True:
-            pfs_status = self.get_property("/NikonTi/PFSStatus")
-            if pfs_status == "Locked in focus":
-                return
-            elif pfs_status == "Within range of focus search":
-                self.set_property({"/NikonTi/PFSState": "On"})
-                time.sleep(0.1)
-                continue
-            elif pfs_status == "Focusing":
-                time.sleep(0.1)
-                continue
-            else:
-                raise RuntimeError(pfs_status)
-
-    def search_focus_range(self, z_range, z_step_size, z_center, z_max_safety=None):
-        try:
-            self.enable_pfs()
-            return
-        except:
-            pass
-
-        n_steps = math.ceil(z_range / z_step_size)
-        z_min = z_center - (n_steps / 2) * z_step_size
-        z_max = z_center + (n_steps / 2) * z_step_size
-        if z_max_safety and (z_max > z_max_safety):
-            z_max = z_max_safety
-        if z_max_safety and (z_min > z_max_safety):
-            raise ValueError(
-                "z_min= {}, higher than z_max_safety ={}".format(z_min, z_max_safety))
-        n_steps = math.ceil((z_max - z_min) / z_step_size)
-        z_list = list(np.linspace(z_min, z_max, n_steps))
-        z_list.reverse()
-        for z_pos in z_list:
-            print("set z={}".format(z_pos))
-            self.set_z_stage_position(z_pos)
-            self.wait_z_stage()
-            try:
-                self.enable_pfs()
-                return
-            except:
-                pass
-
-        raise RuntimeError("Focus search failed")
-
-class NDImage():
-    def __init__(self, name, data, ch_names):
-        self.name = name
-        self.data = data
-        self.ch_names = ch_names
-    
-    def view_napari(self):
-        napari.view_image(self.data, channel_axis=2, name=self.ch_names)
