@@ -231,7 +231,7 @@ set(QT_SOURCES
     src/qt/datamanager_model.cpp
     src/qt/samplemanager_view.cpp
     src/qt/samplemanager_model.cpp
-    src/qt/ndimageview.cpp
+    src/qt/ndimage_view.cpp
     src/qt/glimageview.cpp
     src/qt/glimageview.qrc
 

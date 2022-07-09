@@ -69,6 +69,9 @@ void AcquirePage::setImagingControlModel(ImagingControlModel *model)
             &AcquirePage::handleNDImageUpdate);
     connect(model->DataManagerModel(), &DataManagerModel::ndImageChanged, this,
             &AcquirePage::handleNDImageUpdate);
+    
+    connect(ndImageView->tSlider, &QSlider::valueChanged, this, &AcquirePage::handleTSliderValueChange);
+    connect(ndImageView->zSlider, &QSlider::valueChanged, this, &AcquirePage::handleZSliderValueChange);
 }
 
 void AcquirePage::setDeviceControlModel(DeviceControlModel *model)
@@ -94,7 +97,7 @@ void AcquirePage::runLiveViewDisplay()
 void AcquirePage::startLiveViewDisplay()
 {
     LOG_DEBUG("AcquirePage::StartLiveViewDisplay");
-    ndImageView->setNumChannels(1);
+    ndImageView->setNChannels(1);
     ndImageView->setChannelName(0, "BF");
     if (liveViewDisplayFuture.valid()) {
         try {
@@ -133,21 +136,71 @@ void AcquirePage::handleNDImageUpdate(QString name)
     }
 }
 
+void AcquirePage::handleZSliderValueChange(int i_z)
+{
+    if (current_i_z == i_z) {
+        return;
+    }
+
+    std::unique_lock<std::mutex> lk(im_mutex);
+    current_i_z = i_z;
+    if (ndImageSelected.isEmpty()) {
+        displayNDImage(ndImageLatest, current_i_z, current_i_t);
+    } else {
+        displayNDImage(ndImageSelected, current_i_z, current_i_t);
+    }
+}
+
+void AcquirePage::handleTSliderValueChange(int i_t)
+{
+    if (current_i_t == i_t) {
+        return;
+    }
+
+    std::unique_lock<std::mutex> lk(im_mutex);
+    current_i_t = i_t;
+    if (ndImageSelected.isEmpty()) {
+        displayNDImage(ndImageLatest, current_i_z, current_i_t);
+    } else {
+        displayNDImage(ndImageSelected, current_i_z, current_i_t);
+    }
+}
+
 void AcquirePage::displayNDImage(QString name)
 {
     NDImage *im = imagingControlModel->DataManagerModel()->GetNDImage(name);
-    ndImageView->setNumChannels(im->NChannels());
+    ndImageView->setNChannels(im->NChannels());
 
     if (im->NDimT() == 0) {
         return;
     }
 
-    // Display latest images
+    // find latested image
     int i_t = im->NDimT() - 1;
     int i_z = 0;
     if (im->NDimZ() > 0) {
         i_z = im->NDimZ() - 1;
     }
+    current_i_z = i_z;
+    current_i_t = i_t;
+
+    displayNDImage(name, current_i_z, current_i_t);
+}
+
+void AcquirePage::displayNDImage(QString name, int i_z, int i_t)
+{
+    NDImage *im = imagingControlModel->DataManagerModel()->GetNDImage(name);
+    ndImageView->setNChannels(im->NChannels());
+
+    if (im->NDimT() == 0) {
+        return;
+    }
+
+    ndImageView->setNDimZ(im->NDimZ());
+    ndImageView->setNDimT(im->NDimT());
+
+    ndImageView->setIndexZ(i_z);
+    ndImageView->setIndexT(i_t);
 
     for (int i_ch = 0; i_ch < im->NChannels(); i_ch++) {
         if (im->HasData(i_ch, i_z, i_t)) {

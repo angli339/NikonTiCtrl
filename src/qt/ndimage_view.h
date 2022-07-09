@@ -5,6 +5,8 @@
 
 #include <QGridLayout>
 #include <QWidget>
+#include <QSlider>
+#include <QLabel>
 
 #include "qt/glimageview.h"
 
@@ -15,14 +17,26 @@ class NDImageView : public QWidget {
 public:
     explicit NDImageView(QWidget *parent = nullptr);
 
-    void setNumChannels(int n_channel);
-    void setFrameData(int i_channel, ImageData frame);
+    void setNChannels(int n_channel);
+    void setNDimZ(int n_z);
+    void setNDimT(int n_t);
+
+    void setIndexZ(int i_z);
+    void setIndexT(int i_t);
     void setChannelName(int i_channel, QString channelName);
+    void setFrameData(int i_channel, ImageData frame);
 
 public:
-    QGridLayout *layout = nullptr;
-
+    QGridLayout *imGridLayout = nullptr;
     std::vector<NDImageChannelView *> channelViewList;
+
+    QSlider *zSlider;
+    QLabel *zLabelCurrent;
+    QLabel *zLabelTotal;
+
+    QSlider *tSlider;
+    QLabel *tLabelCurrent;
+    QLabel *tLabelTotal;
 };
 
 class NDImageChannelView : public QWidget {
