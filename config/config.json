@@ -1,5 +1,10 @@
 {
-     "unet_grpc_addr": "127.0.0.1:8500",
+     "unet_model": {
+        "server_addr": "127.0.0.1:8500",
+        "model_name": "yeaz_unet",
+        "input_name": "input_1",
+        "output_name": "conv2d_23"
+     },
      "pixel_size": {
           "20x": 0.3125,
           "60xO": 0.1072,

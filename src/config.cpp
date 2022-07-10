@@ -43,7 +43,7 @@ void loadSystemConfig(std::filesystem::path filename)
     std::ifstream ifs(filename.string());
     nlohmann::json j = nlohmann::json::parse(ifs);
 
-    j.at("unet_grpc_addr").get_to(config.system.unet_grpc_addr);
+    j.at("unet_model").get_to(config.system.unet_model);
     j.at("pixel_size").get_to(config.system.pixel_size);
 
     try {

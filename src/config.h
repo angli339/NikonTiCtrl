@@ -16,8 +16,16 @@ struct Label {
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Label, name, description)
 
+struct ConfigUnetModel {
+    std::string server_addr;
+    std::string model_name;
+    std::string input_name;
+    std::string output_name;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ConfigUnetModel, server_addr, model_name, input_name, output_name)
+
 struct ConfigSystem {
-    std::string unet_grpc_addr;
+    ConfigUnetModel unet_model;
     std::map<std::string, double> pixel_size;
     std::map<PropertyPath, std::map<std::string, Label>> labels;
     std::vector<ChannelPreset> presets;

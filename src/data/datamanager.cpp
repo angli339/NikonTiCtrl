@@ -7,7 +7,13 @@
 #include "config.h"
 #include "logging.h"
 
-DataManager::DataManager() : unet(config.system.unet_grpc_addr) {}
+DataManager::DataManager()
+    : unet(config.system.unet_model.server_addr,
+           config.system.unet_model.model_name,
+           config.system.unet_model.input_name,
+           config.system.unet_model.output_name)
+{
+}
 
 void DataManager::SetLiveViewFrame(ImageData new_frame)
 {
@@ -25,10 +31,7 @@ ImageData DataManager::GetNextLiveViewFrame()
     return live_view_frame;
 }
 
-std::filesystem::path DataManager::ExperimentPath()
-{
-    return exp_path;
-}
+std::filesystem::path DataManager::ExperimentPath() { return exp_path; }
 
 void DataManager::SetExperimentPath(std::filesystem::path path)
 {
@@ -62,15 +65,9 @@ void DataManager::SetExperimentPath(std::filesystem::path path)
     });
 }
 
-std::filesystem::path DataManager::ImagePath()
-{
-    return exp_path / "images";
-}
+std::filesystem::path DataManager::ImagePath() { return exp_path / "images"; }
 
-std::vector<NDImage *> DataManager::ListNDImage()
-{
-    return dataset;
-}
+std::vector<NDImage *> DataManager::ListNDImage() { return dataset; }
 
 bool DataManager::HasNDImage(std::string ndimage_name)
 {

@@ -348,7 +348,10 @@ APIServer::GetSegmentationScore(ServerContext *context,
 
     ImageData score;
     try {
-        im::UNet unet(config.system.unet_grpc_addr);
+        im::UNet unet(config.system.unet_model.server_addr,
+                      config.system.unet_model.model_name,
+                      config.system.unet_model.input_name,
+                      config.system.unet_model.output_name);
         score = unet.GetScore(im);
     } catch (std::exception &e) {
         return grpc::Status(grpc::StatusCode::INTERNAL,

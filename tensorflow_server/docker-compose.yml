@@ -1,0 +1,18 @@
+version: '3'
+services:
+  tensorflow_server_yeaz_unet:
+    container_name: tensorflow_server_yeaz_unet
+    image: tensorflow/serving:2.5.4-gpu
+    ports:
+      - 8500:8500
+    volumes:
+      - ./yeaz_unet:/models/yeaz_unet
+    environment:
+      - MODEL_NAME=yeaz_unet
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

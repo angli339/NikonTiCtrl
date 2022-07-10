@@ -36,10 +36,15 @@ std::vector<double> RegionMean(ImageData im, ImageData label,
 
 class UNet {
 public:
-    UNet(const std::string addr);
+    UNet(const std::string server_addr, const std::string model_name, const std::string input_name, const std::string output_name);
     ImageData GetScore(ImageData im);
 
 private:
+    std::string server_addr;
+    std::string model_name;
+    std::string input_name;
+    std::string output_name;
+
     std::shared_ptr<::grpc::Channel> grpc_channel;
     std::shared_ptr<::tensorflow::serving::PredictionService::Stub> stub;
 };

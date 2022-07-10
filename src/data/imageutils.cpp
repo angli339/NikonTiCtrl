@@ -131,14 +131,19 @@ std::vector<double> RegionMean(ImageData im, ImageData label,
     return mean;
 }
 
-UNet::UNet(const std::string addr)
+UNet::UNet(const std::string server_addr, const std::string model_name, const std::string input_name, const std::string output_name)
 {
     grpc::ChannelArguments channel_args;
     channel_args.SetInt(GRPC_ARG_MAX_SEND_MESSAGE_LENGTH, 20 * 1024 * 1024);
     channel_args.SetInt(GRPC_ARG_MAX_RECEIVE_MESSAGE_LENGTH, 20 * 1024 * 1024);
     grpc_channel = grpc::CreateCustomChannel(
-        addr, grpc::InsecureChannelCredentials(), channel_args);
+        server_addr, grpc::InsecureChannelCredentials(), channel_args);
     stub = tensorflow::serving::PredictionService::NewStub(grpc_channel);
+
+    this->server_addr = server_addr;
+    this->model_name = model_name;
+    this->input_name = input_name;
+    this->output_name = output_name;
 }
 
 ImageData UNet::GetScore(ImageData im)
@@ -149,11 +154,11 @@ ImageData UNet::GetScore(ImageData im)
     tensorflow::serving::PredictRequest req;
     tensorflow::serving::PredictResponse resp;
 
-    req.mutable_model_spec()->set_name("unet_yeast_bf");
+    req.mutable_model_spec()->set_name(this->model_name);
     req.mutable_model_spec()->set_signature_name("serving_default");
     // req.mutable_model_spec()->mutable_version()->set_value(1);
 
-    tensorflow::TensorProto &input_tensor = (*req.mutable_inputs())["input_1"];
+    tensorflow::TensorProto &input_tensor = (*req.mutable_inputs())[this->input_name];
     input_tensor.set_dtype(tensorflow::DataType::DT_FLOAT);
 
     input_tensor.mutable_tensor_shape()->add_dim()->set_size(1);
@@ -171,7 +176,7 @@ ImageData UNet::GetScore(ImageData im)
             fmt::format("stub.Predict: {}", status.error_message()));
     }
 
-    auto it = resp.outputs().find("conv2d_23");
+    auto it = resp.outputs().find(this->output_name);
     if (it == resp.outputs().end()) {
         throw std::runtime_error("output tensor not found");
     }
