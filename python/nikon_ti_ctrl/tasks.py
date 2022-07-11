@@ -97,7 +97,7 @@ class MultiSiteTaskStatusWidget():
 
 # TODO: reimplement without using df_sites
 class MultiSiteTask():
-    def __init__(self, df_sites, presets: dict[str, Channel], api: API, seq_no=0):
+    def __init__(self, df_sites, presets: dict[str, Channel], api: API, seq_no=0, fn_after_acq=None, fn_before_acq=None):
         if df_sites["pos_x"].isnull().values.any():
             raise ValueError("contains missing positions")
         if df_sites["pos_y"].isnull().values.any():
@@ -117,6 +117,11 @@ class MultiSiteTask():
         self._t_stop = None
         self.df_sites = None
 
+        self.previous_well_id = None
+        self.current_row = None
+        self.fn_after_acq = fn_after_acq
+        self.fn_before_acq = fn_before_acq
+
     def _run(self, find_focus=True):
         self._t_start = datetime.datetime.now()
         self.status_bar.set_t_start(self._t_start)
@@ -127,10 +132,12 @@ class MultiSiteTask():
         n_sites = self._df_sites.shape[0]
         n_wells = len(self._df_sites["well"].unique())
 
-        previous_well_id = None
+        self.previous_well_id = None
         wells_finished = set()
 
         for (i_site, row) in enumerate(self._df_sites.itertuples()):
+            self.current_row = row
+            
             # Determine progress
             well_id = row.well
             site_id = row.site
@@ -139,10 +146,10 @@ class MultiSiteTask():
             pos_y = row.pos_y
             im_name = "{}-{}".format(well_id, site_id)
             
-            if previous_well_id:
-                if previous_well_id != well_id:
+            if self.previous_well_id:
+                if self.previous_well_id != well_id:
                     wells_finished.add(well_id)
-            previous_well_id = well_id
+            self.previous_well_id = well_id
 
             self.status_bar.set_sites_progress(i_site, n_sites)
             self.status_bar.set_wells_progress(len(wells_finished), n_wells)
@@ -168,11 +175,18 @@ class MultiSiteTask():
             self._api.wait_xy_stage()
             if find_focus:
                 self._focus_task.find_focus(msg_prefix=im_name)
+            
+            if self.fn_before_acq:
+                self.fn_before_acq(self)
+
             time.sleep(1)
             
             ### Acquire
             self._api.acquire_multi_channel(im_name, self._presets[preset_name], 0, self._seq_no)
-        
+            
+            if self.fn_after_acq:
+                self.fn_after_acq(self)
+
         self.status_bar.set_sites_progress(n_sites, n_sites)
         self.status_bar.set_wells_progress(len(wells_finished)+1, n_wells)
         self._t_stop = datetime.datetime.now()

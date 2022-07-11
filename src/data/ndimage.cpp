@@ -112,7 +112,6 @@ void NDImage::SaveImage(int i_ch, int i_z, int i_t)
 
     TiffMetadata t_meta;
     t_meta.metadata = metadata;
-    t_meta.software_version = fmt::format("NikonTiControl {}", gitTagVersion);
 
     std::filesystem::path filepath = folder / getImageName(i_ch, i_z, i_t);
     ImageWrite(filepath, data, t_meta);

@@ -42,7 +42,7 @@ ImageData EqualizeCLAHE(ImageData im, double clip_limit)
     if (im_eq.BufSize() != out_mat.total() * out_mat.elemSize()) {
         throw std::runtime_error("unexpected out_mat size");
     }
-    memcpy(im.Buf().get(), out_mat.data, im.BufSize());
+    memcpy(im_eq.Buf().get(), out_mat.data, im_eq.BufSize());
     return im_eq;
 }
 
@@ -51,8 +51,9 @@ ImageData RegionLabel(ImageData im_score,
                       double threshold)
 {
     cv::Mat score_mat = im_score.AsMat();
-    cv::Mat mask_mat = cv::Mat(score_mat.size(), CV_8U);
+    cv::Mat mask_mat;
     cv::threshold(score_mat, mask_mat, threshold, 1, cv::THRESH_BINARY);
+    mask_mat.convertTo(mask_mat, CV_8U, 255, 0);
 
     cv::Mat label_mat;
     cv::Mat stats_mat;
@@ -63,22 +64,22 @@ ImageData RegionLabel(ImageData im_score,
 
     // Label Image
     ImageData im_label = ImageData(label_mat.rows, label_mat.cols,
-                                   DataType::Uint16, ColorType::Unknown);
+                                   DataType::Uint16, ColorType::Mono16);
     im_label.CopyFrom(label_mat);
 
     // Region props
     for (int label = 0; label < n_labels; label++) {
         ImageRegionProp prop;
         prop.label = label;
-        prop.bbbox_x0 = stats_mat.at<float>(
+        prop.bbbox_x0 = stats_mat.at<int32_t>(
             label, cv::ConnectedComponentsTypes::CC_STAT_LEFT);
-        prop.bbbox_y0 = stats_mat.at<float>(
+        prop.bbbox_y0 = stats_mat.at<int32_t>(
             label, cv::ConnectedComponentsTypes::CC_STAT_TOP);
-        prop.bbbox_width = stats_mat.at<float>(
+        prop.bbbox_width = stats_mat.at<int32_t>(
             label, cv::ConnectedComponentsTypes::CC_STAT_WIDTH);
-        prop.bbbox_height = stats_mat.at<float>(
+        prop.bbbox_height = stats_mat.at<int32_t>(
             label, cv::ConnectedComponentsTypes::CC_STAT_HEIGHT);
-        prop.area = stats_mat.at<float>(
+        prop.area = stats_mat.at<int32_t>(
             label, cv::ConnectedComponentsTypes::CC_STAT_AREA);
 
         prop.centroid_x = centroids_mat.at<double>(label, 0);
@@ -103,20 +104,27 @@ std::vector<double> RegionMean(ImageData im, ImageData label,
 
     uint16_t *im_label_buf = reinterpret_cast<uint16_t *>(label.Buf().get());
 
-    uint8_t *im_buf8;
-    uint16_t *im_buf16;
+    uint8_t *im_buf_u8;
+    uint16_t *im_buf_u16;
+    float *im_buf_f32;
 
     switch (im.DataType()) {
     case DataType::Uint8:
-        im_buf8 = reinterpret_cast<uint8_t *>(im.Buf().get());
+        im_buf_u8 = reinterpret_cast<uint8_t *>(im.Buf().get());
         for (int i = 0; i < im.size(); i++) {
-            sum[im_label_buf[i]] += im_buf8[i];
+            sum[im_label_buf[i]] += im_buf_u8[i];
         }
         break;
     case DataType::Uint16:
-        im_buf16 = reinterpret_cast<uint16_t *>(im.Buf().get());
+        im_buf_u16 = reinterpret_cast<uint16_t *>(im.Buf().get());
         for (int i = 0; i < im.size(); i++) {
-            sum[im_label_buf[i]] += im_buf16[i];
+            sum[im_label_buf[i]] += im_buf_u16[i];
+        }
+        break;
+    case DataType::Float32:
+        im_buf_f32 = reinterpret_cast<float *>(im.Buf().get());
+        for (int i = 0; i < im.size(); i++) {
+            sum[im_label_buf[i]] += im_buf_f32[i];
         }
         break;
     default:

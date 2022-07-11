@@ -5,12 +5,13 @@
 #include <fmt/format.h>
 #include <tiffio.h>
 
+#include "version.h"
 
 void ImageWrite(std::filesystem::path filepath, ImageData data,
                 TiffMetadata tiff_meta)
 {
     std::string encoded_metadata = tiff_meta.metadata.dump();
-
+    tiff_meta.software_version = fmt::format("NikonTiControl {}", gitTagVersion);
 
     TIFF *tif = TIFFOpen(filepath.string().c_str(), "w");
     if (tif == NULL) {

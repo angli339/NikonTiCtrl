@@ -365,3 +365,20 @@ APIServer::GetSegmentationScore(ServerContext *context,
     resp->mutable_data()->set_buf(score.Buf().get(), score.BufSize());
     return grpc::Status::OK;
 }
+
+grpc::Status
+APIServer::QuantifyRegions(ServerContext *context,
+                         const api::QuantifyRegionsRequest *req,
+                         api::QuantifyRegionsResponse *resp)
+{
+    int n_regions;
+    try {
+        n_regions = imaging_control->DataManager()->QuantifyRegions(req->ndimage_name(), req->i_z(), req->i_t(), req->segmentation_ch());
+    } catch (std::exception &e) {
+        return grpc::Status(grpc::StatusCode::INTERNAL,
+                            fmt::format("unexpected exception: {}", e.what()));
+    }
+
+    resp->set_n_regions(n_regions);
+    return grpc::Status::OK;
+}

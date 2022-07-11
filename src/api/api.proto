@@ -114,7 +114,10 @@ service NikonTiCtrl {
     // Data
     rpc ListNDImage(google.protobuf.Empty) returns (ListNDImageResponse) {}
     rpc GetImage(GetImageRequest) returns (GetImageResponse) {}
+
+    // Analysis
     rpc GetSegmentationScore(GetSegmentationScoreRequest) returns (GetSegmentationScoreResponse) {}
+    rpc QuantifyRegions(QuantifyRegionsRequest) returns (QuantifyRegionsResponse) {}
 }
 
 //
@@ -225,4 +228,15 @@ message GetSegmentationScoreRequest {
 
 message GetSegmentationScoreResponse {
     ImageData data = 1;
+}
+
+message QuantifyRegionsRequest {
+    string ndimage_name = 1;
+    int32 i_z = 2;
+    int32 i_t = 3;
+    string segmentation_ch = 4;
+}
+
+message QuantifyRegionsResponse {
+    int32 n_regions = 1;
 }

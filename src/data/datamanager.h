@@ -11,6 +11,8 @@
 #include "data/ndimage.h"
 #include "eventstream.h"
 
+struct QuantificationResults;
+
 class DataManager : public EventSender {
 public:
     DataManager();
@@ -32,6 +34,7 @@ public:
     void AddImage(std::string ndimage_name, int i_ch, int i_z, int i_t,
                   ImageData data, nlohmann::ordered_json metadata);
 
+    int QuantifyRegions(std::string ndimage_name, int i_z, int i_t, std::string segmentation_ch);
 
 private:
     std::mutex mutex_live_frame;
@@ -46,6 +49,14 @@ private:
     std::map<std::string, NDImage *> dataset_map;
 
     im::UNet unet;
+    std::map<std::tuple<std::string, int, int>, QuantificationResults> quantifications;
+};
+
+struct QuantificationResults {
+    int n_regions;
+    std::vector<im::ImageRegionProp> region_props;
+    std::vector<std::string> ch_names;
+    std::vector<std::vector<double>> ch_means;
 };
 
 #endif

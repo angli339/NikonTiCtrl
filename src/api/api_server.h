@@ -71,6 +71,11 @@ public:
     GetSegmentationScore(ServerContext *context,
                          const api::GetSegmentationScoreRequest *req,
                          api::GetSegmentationScoreResponse *resp) override;
+    
+    grpc::Status
+    QuantifyRegions(ServerContext *context,
+                         const api::QuantifyRegionsRequest *req,
+                         api::QuantifyRegionsResponse *resp) override;
 
 private:
     std::shared_ptr<grpc::Server> server;
