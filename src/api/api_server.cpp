@@ -211,11 +211,11 @@ grpc::Status APIServer::ListChannel(ServerContext *context,
                                     api::ListChannelResponse *resp)
 {
     std::vector<std::string> preset_names =
-        experiment_control->ChannelControl()->ListPresetNames();
+        experiment_control->Channels()->ListPresetNames();
 
     for (const auto &preset_name : preset_names) {
         ChannelPreset preset =
-            experiment_control->ChannelControl()->GetPreset(preset_name);
+            experiment_control->Channels()->GetPreset(preset_name);
         auto ch = resp->add_channels();
         ch->set_preset_name(preset_name);
         ch->set_exposure_ms(preset.default_exposure_ms);
@@ -232,7 +232,7 @@ grpc::Status APIServer::SwitchChannel(ServerContext *context,
                                       protobuf::Empty *resp)
 {
     try {
-        experiment_control->ChannelControl()->SwitchChannel(
+        experiment_control->Channels()->SwitchChannel(
             req->channel().preset_name(), req->channel().exposure_ms(),
             req->channel().illumination_intensity());
     } catch (std::exception &e) {
@@ -248,7 +248,7 @@ APIServer::SetExperimentPath(ServerContext *context,
                              google::protobuf::Empty *resp)
 {
     try {
-        experiment_control->Images()->SetExperimentPath(req->path());
+        experiment_control->OpenExperiment(req->path());
     } catch (std::exception &e) {
         return grpc::Status(grpc::StatusCode::INTERNAL,
                             fmt::format("unexpected exception: {}", e.what()));

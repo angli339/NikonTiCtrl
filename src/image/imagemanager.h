@@ -13,17 +13,14 @@
 
 struct QuantificationResults;
 
+class ExperimentControl;
+
 class ImageManager : public EventSender {
 public:
-    ImageManager();
+    ImageManager(ExperimentControl *exp);
 
     void SetLiveViewFrame(ImageData new_frame);
     ImageData GetNextLiveViewFrame();
-
-    std::filesystem::path ExperimentPath();
-    void SetExperimentPath(std::filesystem::path path);
-
-    std::filesystem::path ImagePath();
 
     std::vector<NDImage *> ListNDImage();
     bool HasNDImage(std::string ndimage_name);
@@ -37,6 +34,11 @@ public:
     int QuantifyRegions(std::string ndimage_name, int i_z, int i_t, std::string segmentation_ch);
 
 private:
+    ExperimentControl *exp;
+    std::filesystem::path GetImageDir();
+    std::filesystem::path GetSegmentationLabelDir();
+    std::filesystem::path GetQuantificationDir();
+
     std::mutex mutex_live_frame;
     std::condition_variable cv_live_frame;
     bool new_frame_set = false;

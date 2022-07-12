@@ -24,6 +24,9 @@ public:
     ImageManagerModel *DataManagerModel();
     SampleManagerModel *SampleManagerModel();
 
+    void SetExperimentDir(QString exp_dir);
+    QString ExperimentDir();
+
     void SetSelectedSite(Site *site)
     {
         if (site != nullptr) {
@@ -45,6 +48,7 @@ public:
 signals:
     void stateChanged(QString state);
     void channelChanged(QString channel_name);
+    void experimentPathChanged(QString path);
     void messageReceived(QString message);
     void liveViewStarted();
 

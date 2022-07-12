@@ -20,8 +20,6 @@ public:
                               QObject *parent = nullptr);
     ~ImageManagerModel();
 
-    QString ExperimentPath();
-
     ImageData GetNextLiveViewFrame();
     NDImage *GetNDImage(QString name);
 
@@ -39,7 +37,6 @@ public:
     QString NDImageName(const QModelIndex &index) const;
 
 signals:
-    void experimentPathChanged(QString path);
     void ndImageCreated(QString name);
     void ndImageChanged(QString name);
 

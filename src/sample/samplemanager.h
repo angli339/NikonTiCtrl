@@ -12,9 +12,11 @@
 #include "device/devicehub.h"
 #include "sample/sample.h"
 
+class ExperimentControl;
+
 class SampleManager: public EventSender {
 public:
-    SampleManager(DeviceHub *hub);
+    SampleManager(ExperimentControl *exp);
     ~SampleManager();
 
     SampleArray *NewSampleArray(std::string id, std::string name,
@@ -31,7 +33,7 @@ public:
 
 
 private:
-    DeviceHub *hub;
+    ExperimentControl *exp;
 
     std::shared_mutex items_mutex;
     // data container

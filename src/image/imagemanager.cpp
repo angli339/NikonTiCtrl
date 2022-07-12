@@ -8,13 +8,15 @@
 #include "config.h"
 #include "logging.h"
 #include "image/imageio.h"
+#include "experimentcontrol.h"
 
-ImageManager::ImageManager()
+ImageManager::ImageManager(ExperimentControl *exp)
     : unet(config.system.unet_model.server_addr,
            config.system.unet_model.model_name,
            config.system.unet_model.input_name,
            config.system.unet_model.output_name)
 {
+    this->exp = exp;
 }
 
 void ImageManager::SetLiveViewFrame(ImageData new_frame)
@@ -32,42 +34,6 @@ ImageData ImageManager::GetNextLiveViewFrame()
     new_frame_set = false;
     return live_view_frame;
 }
-
-std::filesystem::path ImageManager::ExperimentPath() { return exp_path; }
-
-void ImageManager::SetExperimentPath(std::filesystem::path path)
-{
-    // Default path
-    if (path.empty()) {
-        std::time_t t = std::time(nullptr);
-        std::string exp_name = fmt::format("{:%Y-%m-%d}", fmt::localtime(t));
-        path = std::filesystem::path(config.user.data_root) / exp_name;
-    }
-    if (!fs::exists(path)) {
-        if (!fs::create_directories(path)) {
-            throw std::runtime_error(
-                fmt::format("failed to create dir {}", path.string()));
-        }
-    }
-
-    // Create sub-dir
-    std::filesystem::path image_path = path / "images";
-    if (!fs::exists(image_path)) {
-        if (!fs::create_directories(image_path)) {
-            throw std::runtime_error(
-                fmt::format("failed to create dir {}", image_path.string()));
-        }
-    }
-
-    this->exp_path = path;
-
-    SendEvent({
-        .type = EventType::ExperimentPathChanged,
-        .value = path.string(),
-    });
-}
-
-std::filesystem::path ImageManager::ImagePath() { return exp_path / "images"; }
 
 std::vector<NDImage *> ImageManager::ListNDImage() { return dataset; }
 
@@ -96,6 +62,8 @@ NDImage *ImageManager::GetNDImage(std::string ndimage_name)
 void ImageManager::NewNDImage(std::string ndimage_name,
                              std::vector<NDImageChannel> channel_info)
 {
+    std::filesystem::path im_path = GetImageDir();
+
     std::unique_lock<std::shared_mutex> lk(dataset_mutex);
 
     auto it = dataset_map.find(ndimage_name);
@@ -107,13 +75,8 @@ void ImageManager::NewNDImage(std::string ndimage_name,
             "duplicated name but different channel_infof");
     }
 
-    // Create data directory if not exists
-    if (exp_path.empty()) {
-        SetExperimentPath("");
-    }
-
     NDImage *ndimage = new NDImage(ndimage_name, channel_info);
-    ndimage->SetFolder(ImagePath());
+    ndimage->SetFolder(im_path);
     dataset.push_back(ndimage);
     dataset_map[ndimage_name] = ndimage;
 
@@ -201,15 +164,9 @@ int ImageManager::QuantifyRegions(std::string ndimage_name, int i_z, int i_t,
     tiff_meta.metadata["model_name"] = config.system.unet_model.model_name;
     tiff_meta.metadata["segmentation_channel"] = segmentation_ch;
 
+    std::filesystem::path im_label_dir = GetSegmentationLabelDir();
     std::string im_label_filename = fmt::format("{}-{:03d}-{:04d}.tif", ndimage_name, i_z, i_t);
-    std::filesystem::path im_label_dir= exp_path / "analysis" / "labels";
     std::filesystem::path im_label_path = im_label_dir / im_label_filename;
-    if (!fs::exists(im_label_dir)) {
-        if (!fs::create_directories(im_label_dir)) {
-            throw std::runtime_error(
-                fmt::format("failed to create dir {}", im_label_dir.string()));
-        }
-    }
 
     ImageWrite(im_label_path, im_labels, tiff_meta);
 
@@ -231,16 +188,10 @@ int ImageManager::QuantifyRegions(std::string ndimage_name, int i_z, int i_t,
     }
     quantifications[{ndimage_name, i_z, i_t}] = results;
     
+    std::filesystem::path im_quant_dir = GetQuantificationDir();
     std::string im_quant_filename = fmt::format("{}-{:03d}-{:04d}.csv", ndimage_name, i_z, i_t);
-    std::filesystem::path im_quant_dir = exp_path / "analysis" / "quantification";
     std::filesystem::path im_quant_path = im_quant_dir / im_quant_filename;
-    if (!fs::exists(im_quant_dir)) {
-        if (!fs::create_directories(im_quant_dir)) {
-            throw std::runtime_error(
-                fmt::format("failed to create dir {}", im_quant_dir.string()));
-        }
-    }
-
+    
     auto out = fmt::output_file(im_quant_path.string().c_str(), O_CREAT|O_WRONLY|O_TRUNC);
     out.print("label,bbox_x0,bbox_y0,bbox_width,bbox_height,area,centroid_x,centroid_y,mean_score");
     for (int i_ch = 0; i_ch < ndimage->NChannels(); i_ch++) {
@@ -262,3 +213,57 @@ int ImageManager::QuantifyRegions(std::string ndimage_name, int i_z, int i_t,
 
     return n_regions;
 }
+
+std::filesystem::path ImageManager::GetImageDir() {
+    std::filesystem::path exp_dir = exp->ExperimentDir();
+    if (exp_dir.empty()) {
+        throw std::runtime_error("experiment dir not set");
+    }
+
+    // Create if not exists
+    std::filesystem::path path = exp_dir / "images";
+    if (!fs::exists(path)) {
+        if (!fs::create_directories(path)) {
+            throw std::runtime_error(
+                fmt::format("failed to create dir {}", path.string()));
+        }
+    }
+
+    return path;
+ }
+
+ std::filesystem::path ImageManager::GetSegmentationLabelDir() {
+    std::filesystem::path exp_dir = exp->ExperimentDir();
+    if (exp_dir.empty()) {
+        throw std::runtime_error("experiment dir not set");
+    }
+
+    // Create if not exists
+    std::filesystem::path path = exp_dir / "images";
+    if (!fs::exists(path)) {
+        if (!fs::create_directories(path)) {
+            throw std::runtime_error(
+                fmt::format("failed to create dir {}", path.string()));
+        }
+    }
+
+    return path;
+ }
+
+ std::filesystem::path ImageManager::GetQuantificationDir() {
+    std::filesystem::path exp_dir = exp->ExperimentDir();
+    if (exp_dir.empty()) {
+        throw std::runtime_error("experiment dir not set");
+    }
+
+    // Create if not exists
+    std::filesystem::path path = exp_dir / "analysis" / "quantification";
+    if (!fs::exists(path)) {
+        if (!fs::create_directories(path)) {
+            throw std::runtime_error(
+                fmt::format("failed to create dir {}", path.string()));
+        }
+    }
+
+    return path;
+ }

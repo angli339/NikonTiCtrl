@@ -1,6 +1,18 @@
+#include "experimentcontrol.h"
 #include "task/live_view_task.h"
 
 #include "logging.h"
+
+LiveViewTask::LiveViewTask(ExperimentControl *exp)
+{
+    this->exp = exp;
+    this->dcam = exp->Devices()->GetHamamatsuDCam();
+}
+
+bool LiveViewTask::IsRunning()
+{
+    return is_running;
+}
 
 void LiveViewTask::Run()
 {
@@ -13,15 +25,15 @@ void LiveViewTask::Run()
             ImageData frame = GetFrame();
             if (frame.empty()) {
                 is_running = false;
-                image_manager->SetLiveViewFrame(frame);
+                exp->Images()->SetLiveViewFrame(frame);
                 return;
             }
-            image_manager->SetLiveViewFrame(frame);
+            exp->Images()->SetLiveViewFrame(frame);
         }
     } catch (std::exception &e) {
         StopAcqusition();
         is_running = false;
-        image_manager->SetLiveViewFrame(ImageData());
+        exp->Images()->SetLiveViewFrame(ImageData());
     }
 }
 

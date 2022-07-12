@@ -4,15 +4,15 @@
 
 #include "logging.h"
 
-ExperimentControl::ExperimentControl(DeviceHub *hub, Hamamatsu::DCam *dcam)
-    : channel_control(hub), sample_manager(hub)
+ExperimentControl::ExperimentControl(DeviceHub *hub)
 {
     this->hub = hub;
-    this->dcam = dcam;
+    this->sample_manager = new SampleManager(this);
+    this->image_manager = new ImageManager(this);
 
-    live_view_task = new LiveViewTask(hub, dcam, &image_manager);
-    multichannel_task =
-        new MultiChannelTask(hub, dcam, &channel_control, &image_manager);
+    this->channel_control = new ChannelControl(hub);
+    this->live_view_task = new LiveViewTask(this);
+    this->multichannel_task = new MultiChannelTask(this);
 
     hub->SubscribeEvents(&dev_event_stream);
     handle_dev_event_future = std::async(
@@ -23,18 +23,70 @@ ExperimentControl::~ExperimentControl()
 {
     dev_event_stream.Close();
     handle_dev_event_future.get();
+    
+    delete live_view_task;
+    delete multichannel_task;
+    delete sample_manager;
+    delete channel_control;
+    delete image_manager;
 }
 
 void ExperimentControl::SubscribeEvents(EventStream *channel)
 {
     EventSender::SubscribeEvents(channel);
 
-    channel_control.SubscribeEvents(channel);
-    sample_manager.SubscribeEvents(channel);
-    image_manager.SubscribeEvents(channel);
+    channel_control->SubscribeEvents(channel);
+    sample_manager->SubscribeEvents(channel);
+    image_manager->SubscribeEvents(channel);
 
     live_view_task->SubscribeEvents(channel);
     multichannel_task->SubscribeEvents(channel);
+}
+
+void ExperimentControl::OpenExperiment(std::filesystem::path exp_dir)
+{
+    // Check path
+    if (exp_dir.empty()) {
+        throw std::invalid_argument("empty path");
+    }
+
+    // Create dir
+    if (!fs::exists(exp_dir)) {
+        if (!fs::create_directories(exp_dir)) {
+            throw std::runtime_error(
+                fmt::format("failed to create dir {}", exp_dir.string()));
+        }
+    }
+
+    this->exp_dir = exp_dir;
+
+    SendEvent({
+        .type = EventType::ExperimentPathChanged,
+        .value = exp_dir.string(),
+    });
+}
+
+std::filesystem::path ExperimentControl::ExperimentDir()
+{
+    return exp_dir;
+}
+
+DeviceHub *ExperimentControl::Devices()
+{
+    return hub;
+}
+
+SampleManager *ExperimentControl::Samples()
+{
+    return sample_manager;
+}
+ChannelControl *ExperimentControl::Channels()
+{
+    return channel_control;
+}
+ImageManager *ExperimentControl::Images()
+{
+    return image_manager;
 }
 
 void ExperimentControl::runLiveView()
@@ -51,7 +103,7 @@ void ExperimentControl::runLiveView()
             "Cannot start live view: task control is in busy state");
     }
 
-    channel_control.OpenCurrentShutter();
+    channel_control->OpenCurrentShutter();
 
     SendEvent({
         .type = EventType::TaskStateChanged,
@@ -74,7 +126,7 @@ void ExperimentControl::runLiveView()
             .type = EventType::TaskMessage,
             .value = message,
         });
-        channel_control.CloseCurrentShutter();
+        channel_control->CloseCurrentShutter();
         throw std::runtime_error(message);
     }
 
@@ -84,7 +136,7 @@ void ExperimentControl::runLiveView()
         .value = "Ready",
     });
     LOG_INFO("Live view stopped");
-    channel_control.CloseCurrentShutter();
+    channel_control->CloseCurrentShutter();
 }
 
 void ExperimentControl::StartLiveView()
@@ -134,6 +186,11 @@ void ExperimentControl::StopLiveView()
 
     // Get the exception
     current_task_future.get();
+}
+
+bool ExperimentControl::IsLiveRunning()
+{
+    return live_view_task->IsRunning();
 }
 
 void ExperimentControl::runMultiChannelTask(std::string ndimage_name,

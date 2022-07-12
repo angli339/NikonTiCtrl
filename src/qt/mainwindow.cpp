@@ -6,9 +6,11 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
+#include "version.h"
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
-    const QString appName = "Nikon Ti Control";
+    QString appName = QString("Nikon Ti Control (%1)").arg(gitTagVersion.c_str());
     setWindowTitle(appName);
 
     //

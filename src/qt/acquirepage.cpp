@@ -3,6 +3,8 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QVBoxLayout>
+#include <QFileDialog>
+#include <QMessageBox>
 
 #include "logging.h"
 
@@ -18,6 +20,12 @@ AcquirePage::AcquirePage(QWidget *parent) : QWidget(parent)
     QVBoxLayout *leftLayout = new QVBoxLayout;
     leftLayout->setAlignment(Qt::AlignTop);
 
+    QLabel *experimentTitle = new QLabel("Experiment");
+    experimentTitle->setFixedHeight(20);
+    experimentPath = new QPushButton("Select directory...");
+    experimentPath->setFixedHeight(25);
+    experimentPath->setStyleSheet("text-align:left");
+
     sampleManagerView = new SampleManagerView;
     dataManagerView = new DataManagerView;
     sampleManagerView->setMaximumWidth(280);
@@ -25,6 +33,8 @@ AcquirePage::AcquirePage(QWidget *parent) : QWidget(parent)
     dataManagerView->setMaximumWidth(280);
     dataManagerView->setMinimumWidth(280);
 
+    leftLayout->addWidget(experimentTitle);
+    leftLayout->addWidget(experimentPath);
     leftLayout->addWidget(sampleManagerView);
     leftLayout->addWidget(dataManagerView);
 
@@ -65,6 +75,13 @@ void AcquirePage::setImagingControlModel(ExperimentControlModel *model)
     imagingControlView->setModel(model);
     imagingControlModel = model;
 
+    if (!model->ExperimentDir().isEmpty()) {
+        this->experimentPath->setText(model->ExperimentDir());
+    }
+    connect(model, &ExperimentControlModel::experimentPathChanged,
+            this->experimentPath, &QPushButton::setText);
+    connect(experimentPath, &QPushButton::clicked, this, &AcquirePage::selectExperimentDir);
+
     connect(model->DataManagerModel(), &ImageManagerModel::ndImageCreated, this,
             &AcquirePage::handleNDImageUpdate);
     connect(model->DataManagerModel(), &ImageManagerModel::ndImageChanged, this,
@@ -72,6 +89,19 @@ void AcquirePage::setImagingControlModel(ExperimentControlModel *model)
     
     connect(ndImageView->tSlider, &QSlider::valueChanged, this, &AcquirePage::handleTSliderValueChange);
     connect(ndImageView->zSlider, &QSlider::valueChanged, this, &AcquirePage::handleZSliderValueChange);
+}
+
+void AcquirePage::selectExperimentDir()
+{
+    QString dir = QFileDialog::getExistingDirectory();
+    if (dir.isEmpty()) {
+        return;
+    }
+    try {
+        imagingControlModel->SetExperimentDir(dir);
+    } catch (std::exception &e) {
+        QMessageBox::warning(this, QString("Error"), QString(e.what()));
+    }
 }
 
 void AcquirePage::setDeviceControlModel(DeviceControlModel *model)

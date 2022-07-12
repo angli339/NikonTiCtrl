@@ -9,7 +9,7 @@ ExperimentControlModel::ExperimentControlModel(ExperimentControl *imagingControl
     this->experimentControl = imagingControl;
 
     channelControlModel =
-        new ::ChannelControlModel(imagingControl->ChannelControl());
+        new ::ChannelControlModel(imagingControl->Channels());
     imageManagerModel = new ::ImageManagerModel(imagingControl->Images());
     sampleManagerModel =
         new ::SampleManagerModel(imagingControl->Samples());
@@ -27,6 +27,17 @@ ExperimentControlModel::~ExperimentControlModel()
     delete channelControlModel;
     delete imageManagerModel;
     delete sampleManagerModel;
+}
+
+void ExperimentControlModel::SetExperimentDir(QString exp_dir)
+{
+    experimentControl->OpenExperiment(exp_dir.toStdString());
+}
+
+QString ExperimentControlModel::ExperimentDir()
+{
+    std::string path = experimentControl->ExperimentDir().string();
+    return QString::fromStdString(path);
 }
 
 ChannelControlModel *ExperimentControlModel::ChannelControlModel()
@@ -77,7 +88,7 @@ void ExperimentControlModel::handleEvents()
             emit messageReceived(e.value.c_str());
             break;
         case EventType::ExperimentPathChanged:
-            imageManagerModel->handleExperimentPathChanged(e.value);
+            emit experimentPathChanged(e.value.c_str());
             break;
         case EventType::NDImageCreated:
             imageManagerModel->handleNDImageCreated(e.value);

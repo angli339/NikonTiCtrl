@@ -13,12 +13,6 @@ ImageManagerModel::~ImageManagerModel()
     deleteTree(rootItem);
 }
 
-QString ImageManagerModel::ExperimentPath()
-{
-    std::string path = imageManager->ExperimentPath().string();
-    return QString::fromStdString(path);
-}
-
 ImageData ImageManagerModel::GetNextLiveViewFrame()
 {
     return imageManager->GetNextLiveViewFrame();
@@ -55,11 +49,6 @@ void ImageManagerModel::deleteTree(ImageManagerTreeItem *item)
         deleteTree(childItem);
     }
     delete item;
-}
-
-void ImageManagerModel::handleExperimentPathChanged(std::string path)
-{
-    emit experimentPathChanged(path.c_str());
 }
 
 void ImageManagerModel::handleNDImageCreated(std::string name)

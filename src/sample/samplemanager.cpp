@@ -1,8 +1,10 @@
 #include "sample/samplemanager.h"
 
-SampleManager::SampleManager(DeviceHub *hub)
+#include "experimentcontrol.h"
+
+SampleManager::SampleManager(ExperimentControl *exp)
 {
-    this->hub = hub;
+    this->exp = exp;
 }
 
 SampleManager::~SampleManager()

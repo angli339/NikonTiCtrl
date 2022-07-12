@@ -15,11 +15,11 @@
 #include "task/channelcontrol.h"
 #include "utils/time_utils.h"
 
+class ExperimentControl;
+
 class MultiChannelTask : public EventSender {
 public:
-    MultiChannelTask(DeviceHub *hub, Hamamatsu::DCam *dcam,
-                     ChannelControl *channel_control,
-                     ImageManager *image_manager);
+    MultiChannelTask(ExperimentControl *exp);
 
     Status Acquire(std::string ndimage_name, std::vector<Channel> channels,
                    int i_z, int i_t, nlohmann::ordered_json metadata = nullptr);
@@ -34,10 +34,8 @@ protected:
     Status StopAcqusition();
 
 private:
-    DeviceHub *hub;
+    ExperimentControl *exp;
     Hamamatsu::DCam *dcam;
-    ChannelControl *channel_control;
-    ImageManager *image_manager;
 
     std::string ndimage_name;
     std::vector<Channel> channels;

@@ -14,30 +14,22 @@
 
 class ExperimentControl : public EventSender {
 public:
-    ExperimentControl(DeviceHub *hub, Hamamatsu::DCam *dcam);
+    ExperimentControl(DeviceHub *hub);
     ~ExperimentControl();
 
     void SubscribeEvents(EventStream *channel) override;
 
-    SampleManager *Samples()
-    {
-        return &sample_manager;
-    }
-    ChannelControl *ChannelControl()
-    {
-        return &channel_control;
-    }
-    ImageManager *Images()
-    {
-        return &image_manager;
-    }
+    void OpenExperiment(std::filesystem::path exp_dir);
+    std::filesystem::path ExperimentDir();
+
+    DeviceHub *Devices();
+    SampleManager *Samples();
+    ChannelControl *Channels();
+    ImageManager *Images();
 
     void StartLiveView();
     void StopLiveView();
-    bool IsLiveRunning()
-    {
-        return live_view_task->IsRunning();
-    }
+    bool IsLiveRunning();
 
     void AcquireMultiChannel(std::string ndimage_name,
                              std::vector<Channel> channels, int i_z, int i_t,
@@ -46,14 +38,15 @@ public:
 
 private:
     DeviceHub *hub;
-    Hamamatsu::DCam *dcam;
+    SampleManager *sample_manager;
+    ChannelControl *channel_control;
+    ImageManager *image_manager;
+
+    std::filesystem::path exp_dir;
+
     EventStream dev_event_stream;
     std::future<void> handle_dev_event_future;
     void handleDeviceEvents();
-
-    ::SampleManager sample_manager;
-    ::ChannelControl channel_control;
-    ::ImageManager image_manager;
 
     LiveViewTask *live_view_task;
     MultiChannelTask *multichannel_task;

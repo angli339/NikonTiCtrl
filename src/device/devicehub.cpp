@@ -54,6 +54,17 @@ std::string DeviceHub::GetDeviceName(Device *dev)
     return "";
 }
 
+void DeviceHub::AddCamera(std::string dev_name, Hamamatsu::DCam *dcam)
+{
+    AddDevice(dev_name, dcam);
+    hamamatsu_dcam = dcam;
+}
+
+Hamamatsu::DCam *DeviceHub::GetHamamatsuDCam()
+{
+    return hamamatsu_dcam;
+}
+
 Status DeviceHub::ConnectAll()
 {
     // Concurrently connect all devices

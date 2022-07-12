@@ -11,6 +11,8 @@
 #include "device/propertypath.h"
 #include "eventstream.h"
 
+#include "device/hamamatsu/hamamatsu_dcam.h"
+
 class DeviceHub {
 public:
     ~DeviceHub();
@@ -18,6 +20,9 @@ public:
     void AddDevice(std::string dev_name, Device *dev);
     Device *GetDevice(std::string dev_name);
     std::string GetDeviceName(Device *dev);
+
+    void AddCamera(std::string dev_name, Hamamatsu::DCam *dcam);
+    Hamamatsu::DCam *GetHamamatsuDCam();
 
     Status ConnectAll();
     Status DisconnectAll();
@@ -42,6 +47,7 @@ public:
 
 private:
     std::map<std::string, Device *> dev_map;
+    Hamamatsu::DCam *hamamatsu_dcam = nullptr;
 
     std::vector<EventStream *> event_subscriber_list;
 

@@ -21,6 +21,8 @@ public:
     void setImagingControlModel(ExperimentControlModel *model);
     void setDeviceControlModel(DeviceControlModel *model);
 
+    void selectExperimentDir();
+
     void runLiveViewDisplay();
     void displayNDImage(QString name);
     void displayNDImage(QString name, int i_z, int i_t);
@@ -38,6 +40,7 @@ public:
 
     std::future<void> liveViewDisplayFuture;
 
+    QPushButton *experimentPath;
     DataManagerView *dataManagerView;
     SampleManagerView *sampleManagerView;
     DeviceControlView *deviceControlView;

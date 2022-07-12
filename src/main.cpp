@@ -95,14 +95,14 @@ int main(int argc, char *argv[])
         hub.AddDevice("PriorProScan",
                       new PriorProscan::Proscan("ASRL1::INSTR"));
         dcam = new Hamamatsu::DCam;
-        hub.AddDevice("Hamamatsu", dcam);
+        hub.AddCamera("Hamamatsu", dcam);
         // hub.AddDevice("FLIR", new FLIR::Camera);
 
     } catch (std::exception &e) {
         LOG_ERROR("Failed to add device: {}", e.what());
     }
 
-    ExperimentControl experiment_control(&hub, dcam);
+    ExperimentControl experiment_control(&hub);
 
     //
     // Start API Server

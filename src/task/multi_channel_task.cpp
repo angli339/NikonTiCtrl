@@ -1,3 +1,4 @@
+#include "experimentcontrol.h"
 #include "task/multi_channel_task.h"
 
 #include <fmt/format.h>
@@ -6,14 +7,10 @@
 #include "logging.h"
 #include "utils/time_utils.h"
 
-MultiChannelTask::MultiChannelTask(DeviceHub *hub, Hamamatsu::DCam *dcam,
-                                   ChannelControl *channel_control,
-                                   ImageManager *data_manager)
+MultiChannelTask::MultiChannelTask(ExperimentControl *exp)
 {
-    this->hub = hub;
-    this->dcam = dcam;
-    this->channel_control = channel_control;
-    this->image_manager = data_manager;
+    this->exp = exp;
+    this->dcam = exp->Devices()->GetHamamatsuDCam();
 }
 
 Status MultiChannelTask::EnableTrigger()
@@ -83,12 +80,12 @@ PropertyValueMap MultiChannelTask::ExposeFrame(int i_ch)
 
     utils::StopWatch sw;
 
-    Status status = channel_control->OpenCurrentShutter();
+    Status status = exp->Channels()->OpenCurrentShutter();
     if (!status.ok()) {
         LOG_ERROR("[{}][{}] Shutter failed to turn on: {} [{:.1f} ms]",
                   ndimage_name, i_ch + 1, status.ToString(), sw.Milliseconds());
     }
-    status = channel_control->WaitShutter();
+    status = exp->Channels()->WaitShutter();
     if (!status.ok()) {
         LOG_ERROR(
             "[{}][{}] Shutter failed to turn on after waiting: {} [{:.1f} ms]",
@@ -103,7 +100,7 @@ PropertyValueMap MultiChannelTask::ExposeFrame(int i_ch)
               sw.Milliseconds());
 
     sw.Reset();
-    auto property_snapshot = hub->GetPropertySnapshot();
+    auto property_snapshot = exp->Devices()->GetPropertySnapshot();
     LOG_DEBUG("[{}][{}] Device status snapshot got [{:.1f} ms]", ndimage_name,
               i_ch + 1, sw.Milliseconds());
 
@@ -114,12 +111,12 @@ PropertyValueMap MultiChannelTask::ExposeFrame(int i_ch)
               sw.Milliseconds());
 
     sw.Reset();
-    status = channel_control->CloseCurrentShutter();
+    status = exp->Channels()->CloseCurrentShutter();
     if (!status.ok()) {
         LOG_ERROR("[{}][{}] Shutter failed to turn off: {} [{:.1f} ms]",
                   ndimage_name, i_ch + 1, status.ToString(), sw.Milliseconds());
     }
-    status = channel_control->WaitShutter();
+    status = exp->Channels()->WaitShutter();
     if (!status.ok()) {
         LOG_ERROR(
             "[{}][{}] Shutter failed to turn off after waiting: {} [{:.1f} ms]",
@@ -165,14 +162,14 @@ MultiChannelTask::GetFrame(int i_ch,
 Status MultiChannelTask::StopAcqusition()
 {
     utils::StopWatch sw;
-    StatusOr<bool> shutter_open = channel_control->IsCurrentShutterOpen();
+    StatusOr<bool> shutter_open = exp->Channels()->IsCurrentShutterOpen();
     if (shutter_open.ok()) {
         if (*shutter_open) {
             LOG_WARN("[{}] Shutter is still open. Turning off...",
                      ndimage_name);
 
             sw.Reset();
-            Status status = channel_control->CloseCurrentShutter();
+            Status status = exp->Channels()->CloseCurrentShutter();
 
             if (status.ok()) {
                 LOG_INFO("[{}] Shutter turned off. [{:.1f} ms]", ndimage_name,
@@ -219,7 +216,7 @@ Status MultiChannelTask::Acquire(std::string ndimage_name,
     // Switch to channel 0
     //
     Channel channel = channels[0];
-    channel_control->SwitchChannel(channel.preset_name, channel.exposure_ms,
+    exp->Channels()->SwitchChannel(channel.preset_name, channel.exposure_ms,
                                    channel.illumination_intensity);
 
     //
@@ -247,7 +244,7 @@ Status MultiChannelTask::Acquire(std::string ndimage_name,
         nd_channel.ctype = ctype;
         nd_channels.push_back(nd_channel);
     }
-    image_manager->NewNDImage(ndimage_name, nd_channels);
+    exp->Images()->NewNDImage(ndimage_name, nd_channels);
 
     //
     // Start acquisition
@@ -269,7 +266,7 @@ Status MultiChannelTask::Acquire(std::string ndimage_name,
     utils::StopWatch sw_channel;
     try {
         for (int i_ch = 0; i_ch < channels.size(); i_ch++) {
-            status = channel_control->WaitSwitchChannel();
+            status = exp->Channels()->WaitSwitchChannel();
             if (!status.ok()) {
                 StopAcqusition();
                 return status;
@@ -290,7 +287,7 @@ Status MultiChannelTask::Acquire(std::string ndimage_name,
             if (i_ch + 1 < channels.size()) {
                 sw_channel.Reset();
                 Channel next_channel = channels[i_ch + 1];
-                channel_control->SwitchChannel(
+                exp->Channels()->SwitchChannel(
                     next_channel.preset_name, next_channel.exposure_ms,
                     next_channel.illumination_intensity);
             }
@@ -302,7 +299,7 @@ Status MultiChannelTask::Acquire(std::string ndimage_name,
             new_metadata["timestamp"] =
                 utils::TimePoint(timestamp).FormatRFC3339_Local();
             ChannelPreset preset =
-                channel_control->GetPreset(channel.preset_name);
+                exp->Channels()->GetPreset(channel.preset_name);
             new_metadata["channel"] = {
                 {"preset_name", channel.preset_name},
                 {"exposure_ms", channel.exposure_ms},
@@ -320,7 +317,7 @@ Status MultiChannelTask::Acquire(std::string ndimage_name,
                 new_metadata["device_property"][k.ToString()] = v;
             }
 
-            image_manager->AddImage(ndimage_name, i_ch, i_z, i_t, data,
+            exp->Images()->AddImage(ndimage_name, i_ch, i_z, i_t, data,
                                    new_metadata);
             LOG_INFO("[{}][{}] Frame completed [{:.0f} ms]", ndimage_name,
                      i_ch + 1, sw_frame.Milliseconds());

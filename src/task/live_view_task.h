@@ -7,20 +7,12 @@
 #include "image/imagemanager.h"
 #include "image/imagedata.h"
 
+class ExperimentControl;
+
 class LiveViewTask : public EventSender {
 public:
-    LiveViewTask(DeviceHub *hub, Hamamatsu::DCam *dcam,
-                 ImageManager *image_manager)
-    {
-        this->hub = hub;
-        this->dcam = dcam;
-        this->image_manager = image_manager;
-    }
-
-    bool IsRunning()
-    {
-        return is_running;
-    }
+    LiveViewTask(ExperimentControl *exp);
+    bool IsRunning();
     void Run();
     void Stop();
 
@@ -31,9 +23,8 @@ protected:
     Status StopAcqusition();
 
 private:
-    DeviceHub *hub;
+    ExperimentControl *exp;
     Hamamatsu::DCam *dcam;
-    ImageManager *image_manager;
 
     std::atomic<bool> is_running = false;
     std::string task_name = "LiveView";

@@ -23,7 +23,6 @@ signals:
 private:
     ImageManagerModel *model;
 
-    QLabel *experimentPath;
     QTreeView *dataView;
 };
 

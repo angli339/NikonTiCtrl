@@ -12,15 +12,11 @@ DataManagerView::DataManagerView(QWidget *parent) : QWidget(parent)
     QLabel *dataManagerTitle = new QLabel("Data Manager");
     dataManagerTitle->setFixedHeight(30);
 
-    experimentPath = new QLabel;
-    experimentPath->setFixedHeight(20);
-
     dataView = new QTreeView;
     dataView->installEventFilter(this);
     dataView->viewport()->installEventFilter(this);
 
     layout->addWidget(dataManagerTitle);
-    layout->addWidget(experimentPath);
     layout->addWidget(dataView);
 }
 
@@ -28,10 +24,6 @@ DataManagerView::DataManagerView(QWidget *parent) : QWidget(parent)
 void DataManagerView::setModel(ImageManagerModel *model)
 {
     this->model = model;
-
-    this->experimentPath->setText(model->ExperimentPath());
-    connect(model, &ImageManagerModel::experimentPathChanged,
-            this->experimentPath, &QLabel::setText);
 
     this->dataView->setModel(model);
     connect(dataView->selectionModel(), &QItemSelectionModel::selectionChanged,
