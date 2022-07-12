@@ -218,19 +218,21 @@ set(version_srcs "${CMAKE_CURRENT_BINARY_DIR}/version.cpp")
 set(QT_SOURCES
     src/qt/mainwindow.cpp
 
+    src/qt/devicecontrol_model.cpp
+    src/qt/experimentcontrol_model.cpp
+    src/qt/channelcontrol_model.cpp
+    src/qt/samplemanager_model.cpp
+    src/qt/imagemanager_model.cpp
+
     src/qt/setuppage.cpp
     src/qt/acquirepage.cpp
     src/qt/datapage.cpp
 
     src/qt/devicecontrol_view.cpp
-    src/qt/devicecontrol_model.cpp
-    src/qt/imagingcontrol_view.cpp
-    src/qt/imagingcontrol_model.cpp
-    src/qt/channelcontrol_model.cpp
-    src/qt/datamanager_view.cpp
-    src/qt/datamanager_model.cpp
+    src/qt/acquisitioncontrol_view.cpp
     src/qt/samplemanager_view.cpp
-    src/qt/samplemanager_model.cpp
+    src/qt/imagemanager_view.cpp
+    
     src/qt/ndimage_view.cpp
     src/qt/glimageview.cpp
     src/qt/glimageview.qrc

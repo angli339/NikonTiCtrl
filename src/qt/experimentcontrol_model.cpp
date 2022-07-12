@@ -1,22 +1,22 @@
-#include "qt/imagingcontrol_model.h"
+#include "qt/experimentcontrol_model.h"
 
 #include "logging.h"
 
-ExperimentControlModel::ExperimentControlModel(ExperimentControl *imagingControl,
+ExperimentControlModel::ExperimentControlModel(ExperimentControl *exp,
                                          QObject *parent)
     : QObject(parent)
 {
-    this->experimentControl = imagingControl;
+    this->exp = exp;
 
     channelControlModel =
-        new ::ChannelControlModel(imagingControl->Channels());
-    imageManagerModel = new ::ImageManagerModel(imagingControl->Images());
+        new ::ChannelControlModel(exp->Channels());
+    imageManagerModel = new ::ImageManagerModel(exp->Images());
     sampleManagerModel =
-        new ::SampleManagerModel(imagingControl->Samples());
+        new ::SampleManagerModel(exp->Samples());
 
     handleEventFuture = std::async(std::launch::async,
                                    &ExperimentControlModel::handleEvents, this);
-    imagingControl->SubscribeEvents(&eventStream);
+    exp->SubscribeEvents(&eventStream);
 }
 
 ExperimentControlModel::~ExperimentControlModel()
@@ -29,23 +29,12 @@ ExperimentControlModel::~ExperimentControlModel()
     delete sampleManagerModel;
 }
 
-void ExperimentControlModel::SetExperimentDir(QString exp_dir)
-{
-    experimentControl->OpenExperiment(exp_dir.toStdString());
-}
-
-QString ExperimentControlModel::ExperimentDir()
-{
-    std::string path = experimentControl->ExperimentDir().string();
-    return QString::fromStdString(path);
-}
-
 ChannelControlModel *ExperimentControlModel::ChannelControlModel()
 {
     return channelControlModel;
 }
 
-ImageManagerModel *ExperimentControlModel::DataManagerModel()
+ImageManagerModel *ExperimentControlModel::ImageManagerModel()
 {
     return imageManagerModel;
 }
@@ -55,10 +44,39 @@ SampleManagerModel *ExperimentControlModel::SampleManagerModel()
     return sampleManagerModel;
 }
 
+QString ExperimentControlModel::GetUserDataRoot()
+{
+    return exp->UserDataRoot().string().c_str();
+}
+
+void ExperimentControlModel::SetExperimentDir(QString exp_dir)
+{
+    exp->OpenExperiment(exp_dir.toStdString());
+}
+
+QString ExperimentControlModel::ExperimentDir()
+{
+    std::string path = exp->ExperimentDir().string();
+    return QString::fromStdString(path);
+}
+
+void ExperimentControlModel::SetSelectedSite(Site *site)
+{
+    if (site != nullptr) {
+        LOG_DEBUG("site {} selected", site->FullID());
+    } else {
+        LOG_DEBUG("site selection cleared");
+    }
+
+    selected_array = nullptr;
+    selected_sample = nullptr;
+    selected_site = site;
+}
+
 void ExperimentControlModel::StartLiveView()
 {
     try {
-        experimentControl->StartLiveView();
+        exp->StartLiveView();
     } catch (std::exception &e) {
         LOG_ERROR(e.what());
     }
@@ -67,7 +85,7 @@ void ExperimentControlModel::StartLiveView()
 void ExperimentControlModel::StopLiveView()
 {
     try {
-        experimentControl->StopLiveView();
+        exp->StopLiveView();
     } catch (std::exception &e) {
         LOG_ERROR(e.what());
     }
@@ -103,5 +121,5 @@ void ExperimentControlModel::handleEvents()
 void ExperimentControlModel::StartMultiChannelTask()
 {
     std::vector<Channel> channels = channelControlModel->GetEnabledChannels();
-    experimentControl->AcquireMultiChannel("test", channels, 0, 0);
+    exp->AcquireMultiChannel("test", channels, 0, 0);
 }

@@ -14,7 +14,7 @@
 #include "qt/setuppage.h"
 
 #include "qt/devicecontrol_model.h"
-#include "qt/imagingcontrol_model.h"
+#include "qt/experimentcontrol_model.h"
 
 class NavBar;
 
@@ -24,8 +24,8 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    void setDeviceHub(DeviceHub *hub);
-    void setExperimentControl(ExperimentControl *experimentControl);
+    void setDeviceHub(DeviceHub *dev);
+    void setExperimentControl(ExperimentControl *exp);
     void updateLabels();
 
 public slots:
@@ -41,8 +41,8 @@ public:
     AcquirePage *acquirePage;
     DataPage *dataPage;
 
-    DeviceControlModel *deviceControlModel;
-    ExperimentControlModel *imagingControlModel;
+    DeviceControlModel *devControlModel;
+    ExperimentControlModel *expControlModel;
 };
 
 class NavBar : public QWidget {

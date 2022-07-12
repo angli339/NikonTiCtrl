@@ -11,7 +11,7 @@
 class DeviceControlModel : public QObject {
     Q_OBJECT
 public:
-    explicit DeviceControlModel(DeviceHub *hub, QObject *parent = nullptr);
+    explicit DeviceControlModel(DeviceHub *dev, QObject *parent = nullptr);
     ~DeviceControlModel();
     void setPropertyValue(QString propertyPath, QString value);
 
@@ -21,7 +21,7 @@ signals:
     void deviceDisconnected(QString devName);
 
 private:
-    DeviceHub *hub;
+    DeviceHub *dev;
     EventStream eventStream;
     std::future<void> handleEventFuture;
 

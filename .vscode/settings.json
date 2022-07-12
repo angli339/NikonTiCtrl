@@ -115,7 +115,8 @@
         "xutility": "cpp",
         "queue": "cpp",
         "*.inc": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "qtreeview": "cpp"
     },
     "git.ignoreLimitWarning": true
 }

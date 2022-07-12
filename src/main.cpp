@@ -88,26 +88,23 @@ int main(int argc, char *argv[])
     //
     // Add devices
     //
-    DeviceHub hub;
-    Hamamatsu::DCam *dcam;
+    DeviceHub dev;
     try {
-        hub.AddDevice("NikonTi", new NikonTi::Microscope);
-        hub.AddDevice("PriorProScan",
-                      new PriorProscan::Proscan("ASRL1::INSTR"));
-        dcam = new Hamamatsu::DCam;
-        hub.AddCamera("Hamamatsu", dcam);
-        // hub.AddDevice("FLIR", new FLIR::Camera);
+        dev.AddDevice("NikonTi", new NikonTi::Microscope);
+        dev.AddDevice("PriorProScan", new PriorProscan::Proscan("ASRL1::INSTR"));
+        dev.AddCamera("Hamamatsu", new Hamamatsu::DCam);
+        // dev.AddDevice("FLIR", new FLIR::Camera);
 
     } catch (std::exception &e) {
         LOG_ERROR("Failed to add device: {}", e.what());
     }
 
-    ExperimentControl experiment_control(&hub);
+    ExperimentControl exp(&dev);
 
     //
     // Start API Server
     //
-    APIServer api_server(api_listen_addr, &hub, &experiment_control);
+    APIServer api_server(api_listen_addr, &exp);
     auto api_server_future =
         std::async(std::launch::async, &APIServer::Wait, &api_server);
     LOG_INFO("Listening {}...", api_listen_addr);
@@ -118,8 +115,8 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     configApp();
     MainWindow w;
-    w.setDeviceHub(&hub);
-    w.setExperimentControl(&experiment_control);
+    w.setDeviceHub(&dev);
+    w.setExperimentControl(&exp);
     w.showMaximized();
     utils::StopWatch sw;
 
@@ -129,14 +126,14 @@ int main(int argc, char *argv[])
     EventStream event_stream;
     auto print_event_future =
         std::async(std::launch::async, printEvents, &event_stream);
-    hub.SubscribeEvents(&event_stream);
+    dev.SubscribeEvents(&event_stream);
 
     //
     // Connect devices
     //
     std::future<void> connect_devices_future =
         std::async(std::launch::async, [&] {
-            absl::Status status = hub.ConnectAll();
+            absl::Status status = dev.ConnectAll();
             if (!status.ok()) {
                 LOG_ERROR("Connect: {}", status.ToString());
             } else {
@@ -144,7 +141,7 @@ int main(int argc, char *argv[])
             }
 
             // Init properties
-            status = hub.SetProperty("/Hamamatsu/BIT PER CHANNEL", "16");
+            status = dev.SetProperty("/Hamamatsu/BIT PER CHANNEL", "16");
             if (!status.ok()) {
                 LOG_ERROR("Init device properties: {}", status.ToString());
             } else {
@@ -164,7 +161,7 @@ int main(int argc, char *argv[])
     int returnCode = app.exec();
 
     LOG_INFO("Disconnecting devices...");
-    hub.DisconnectAll();
+    dev.DisconnectAll();
     LOG_INFO("Disconnected");
 
     LOG_INFO("Shutting down API Server...");

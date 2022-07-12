@@ -55,20 +55,20 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
 MainWindow::~MainWindow()
 {
-    delete deviceControlModel;
-    delete imagingControlModel;
+    delete devControlModel;
+    delete expControlModel;
 }
 
-void MainWindow::setDeviceHub(DeviceHub *hub)
+void MainWindow::setDeviceHub(DeviceHub *dev)
 {
-    deviceControlModel = new DeviceControlModel(hub);
-    acquirePage->setDeviceControlModel(deviceControlModel);
+    devControlModel = new DeviceControlModel(dev);
+    acquirePage->setDeviceControlModel(devControlModel);
 }
 
 void MainWindow::setExperimentControl(ExperimentControl *imagingControl)
 {
-    imagingControlModel = new ExperimentControlModel(imagingControl);
-    acquirePage->setImagingControlModel(imagingControlModel);
+    expControlModel = new ExperimentControlModel(imagingControl);
+    acquirePage->setExperimentControlModel(expControlModel);
 }
 
 void MainWindow::showSetupPage()

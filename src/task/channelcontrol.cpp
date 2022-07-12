@@ -3,9 +3,9 @@
 #include "config.h"
 #include "logging.h"
 
-ChannelControl::ChannelControl(DeviceHub *hub)
+ChannelControl::ChannelControl(DeviceHub *dev)
 {
-    this->hub = hub;
+    this->dev = dev;
     for (const auto &preset : config.system.presets) {
         preset_names.push_back(preset.name);
         preset_map[preset.name] = preset;
@@ -44,7 +44,7 @@ Status ChannelControl::runSwitchChannel(ChannelPreset preset,
 
     utils::StopWatch sw;
 
-    auto snapshot = hub->GetPropertySnapshot(required_devices);
+    auto snapshot = dev->GetPropertySnapshot(required_devices);
     auto channel_property_value =
         getChannelPropertyValue(preset, exposure_ms, illumination_intensity);
     auto diff = diffSnapshotPropertyValue(snapshot, channel_property_value);
@@ -55,13 +55,13 @@ Status ChannelControl::runSwitchChannel(ChannelPreset preset,
         LOG_DEBUG("  Set {}=\"{}\"", property, value);
     }
     current_shutter = preset.shutter_property;
-    Status status = hub->SetProperty(diff);
+    Status status = dev->SetProperty(diff);
     if (!status.ok()) {
         return absl::UnavailableError(fmt::format(
             "switch to channel {}: {}", preset.name, status.ToString()));
     }
 
-    status = hub->WaitPropertyFor(PropertyPathList(diff),
+    status = dev->WaitPropertyFor(PropertyPathList(diff),
                                   std::chrono::milliseconds(5000));
     if (!status.ok()) {
         std::string message = fmt::format("timeout switching to channel {}: {}",
@@ -128,7 +128,7 @@ StatusOr<bool> ChannelControl::IsCurrentShutterOpen()
     if (current_shutter.empty()) {
         return false;
     }
-    StatusOr<std::string> value = hub->GetProperty(current_shutter);
+    StatusOr<std::string> value = dev->GetProperty(current_shutter);
     if (!value.ok()) {
         return value.status();
     }
@@ -141,7 +141,7 @@ StatusOr<bool> ChannelControl::IsCurrentShutterClose()
     if (current_shutter.empty()) {
         return false;
     }
-    StatusOr<std::string> value = hub->GetProperty(current_shutter);
+    StatusOr<std::string> value = dev->GetProperty(current_shutter);
     if (!value.ok()) {
         return value.status();
     }
@@ -154,7 +154,7 @@ Status ChannelControl::OpenCurrentShutter()
     if (current_shutter.empty()) {
         return absl::OkStatus();
     }
-    return hub->SetProperty(current_shutter, "On");
+    return dev->SetProperty(current_shutter, "On");
 }
 
 Status ChannelControl::CloseCurrentShutter()
@@ -163,7 +163,7 @@ Status ChannelControl::CloseCurrentShutter()
     if (current_shutter.empty()) {
         return absl::OkStatus();
     }
-    return hub->SetProperty(current_shutter, "Off");
+    return dev->SetProperty(current_shutter, "Off");
 }
 
 Status ChannelControl::WaitShutter()
@@ -172,7 +172,7 @@ Status ChannelControl::WaitShutter()
     if (current_shutter.empty()) {
         return absl::OkStatus();
     }
-    return hub->WaitPropertyFor({current_shutter},
+    return dev->WaitPropertyFor({current_shutter},
                                 std::chrono::milliseconds(300));
 }
 

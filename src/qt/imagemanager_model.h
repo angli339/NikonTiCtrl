@@ -1,5 +1,5 @@
-#ifndef DATAMANAGER_MODEL_H
-#define DATAMANAGER_MODEL_H
+#ifndef IMAGEMANAGER_MODEL_H
+#define IMAGEMANAGER_MODEL_H
 
 #include <string>
 #include <vector>

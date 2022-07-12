@@ -15,7 +15,7 @@
 
 class ChannelControl : public EventSender {
 public:
-    ChannelControl(DeviceHub *hub);
+    ChannelControl(DeviceHub *dev);
 
     std::vector<std::string> ListPresetNames();
     ChannelPreset GetPreset(std::string preset_name);
@@ -31,7 +31,7 @@ public:
     Status WaitShutter();
 
 private:
-    DeviceHub *hub;
+    DeviceHub *dev;
 
     std::vector<std::string> preset_names;
     std::map<std::string, ChannelPreset> preset_map;

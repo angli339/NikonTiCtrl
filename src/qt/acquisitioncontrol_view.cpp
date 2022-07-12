@@ -1,9 +1,9 @@
-#include "qt/imagingcontrol_view.h"
+#include "qt/acquisitioncontrol_view.h"
 
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 
-ImagingControlView::ImagingControlView(QWidget *parent) : QWidget(parent)
+AcquisitionControlView::AcquisitionControlView(QWidget *parent) : QWidget(parent)
 {
     QVBoxLayout *containerLayout = new QVBoxLayout(this);
     containerLayout->setSpacing(0);
@@ -83,7 +83,7 @@ ImagingControlView::ImagingControlView(QWidget *parent) : QWidget(parent)
     setControlButtonEnabled(false);
 }
 
-void ImagingControlView::setModel(ExperimentControlModel *model)
+void AcquisitionControlView::setModel(ExperimentControlModel *model)
 {
     this->model = model;
 
@@ -152,18 +152,18 @@ void ImagingControlView::setModel(ExperimentControlModel *model)
     }
 
     connect(model, &ExperimentControlModel::stateChanged, this,
-            &ImagingControlView::setState);
+            &AcquisitionControlView::setState);
     connect(buttonLiveOrStop, &QPushButton::clicked, this,
-            &ImagingControlView::toggleLiveView);
+            &AcquisitionControlView::toggleLiveView);
     connect(buttonStart, &QPushButton::clicked, model,
             &ExperimentControlModel::StartMultiChannelTask);
     connect(model, &ExperimentControlModel::channelChanged, this,
-            &ImagingControlView::setChannel);
+            &AcquisitionControlView::setChannel);
     connect(model, &ExperimentControlModel::messageReceived, this,
-            &ImagingControlView::setMessage);
+            &AcquisitionControlView::setMessage);
 }
 
-void ImagingControlView::setChannel(QString channel_name)
+void AcquisitionControlView::setChannel(QString channel_name)
 {
     for (auto it = channelButtonMap.begin(); it != channelButtonMap.end(); it++)
     {
@@ -182,7 +182,7 @@ void ImagingControlView::setChannel(QString channel_name)
     }
 }
 
-void ImagingControlView::setState(QString state)
+void AcquisitionControlView::setState(QString state)
 {
     stateLabel->setText(state);
     if (state == "Ready") {
@@ -214,7 +214,7 @@ void ImagingControlView::setState(QString state)
     }
 }
 
-void ImagingControlView::toggleLiveView()
+void AcquisitionControlView::toggleLiveView()
 {
     if (buttonLiveOrStop->text() == "Live") {
         model->StartLiveView();
@@ -223,7 +223,7 @@ void ImagingControlView::toggleLiveView()
     }
 }
 
-void ImagingControlView::setControlButtonEnabled(bool enabled)
+void AcquisitionControlView::setControlButtonEnabled(bool enabled)
 {
     for (auto &button : {buttonLiveOrStop, buttonSnap, buttonStart, buttonStop})
     {

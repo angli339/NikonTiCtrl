@@ -1,5 +1,5 @@
-#ifndef IMAGINGCONTROL_VIEW_H
-#define IMAGINGCONTROL_VIEW_H
+#ifndef ACQUISITIONCONTROL_VIEW_H
+#define ACQUISITIONCONTROL_VIEW_H
 
 #include <QCheckBox>
 #include <QGridLayout>
@@ -10,12 +10,12 @@
 #include <QString>
 #include <QWidget>
 
-#include "qt/imagingcontrol_model.h"
+#include "qt/experimentcontrol_model.h"
 
-class ImagingControlView : public QWidget {
+class AcquisitionControlView : public QWidget {
     Q_OBJECT
 public:
-    explicit ImagingControlView(QWidget *parent = nullptr);
+    explicit AcquisitionControlView(QWidget *parent = nullptr);
     void setModel(ExperimentControlModel *model);
 
     void setControlButtonEnabled(bool enabled);

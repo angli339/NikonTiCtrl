@@ -22,19 +22,19 @@ AcquirePage::AcquirePage(QWidget *parent) : QWidget(parent)
 
     QLabel *experimentTitle = new QLabel("Experiment");
     experimentTitle->setFixedHeight(20);
-    experimentPath = new QPushButton("Select directory...");
-    experimentPath->setFixedHeight(25);
-    experimentPath->setStyleSheet("text-align:left");
+    experimentDirButton = new QPushButton("Select directory...");
+    experimentDirButton->setFixedHeight(25);
+    experimentDirButton->setStyleSheet("text-align:left");
 
     sampleManagerView = new SampleManagerView;
-    dataManagerView = new DataManagerView;
+    dataManagerView = new ImageManagerView;
     sampleManagerView->setMaximumWidth(280);
     sampleManagerView->setMinimumWidth(280);
     dataManagerView->setMaximumWidth(280);
     dataManagerView->setMinimumWidth(280);
 
     leftLayout->addWidget(experimentTitle);
-    leftLayout->addWidget(experimentPath);
+    leftLayout->addWidget(experimentDirButton);
     leftLayout->addWidget(sampleManagerView);
     leftLayout->addWidget(dataManagerView);
 
@@ -44,7 +44,7 @@ AcquirePage::AcquirePage(QWidget *parent) : QWidget(parent)
     QVBoxLayout *middleLayout = new QVBoxLayout;
     middleLayout->setAlignment(Qt::AlignTop);
 
-    imagingControlView = new ImagingControlView;
+    imagingControlView = new AcquisitionControlView;
     ndImageView = new NDImageView;
     ndImageView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
@@ -62,29 +62,29 @@ AcquirePage::AcquirePage(QWidget *parent) : QWidget(parent)
     layout->addLayout(middleLayout);
     layout->addWidget(deviceControlView);
 
-    connect(imagingControlView, &ImagingControlView::liveViewStarted, this,
+    connect(imagingControlView, &AcquisitionControlView::liveViewStarted, this,
             &AcquirePage::startLiveViewDisplay);
-    connect(dataManagerView, &DataManagerView::ndImageSelected, this,
+    connect(dataManagerView, &ImageManagerView::ndImageSelected, this,
             &AcquirePage::handleNDImageSelection);
 }
 
-void AcquirePage::setImagingControlModel(ExperimentControlModel *model)
+void AcquirePage::setExperimentControlModel(ExperimentControlModel *model)
 {
     sampleManagerView->setModel(model->SampleManagerModel());
-    dataManagerView->setModel(model->DataManagerModel());
+    dataManagerView->setModel(model->ImageManagerModel());
     imagingControlView->setModel(model);
-    imagingControlModel = model;
+    expControlModel = model;
 
     if (!model->ExperimentDir().isEmpty()) {
-        this->experimentPath->setText(model->ExperimentDir());
+        this->experimentDirButton->setText(model->ExperimentDir());
     }
     connect(model, &ExperimentControlModel::experimentPathChanged,
-            this->experimentPath, &QPushButton::setText);
-    connect(experimentPath, &QPushButton::clicked, this, &AcquirePage::selectExperimentDir);
+            this->experimentDirButton, &QPushButton::setText);
+    connect(experimentDirButton, &QPushButton::clicked, this, &AcquirePage::selectExperimentDir);
 
-    connect(model->DataManagerModel(), &ImageManagerModel::ndImageCreated, this,
+    connect(model->ImageManagerModel(), &ImageManagerModel::ndImageCreated, this,
             &AcquirePage::handleNDImageUpdate);
-    connect(model->DataManagerModel(), &ImageManagerModel::ndImageChanged, this,
+    connect(model->ImageManagerModel(), &ImageManagerModel::ndImageChanged, this,
             &AcquirePage::handleNDImageUpdate);
     
     connect(ndImageView->tSlider, &QSlider::valueChanged, this, &AcquirePage::handleTSliderValueChange);
@@ -93,12 +93,15 @@ void AcquirePage::setImagingControlModel(ExperimentControlModel *model)
 
 void AcquirePage::selectExperimentDir()
 {
-    QString dir = QFileDialog::getExistingDirectory();
+
+    QString dir = QFileDialog::getExistingDirectory(this,
+        "Select Experiment Directory",
+        expControlModel->GetUserDataRoot());
     if (dir.isEmpty()) {
         return;
     }
     try {
-        imagingControlModel->SetExperimentDir(dir);
+        expControlModel->SetExperimentDir(dir);
     } catch (std::exception &e) {
         QMessageBox::warning(this, QString("Error"), QString(e.what()));
     }
@@ -107,7 +110,7 @@ void AcquirePage::selectExperimentDir()
 void AcquirePage::setDeviceControlModel(DeviceControlModel *model)
 {
     deviceControlView->setModel(model);
-    deviceControlModel = model;
+    devControlModel = model;
 }
 
 void AcquirePage::runLiveViewDisplay()
@@ -115,7 +118,7 @@ void AcquirePage::runLiveViewDisplay()
     LOG_DEBUG("live view display started");
     for (;;) {
         ImageData frame =
-            imagingControlModel->DataManagerModel()->GetNextLiveViewFrame();
+            expControlModel->ImageManagerModel()->GetNextLiveViewFrame();
         if (frame.empty()) {
             LOG_DEBUG("live view display stopped");
             return;
@@ -198,7 +201,7 @@ void AcquirePage::handleTSliderValueChange(int i_t)
 
 void AcquirePage::displayNDImage(QString name)
 {
-    NDImage *im = imagingControlModel->DataManagerModel()->GetNDImage(name);
+    NDImage *im = expControlModel->ImageManagerModel()->GetNDImage(name);
     ndImageView->setNChannels(im->NChannels());
 
     if (im->NDimT() == 0) {
@@ -219,7 +222,7 @@ void AcquirePage::displayNDImage(QString name)
 
 void AcquirePage::displayNDImage(QString name, int i_z, int i_t)
 {
-    NDImage *im = imagingControlModel->DataManagerModel()->GetNDImage(name);
+    NDImage *im = expControlModel->ImageManagerModel()->GetNDImage(name);
     ndImageView->setNChannels(im->NChannels());
 
     if (im->NDimT() == 0) {

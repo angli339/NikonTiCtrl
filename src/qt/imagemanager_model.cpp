@@ -1,4 +1,4 @@
-#include "datamanager_model.h"
+#include "imagemanager_model.h"
 
 ImageManagerModel::ImageManagerModel(ImageManager *imageManager, QObject *parent)
     : QAbstractItemModel(parent)

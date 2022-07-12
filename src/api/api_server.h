@@ -16,17 +16,10 @@ namespace protobuf = google::protobuf;
 
 class APIServer final : public api::NikonTiCtrl::Service {
 public:
-    APIServer(std::string listen_addr, DeviceHub *hub,
-              ExperimentControl *experiment_control);
+    APIServer(std::string listen_addr, ExperimentControl *exp);
 
-    void Wait()
-    {
-        server->Wait();
-    }
-    void Shutdown()
-    {
-        server->Shutdown();
-    }
+    void Wait();
+    void Shutdown();
 
     // Device
     grpc::Status GetProperty(ServerContext *context,
@@ -80,8 +73,7 @@ public:
 private:
     std::shared_ptr<grpc::Server> server;
 
-    DeviceHub *hub;
-    ExperimentControl *experiment_control;
+    ExperimentControl *exp;
 };
 
 #endif // APISERVER_H

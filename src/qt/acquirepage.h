@@ -8,9 +8,9 @@
 #include <QWidget>
 
 #include "experimentcontrol.h"
-#include "qt/datamanager_view.h"
+#include "qt/imagemanager_view.h"
 #include "qt/devicecontrol_view.h"
-#include "qt/imagingcontrol_view.h"
+#include "qt/acquisitioncontrol_view.h"
 #include "qt/ndimage_view.h"
 #include "qt/samplemanager_view.h"
 
@@ -18,7 +18,7 @@ class AcquirePage : public QWidget {
     Q_OBJECT
 public:
     explicit AcquirePage(QWidget *parent = nullptr);
-    void setImagingControlModel(ExperimentControlModel *model);
+    void setExperimentControlModel(ExperimentControlModel *model);
     void setDeviceControlModel(DeviceControlModel *model);
 
     void selectExperimentDir();
@@ -35,16 +35,16 @@ public slots:
     void startLiveViewDisplay();
 
 public:
-    ExperimentControlModel *imagingControlModel;
-    DeviceControlModel *deviceControlModel;
+    ExperimentControlModel *expControlModel;
+    DeviceControlModel *devControlModel;
 
     std::future<void> liveViewDisplayFuture;
 
-    QPushButton *experimentPath;
-    DataManagerView *dataManagerView;
+    QPushButton *experimentDirButton;
+    ImageManagerView *dataManagerView;
     SampleManagerView *sampleManagerView;
     DeviceControlView *deviceControlView;
-    ImagingControlView *imagingControlView;
+    AcquisitionControlView *imagingControlView;
     NDImageView *ndImageView;
 
     std::mutex im_mutex;

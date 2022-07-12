@@ -2,13 +2,13 @@
 
 #include "logging.h"
 
-DeviceControlModel::DeviceControlModel(DeviceHub *hub, QObject *parent)
+DeviceControlModel::DeviceControlModel(DeviceHub *dev, QObject *parent)
     : QObject(parent)
 {
-    this->hub = hub;
+    this->dev = dev;
     handleEventFuture =
         std::async(std::launch::async, &DeviceControlModel::handleEvents, this);
-    hub->SubscribeEvents(&eventStream);
+    dev->SubscribeEvents(&eventStream);
 }
 
 DeviceControlModel::~DeviceControlModel()
@@ -19,7 +19,7 @@ DeviceControlModel::~DeviceControlModel()
 
 void DeviceControlModel::setPropertyValue(QString propertyPath, QString value)
 {
-    hub->SetProperty(propertyPath.toStdString(), value.toStdString());
+    dev->SetProperty(propertyPath.toStdString(), value.toStdString());
 }
 
 void DeviceControlModel::handleEvents()

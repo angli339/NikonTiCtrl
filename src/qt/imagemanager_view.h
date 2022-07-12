@@ -1,16 +1,16 @@
-#ifndef DATAMANAGER_VIEW_H
-#define DATAMANAGER_VIEW_H
+#ifndef IMAGEMANAGER_VIEW_H
+#define IMAGEMANAGER_VIEW_H
 
 #include <QLabel>
 #include <QTreeView>
 #include <QWidget>
 
-#include "qt/datamanager_model.h"
+#include "qt/imagemanager_model.h"
 
-class DataManagerView : public QWidget {
+class ImageManagerView : public QWidget {
     Q_OBJECT
 public:
-    explicit DataManagerView(QWidget *parent = nullptr);
+    explicit ImageManagerView(QWidget *parent = nullptr);
     void setModel(ImageManagerModel *model);
 
     bool eventFilter(QObject *source, QEvent *event);
@@ -23,7 +23,7 @@ signals:
 private:
     ImageManagerModel *model;
 
-    QTreeView *dataView;
+    QTreeView *imageList;
 };
 
 #endif

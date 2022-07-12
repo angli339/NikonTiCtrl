@@ -5,7 +5,7 @@
 #include "image/imageutils.h"
 #include "logging.h"
 
-api::DataType DataTypeToAPI(DataType dtype)
+api::DataType DataTypeToPB(DataType dtype)
 {
     switch (dtype) {
     case DataType::Uint8:
@@ -25,9 +25,9 @@ api::DataType DataTypeToAPI(DataType dtype)
     }
 }
 
-DataType DataTypeFromAPI(api::DataType api_dtype)
+DataType DataTypeFromPB(api::DataType pb_dtype)
 {
-    switch (api_dtype) {
+    switch (pb_dtype) {
     case api::DataType::UINT8:
         return DataType::Uint8;
     case api::DataType::UINT16:
@@ -45,7 +45,7 @@ DataType DataTypeFromAPI(api::DataType api_dtype)
     }
 }
 
-api::ColorType ColorTypeToAPI(ColorType ctype)
+api::ColorType ColorTypeToPB(ColorType ctype)
 {
     switch (ctype) {
     case ColorType::Mono8:
@@ -67,9 +67,9 @@ api::ColorType ColorTypeToAPI(ColorType ctype)
     }
 }
 
-ColorType ColorTypeFromAPI(api::ColorType api_ctype)
+ColorType ColorTypeFromPB(api::ColorType pb_ctype)
 {
-    switch (api_ctype) {
+    switch (pb_ctype) {
     case api::ColorType::MONO8:
         return ColorType::Mono8;
     case api::ColorType::MONO10:
@@ -89,11 +89,9 @@ ColorType ColorTypeFromAPI(api::ColorType api_ctype)
     }
 }
 
-APIServer::APIServer(std::string listen_addr, DeviceHub *hub,
-                     ExperimentControl *experiment_control)
+APIServer::APIServer(std::string listen_addr, ExperimentControl *exp)
 {
-    this->hub = hub;
-    this->experiment_control = experiment_control;
+    this->exp = exp;
 
     grpc::ServerBuilder builder;
     builder.SetMaxSendMessageSize(20 * 1024 * 1024);
@@ -108,6 +106,15 @@ APIServer::APIServer(std::string listen_addr, DeviceHub *hub,
     }
 }
 
+void APIServer::Wait()
+{
+    server->Wait();
+}
+void APIServer::Shutdown()
+{
+    server->Shutdown();
+}
+
 grpc::Status APIServer::GetProperty(ServerContext *context,
                                     const api::GetPropertyRequest *req,
                                     api::GetPropertyResponse *resp)
@@ -115,7 +122,7 @@ grpc::Status APIServer::GetProperty(ServerContext *context,
     for (const auto &name : req->name()) {
         StatusOr<std::string> value;
         try {
-            value = hub->GetProperty(name);
+            value = exp->Devices()->GetProperty(name);
         } catch (std::exception &e) {
             return grpc::Status(
                 grpc::StatusCode::INTERNAL,
@@ -145,7 +152,7 @@ grpc::Status APIServer::SetProperty(ServerContext *context,
 
     Status status;
     try {
-        status = hub->SetProperty(property_value_map);
+        status = exp->Devices()->SetProperty(property_value_map);
     } catch (std::exception &e) {
         return grpc::Status(grpc::StatusCode::INTERNAL,
                             fmt::format("unexpected exception: {}", e.what()));
@@ -172,7 +179,7 @@ grpc::Status APIServer::WaitProperty(ServerContext *context,
 
     absl::Status status;
     try {
-        status = hub->WaitPropertyFor(
+        status = exp->Devices()->WaitPropertyFor(
             propertyList,
             std::chrono::duration_cast<std::chrono::milliseconds>(timeout));
     } catch (std::exception &e) {
@@ -194,7 +201,7 @@ grpc::Status APIServer::ListProperty(ServerContext *context,
     std::vector<PropertyPath> property_list;
 
     try {
-        property_list = hub->ListProperty(name);
+        property_list = exp->Devices()->ListProperty(name);
     } catch (std::exception &e) {
         return grpc::Status(grpc::StatusCode::INTERNAL,
                             fmt::format("unexpected exception: {}", e.what()));
@@ -211,11 +218,11 @@ grpc::Status APIServer::ListChannel(ServerContext *context,
                                     api::ListChannelResponse *resp)
 {
     std::vector<std::string> preset_names =
-        experiment_control->Channels()->ListPresetNames();
+        exp->Channels()->ListPresetNames();
 
     for (const auto &preset_name : preset_names) {
         ChannelPreset preset =
-            experiment_control->Channels()->GetPreset(preset_name);
+            exp->Channels()->GetPreset(preset_name);
         auto ch = resp->add_channels();
         ch->set_preset_name(preset_name);
         ch->set_exposure_ms(preset.default_exposure_ms);
@@ -232,7 +239,7 @@ grpc::Status APIServer::SwitchChannel(ServerContext *context,
                                       protobuf::Empty *resp)
 {
     try {
-        experiment_control->Channels()->SwitchChannel(
+        exp->Channels()->SwitchChannel(
             req->channel().preset_name(), req->channel().exposure_ms(),
             req->channel().illumination_intensity());
     } catch (std::exception &e) {
@@ -248,7 +255,7 @@ APIServer::SetExperimentPath(ServerContext *context,
                              google::protobuf::Empty *resp)
 {
     try {
-        experiment_control->OpenExperiment(req->path());
+        exp->OpenExperiment(req->path());
     } catch (std::exception &e) {
         return grpc::Status(grpc::StatusCode::INTERNAL,
                             fmt::format("unexpected exception: {}", e.what()));
@@ -271,9 +278,9 @@ APIServer::AcquireMultiChannel(ServerContext *context,
         });
     }
     try {
-        experiment_control->AcquireMultiChannel(req->ndimage_name(), channels,
+        exp->AcquireMultiChannel(req->ndimage_name(), channels,
                                              req->i_z(), req->i_t(), metadata);
-        experiment_control->WaitMultiChannelTask();
+        exp->WaitMultiChannelTask();
     } catch (std::exception &e) {
         return grpc::Status(grpc::StatusCode::INTERNAL,
                             fmt::format("unexpected exception: {}", e.what()));
@@ -285,7 +292,7 @@ grpc::Status APIServer::ListNDImage(ServerContext *context,
                                     const google::protobuf::Empty *req,
                                     api::ListNDImageResponse *resp)
 {
-    auto ndimage_list = experiment_control->Images()->ListNDImage();
+    auto ndimage_list = exp->Images()->ListNDImage();
     for (const auto &im : ndimage_list) {
         auto ndimage_pb = resp->add_ndimages();
         ndimage_pb->set_name(im->Name());
@@ -298,8 +305,8 @@ grpc::Status APIServer::ListNDImage(ServerContext *context,
             ch_info_pb->set_name(ch_info.name);
             ch_info_pb->set_width(ch_info.width);
             ch_info_pb->set_height(ch_info.height);
-            ch_info_pb->set_dtype(DataTypeToAPI(ch_info.dtype));
-            ch_info_pb->set_ctype(ColorTypeToAPI(ch_info.ctype));
+            ch_info_pb->set_dtype(DataTypeToPB(ch_info.dtype));
+            ch_info_pb->set_ctype(ColorTypeToPB(ch_info.ctype));
         }
     }
     return grpc::Status::OK;
@@ -310,7 +317,7 @@ grpc::Status APIServer::GetImage(ServerContext *context,
                                  api::GetImageResponse *resp)
 {
     NDImage *ndimage =
-        experiment_control->Images()->GetNDImage(req->ndimage_name());
+        exp->Images()->GetNDImage(req->ndimage_name());
     if (ndimage == nullptr) {
         return grpc::Status(grpc::StatusCode::NOT_FOUND, "ndimage not found");
     }
@@ -329,8 +336,8 @@ grpc::Status APIServer::GetImage(ServerContext *context,
 
     resp->mutable_data()->set_width(data.Width());
     resp->mutable_data()->set_height(data.Height());
-    resp->mutable_data()->set_dtype(DataTypeToAPI(data.DataType()));
-    resp->mutable_data()->set_ctype(ColorTypeToAPI(data.ColorType()));
+    resp->mutable_data()->set_dtype(DataTypeToPB(data.DataType()));
+    resp->mutable_data()->set_ctype(ColorTypeToPB(data.ColorType()));
     resp->mutable_data()->set_buf(data.Buf().get(), data.BufSize());
     return grpc::Status::OK;
 }
@@ -340,8 +347,8 @@ APIServer::GetSegmentationScore(ServerContext *context,
                                 const api::GetSegmentationScoreRequest *req,
                                 api::GetSegmentationScoreResponse *resp)
 {
-    DataType dtype = DataTypeFromAPI(req->data().dtype());
-    ColorType ctype = ColorTypeFromAPI(req->data().ctype());
+    DataType dtype = DataTypeFromPB(req->data().dtype());
+    ColorType ctype = ColorTypeFromPB(req->data().ctype());
     ImageData im =
         ImageData(req->data().height(), req->data().width(), dtype, ctype);
     im.CopyFrom(req->data().buf());
@@ -360,8 +367,8 @@ APIServer::GetSegmentationScore(ServerContext *context,
 
     resp->mutable_data()->set_width(score.Width());
     resp->mutable_data()->set_height(score.Height());
-    resp->mutable_data()->set_dtype(DataTypeToAPI(score.DataType()));
-    resp->mutable_data()->set_ctype(ColorTypeToAPI(score.ColorType()));
+    resp->mutable_data()->set_dtype(DataTypeToPB(score.DataType()));
+    resp->mutable_data()->set_ctype(ColorTypeToPB(score.ColorType()));
     resp->mutable_data()->set_buf(score.Buf().get(), score.BufSize());
     return grpc::Status::OK;
 }
@@ -373,7 +380,7 @@ APIServer::QuantifyRegions(ServerContext *context,
 {
     int n_regions;
     try {
-        n_regions = experiment_control->Images()->QuantifyRegions(req->ndimage_name(), req->i_z(), req->i_t(), req->segmentation_ch());
+        n_regions = exp->Images()->QuantifyRegions(req->ndimage_name(), req->i_z(), req->i_t(), req->segmentation_ch());
     } catch (std::exception &e) {
         return grpc::Status(grpc::StatusCode::INTERNAL,
                             fmt::format("unexpected exception: {}", e.what()));

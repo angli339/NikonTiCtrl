@@ -1,5 +1,5 @@
-#ifndef IMAGINGCONTROL_MODEL_H
-#define IMAGINGCONTROL_MODEL_H
+#ifndef EXPERIMENTCONTROL_MODEL_H
+#define EXPERIMENTCONTROL_MODEL_H
 
 #include <future>
 
@@ -10,35 +10,25 @@
 #include "logging.h"
 
 #include "channelcontrol_model.h"
-#include "datamanager_model.h"
+#include "imagemanager_model.h"
 #include "samplemanager_model.h"
 
 class ExperimentControlModel : public QObject {
     Q_OBJECT
 public:
-    explicit ExperimentControlModel(ExperimentControl *imagingControl,
+    explicit ExperimentControlModel(ExperimentControl *exp,
                                  QObject *parent = nullptr);
     ~ExperimentControlModel();
 
     ChannelControlModel *ChannelControlModel();
-    ImageManagerModel *DataManagerModel();
+    ImageManagerModel *ImageManagerModel();
     SampleManagerModel *SampleManagerModel();
 
+    QString GetUserDataRoot();
     void SetExperimentDir(QString exp_dir);
     QString ExperimentDir();
 
-    void SetSelectedSite(Site *site)
-    {
-        if (site != nullptr) {
-            LOG_DEBUG("site {} selected", site->FullID());
-        } else {
-            LOG_DEBUG("site selection cleared");
-        }
-
-        selected_array = nullptr;
-        selected_sample = nullptr;
-        selected_site = site;
-    }
+    void SetSelectedSite(Site *site);
 
     void StartLiveView();
     void StopLiveView();
@@ -53,7 +43,7 @@ signals:
     void liveViewStarted();
 
 private:
-    ExperimentControl *experimentControl;
+    ExperimentControl *exp;
 
     ::ChannelControlModel *channelControlModel;
     ::SampleManagerModel *sampleManagerModel;

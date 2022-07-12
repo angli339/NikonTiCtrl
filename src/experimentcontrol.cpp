@@ -4,17 +4,17 @@
 
 #include "logging.h"
 
-ExperimentControl::ExperimentControl(DeviceHub *hub)
+ExperimentControl::ExperimentControl(DeviceHub *dev)
 {
-    this->hub = hub;
+    this->dev = dev;
     this->sample_manager = new SampleManager(this);
     this->image_manager = new ImageManager(this);
 
-    this->channel_control = new ChannelControl(hub);
+    this->channel_control = new ChannelControl(dev);
     this->live_view_task = new LiveViewTask(this);
     this->multichannel_task = new MultiChannelTask(this);
 
-    hub->SubscribeEvents(&dev_event_stream);
+    dev->SubscribeEvents(&dev_event_stream);
     handle_dev_event_future = std::async(
         std::launch::async, &ExperimentControl::handleDeviceEvents, this);
 }
@@ -24,23 +24,30 @@ ExperimentControl::~ExperimentControl()
     dev_event_stream.Close();
     handle_dev_event_future.get();
     
+    delete sample_manager;
+    delete image_manager;
+
+    delete channel_control;
     delete live_view_task;
     delete multichannel_task;
-    delete sample_manager;
-    delete channel_control;
-    delete image_manager;
 }
 
 void ExperimentControl::SubscribeEvents(EventStream *channel)
 {
     EventSender::SubscribeEvents(channel);
 
-    channel_control->SubscribeEvents(channel);
     sample_manager->SubscribeEvents(channel);
     image_manager->SubscribeEvents(channel);
 
+    channel_control->SubscribeEvents(channel);
     live_view_task->SubscribeEvents(channel);
     multichannel_task->SubscribeEvents(channel);
+}
+
+std::filesystem::path ExperimentControl::UserDataRoot()
+{
+    std::filesystem::path data_root(config.user.data_root);
+    return data_root;
 }
 
 void ExperimentControl::OpenExperiment(std::filesystem::path exp_dir)
@@ -73,7 +80,7 @@ std::filesystem::path ExperimentControl::ExperimentDir()
 
 DeviceHub *ExperimentControl::Devices()
 {
-    return hub;
+    return dev;
 }
 
 SampleManager *ExperimentControl::Samples()

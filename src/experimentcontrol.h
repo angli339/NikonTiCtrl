@@ -5,7 +5,6 @@
 
 #include "image/imagemanager.h"
 #include "device/devicehub.h"
-#include "device/hamamatsu/hamamatsu_dcam.h"
 #include "eventstream.h"
 #include "sample/samplemanager.h"
 #include "task/channelcontrol.h"
@@ -14,11 +13,12 @@
 
 class ExperimentControl : public EventSender {
 public:
-    ExperimentControl(DeviceHub *hub);
+    ExperimentControl(DeviceHub *dev);
     ~ExperimentControl();
 
     void SubscribeEvents(EventStream *channel) override;
 
+    std::filesystem::path UserDataRoot();
     void OpenExperiment(std::filesystem::path exp_dir);
     std::filesystem::path ExperimentDir();
 
@@ -37,7 +37,7 @@ public:
     void WaitMultiChannelTask();
 
 private:
-    DeviceHub *hub;
+    DeviceHub *dev;
     SampleManager *sample_manager;
     ChannelControl *channel_control;
     ImageManager *image_manager;
