@@ -1,45 +1,45 @@
 #include "datamanager_model.h"
 
-DataManagerModel::DataManagerModel(DataManager *dataManager, QObject *parent)
+ImageManagerModel::ImageManagerModel(ImageManager *imageManager, QObject *parent)
     : QAbstractItemModel(parent)
 {
-    this->dataManager = dataManager;
+    this->imageManager = imageManager;
 
     buildTree();
 }
 
-DataManagerModel::~DataManagerModel()
+ImageManagerModel::~ImageManagerModel()
 {
     deleteTree(rootItem);
 }
 
-QString DataManagerModel::ExperimentPath()
+QString ImageManagerModel::ExperimentPath()
 {
-    std::string path = dataManager->ExperimentPath().string();
+    std::string path = imageManager->ExperimentPath().string();
     return QString::fromStdString(path);
 }
 
-ImageData DataManagerModel::GetNextLiveViewFrame()
+ImageData ImageManagerModel::GetNextLiveViewFrame()
 {
-    return dataManager->GetNextLiveViewFrame();
+    return imageManager->GetNextLiveViewFrame();
 }
 
-NDImage *DataManagerModel::GetNDImage(QString name)
+NDImage *ImageManagerModel::GetNDImage(QString name)
 {
-    return dataManager->GetNDImage(name.toStdString());
+    return imageManager->GetNDImage(name.toStdString());
 }
 
-void DataManagerModel::buildTree()
+void ImageManagerModel::buildTree()
 {
-    rootItem = new DataManagerTreeItem;
-    for (const auto &ndimage : dataManager->ListNDImage()) {
+    rootItem = new ImageManagerTreeItem;
+    for (const auto &ndimage : imageManager->ListNDImage()) {
         addNDImage(ndimage);
     }
 }
 
-void DataManagerModel::addNDImage(NDImage *ndimage)
+void ImageManagerModel::addNDImage(NDImage *ndimage)
 {
-    DataManagerTreeItem *item = new DataManagerTreeItem;
+    ImageManagerTreeItem *item = new ImageManagerTreeItem;
     item->parent = rootItem;
     item->ndimage_name = ndimage->Name();
 
@@ -49,7 +49,7 @@ void DataManagerModel::addNDImage(NDImage *ndimage)
     endInsertRows();
 }
 
-void DataManagerModel::deleteTree(DataManagerTreeItem *item)
+void ImageManagerModel::deleteTree(ImageManagerTreeItem *item)
 {
     for (auto &childItem : item->child) {
         deleteTree(childItem);
@@ -57,56 +57,56 @@ void DataManagerModel::deleteTree(DataManagerTreeItem *item)
     delete item;
 }
 
-void DataManagerModel::handleExperimentPathChanged(std::string path)
+void ImageManagerModel::handleExperimentPathChanged(std::string path)
 {
     emit experimentPathChanged(path.c_str());
 }
 
-void DataManagerModel::handleNDImageCreated(std::string name)
+void ImageManagerModel::handleNDImageCreated(std::string name)
 {
-    NDImage *im = dataManager->GetNDImage(name);
+    NDImage *im = imageManager->GetNDImage(name);
     addNDImage(im);
     emit ndImageCreated(name.c_str());
 }
 
-void DataManagerModel::handleNDImageChanged(std::string name)
+void ImageManagerModel::handleNDImageChanged(std::string name)
 {
     emit ndImageChanged(name.c_str());
 };
 
 
-QModelIndex DataManagerModel::index(int row, int column,
+QModelIndex ImageManagerModel::index(int row, int column,
                                     const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent)) {
         return QModelIndex();
     }
 
-    DataManagerTreeItem *parentItem;
+    ImageManagerTreeItem *parentItem;
 
     if (!parent.isValid()) {
         parentItem = rootItem;
     } else {
         parentItem =
-            static_cast<DataManagerTreeItem *>(parent.internalPointer());
+            static_cast<ImageManagerTreeItem *>(parent.internalPointer());
     }
 
-    DataManagerTreeItem *childItem = parentItem->child[row];
+    ImageManagerTreeItem *childItem = parentItem->child[row];
     if (childItem) {
         return createIndex(row, column, childItem);
     }
     return QModelIndex();
 }
 
-QModelIndex DataManagerModel::parent(const QModelIndex &index) const
+QModelIndex ImageManagerModel::parent(const QModelIndex &index) const
 {
     if (!index.isValid()) {
         return QModelIndex();
     }
 
-    DataManagerTreeItem *item =
-        static_cast<DataManagerTreeItem *>(index.internalPointer());
-    DataManagerTreeItem *parentItem = item->parent;
+    ImageManagerTreeItem *item =
+        static_cast<ImageManagerTreeItem *>(index.internalPointer());
+    ImageManagerTreeItem *parentItem = item->parent;
 
     if (parentItem == rootItem) {
         return QModelIndex();
@@ -120,9 +120,9 @@ QModelIndex DataManagerModel::parent(const QModelIndex &index) const
     return QModelIndex();
 }
 
-int DataManagerModel::rowCount(const QModelIndex &parent) const
+int ImageManagerModel::rowCount(const QModelIndex &parent) const
 {
-    DataManagerTreeItem *parentItem;
+    ImageManagerTreeItem *parentItem;
     if (parent.column() > 0) {
         return 0;
     }
@@ -131,17 +131,17 @@ int DataManagerModel::rowCount(const QModelIndex &parent) const
         parentItem = rootItem;
     } else {
         parentItem =
-            static_cast<DataManagerTreeItem *>(parent.internalPointer());
+            static_cast<ImageManagerTreeItem *>(parent.internalPointer());
     }
     return parentItem->child.size();
 }
 
-int DataManagerModel::columnCount(const QModelIndex &parent) const
+int ImageManagerModel::columnCount(const QModelIndex &parent) const
 {
     return rootItem->columnCount();
 }
 
-QVariant DataManagerModel::headerData(int section, Qt::Orientation orientation,
+QVariant ImageManagerModel::headerData(int section, Qt::Orientation orientation,
                                       int role) const
 {
     if (orientation == Qt::Horizontal && role == Qt::DisplayRole) {
@@ -150,7 +150,7 @@ QVariant DataManagerModel::headerData(int section, Qt::Orientation orientation,
     return QVariant();
 }
 
-QVariant DataManagerModel::data(const QModelIndex &index, int role) const
+QVariant ImageManagerModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid()) {
         return QVariant();
@@ -160,12 +160,12 @@ QVariant DataManagerModel::data(const QModelIndex &index, int role) const
         return QVariant();
     }
 
-    DataManagerTreeItem *item =
-        static_cast<DataManagerTreeItem *>(index.internalPointer());
+    ImageManagerTreeItem *item =
+        static_cast<ImageManagerTreeItem *>(index.internalPointer());
     return item->columnData(index.column());
 }
 
-Qt::ItemFlags DataManagerModel::flags(const QModelIndex &index) const
+Qt::ItemFlags ImageManagerModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid()) {
         return Qt::NoItemFlags;
@@ -173,13 +173,13 @@ Qt::ItemFlags DataManagerModel::flags(const QModelIndex &index) const
     return QAbstractItemModel::flags(index);
 }
 
-QString DataManagerModel::NDImageName(const QModelIndex &index) const
+QString ImageManagerModel::NDImageName(const QModelIndex &index) const
 {
     if (!index.isValid()) {
         return "";
     }
 
-    DataManagerTreeItem *item =
-        static_cast<DataManagerTreeItem *>(index.internalPointer());
+    ImageManagerTreeItem *item =
+        static_cast<ImageManagerTreeItem *>(index.internalPointer());
     return item->columnData(0).toString();
 }

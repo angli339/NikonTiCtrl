@@ -1,43 +1,43 @@
-#include "imagingcontrol.h"
+#include "experimentcontrol.h"
 
 #include <set>
 
 #include "logging.h"
 
-ImagingControl::ImagingControl(DeviceHub *hub, Hamamatsu::DCam *dcam)
+ExperimentControl::ExperimentControl(DeviceHub *hub, Hamamatsu::DCam *dcam)
     : channel_control(hub), sample_manager(hub)
 {
     this->hub = hub;
     this->dcam = dcam;
 
-    live_view_task = new LiveViewTask(hub, dcam, &data_manager);
+    live_view_task = new LiveViewTask(hub, dcam, &image_manager);
     multichannel_task =
-        new MultiChannelTask(hub, dcam, &channel_control, &data_manager);
+        new MultiChannelTask(hub, dcam, &channel_control, &image_manager);
 
     hub->SubscribeEvents(&dev_event_stream);
     handle_dev_event_future = std::async(
-        std::launch::async, &ImagingControl::handleDeviceEvents, this);
+        std::launch::async, &ExperimentControl::handleDeviceEvents, this);
 }
 
-ImagingControl::~ImagingControl()
+ExperimentControl::~ExperimentControl()
 {
     dev_event_stream.Close();
     handle_dev_event_future.get();
 }
 
-void ImagingControl::SubscribeEvents(EventStream *channel)
+void ExperimentControl::SubscribeEvents(EventStream *channel)
 {
     EventSender::SubscribeEvents(channel);
 
     channel_control.SubscribeEvents(channel);
     sample_manager.SubscribeEvents(channel);
-    data_manager.SubscribeEvents(channel);
+    image_manager.SubscribeEvents(channel);
 
     live_view_task->SubscribeEvents(channel);
     multichannel_task->SubscribeEvents(channel);
 }
 
-void ImagingControl::runLiveView()
+void ExperimentControl::runLiveView()
 {
     if (is_busy) {
         throw std::runtime_error(
@@ -87,7 +87,7 @@ void ImagingControl::runLiveView()
     channel_control.CloseCurrentShutter();
 }
 
-void ImagingControl::StartLiveView()
+void ExperimentControl::StartLiveView()
 {
     //
     // Check for obvious errors and throw exception immediately
@@ -112,10 +112,10 @@ void ImagingControl::StartLiveView()
     // Start async task
     //
     current_task_future =
-        std::async(std::launch::async, &ImagingControl::runLiveView, this);
+        std::async(std::launch::async, &ExperimentControl::runLiveView, this);
 }
 
-void ImagingControl::StopLiveView()
+void ExperimentControl::StopLiveView()
 {
     try {
         live_view_task->Stop();
@@ -136,7 +136,7 @@ void ImagingControl::StopLiveView()
     current_task_future.get();
 }
 
-void ImagingControl::runMultiChannelTask(std::string ndimage_name,
+void ExperimentControl::runMultiChannelTask(std::string ndimage_name,
                                          std::vector<Channel> channels, int i_z,
                                          int i_t,
                                          nlohmann::ordered_json metadata)
@@ -183,7 +183,7 @@ void ImagingControl::runMultiChannelTask(std::string ndimage_name,
     LOG_INFO("Task completed");
 }
 
-void ImagingControl::AcquireMultiChannel(std::string ndimage_name,
+void ExperimentControl::AcquireMultiChannel(std::string ndimage_name,
                                          std::vector<Channel> channels, int i_z,
                                          int i_t,
                                          nlohmann::ordered_json metadata)
@@ -211,18 +211,18 @@ void ImagingControl::AcquireMultiChannel(std::string ndimage_name,
     // Start async task
     //
     current_task_future =
-        std::async(std::launch::async, &ImagingControl::runMultiChannelTask,
+        std::async(std::launch::async, &ExperimentControl::runMultiChannelTask,
                    this, ndimage_name, channels, i_z, i_t, metadata);
 }
 
-void ImagingControl::WaitMultiChannelTask()
+void ExperimentControl::WaitMultiChannelTask()
 {
     // Wait and get exception
     current_task_future.get();
 }
 
 
-void ImagingControl::handleDeviceEvents()
+void ExperimentControl::handleDeviceEvents()
 {
     const std::set<std::string> dev_required = {"NikonTi", "Hamamatsu",
                                                 "PriorProScan"};

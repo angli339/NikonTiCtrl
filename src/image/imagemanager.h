@@ -6,16 +6,16 @@
 #include <shared_mutex>
 #include <vector>
 
-#include "data/imagedata.h"
-#include "data/imageutils.h"
-#include "data/ndimage.h"
+#include "image/imagedata.h"
+#include "image/imageutils.h"
+#include "image/ndimage.h"
 #include "eventstream.h"
 
 struct QuantificationResults;
 
-class DataManager : public EventSender {
+class ImageManager : public EventSender {
 public:
-    DataManager();
+    ImageManager();
 
     void SetLiveViewFrame(ImageData new_frame);
     ImageData GetNextLiveViewFrame();

@@ -10,7 +10,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include "data/imagedata.h"
+#include "image/imagedata.h"
 
 struct NDImageChannel {
     std::string name;

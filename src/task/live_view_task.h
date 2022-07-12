@@ -4,17 +4,17 @@
 #include "device/devicehub.h"
 #include "device/hamamatsu/hamamatsu_dcam.h"
 #include "eventstream.h"
-#include "data/datamanager.h"
-#include "data/imagedata.h"
+#include "image/imagemanager.h"
+#include "image/imagedata.h"
 
 class LiveViewTask : public EventSender {
 public:
     LiveViewTask(DeviceHub *hub, Hamamatsu::DCam *dcam,
-                 DataManager *data_manager)
+                 ImageManager *image_manager)
     {
         this->hub = hub;
         this->dcam = dcam;
-        this->data_manager = data_manager;
+        this->image_manager = image_manager;
     }
 
     bool IsRunning()
@@ -33,7 +33,7 @@ protected:
 private:
     DeviceHub *hub;
     Hamamatsu::DCam *dcam;
-    DataManager *data_manager;
+    ImageManager *image_manager;
 
     std::atomic<bool> is_running = false;
     std::string task_name = "LiveView";

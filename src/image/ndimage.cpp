@@ -1,6 +1,6 @@
-#include "data/ndimage.h"
+#include "image/ndimage.h"
 
-#include "data/imageio.h"
+#include "image/imageio.h"
 #include "utils/uuid.h"
 #include "version.h"
 

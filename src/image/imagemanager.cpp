@@ -1,4 +1,4 @@
-#include "data/datamanager.h"
+#include "image/imagemanager.h"
 
 #include <ctime>
 #include <fmt/chrono.h>
@@ -7,9 +7,9 @@
 
 #include "config.h"
 #include "logging.h"
-#include "data/imageio.h"
+#include "image/imageio.h"
 
-DataManager::DataManager()
+ImageManager::ImageManager()
     : unet(config.system.unet_model.server_addr,
            config.system.unet_model.model_name,
            config.system.unet_model.input_name,
@@ -17,7 +17,7 @@ DataManager::DataManager()
 {
 }
 
-void DataManager::SetLiveViewFrame(ImageData new_frame)
+void ImageManager::SetLiveViewFrame(ImageData new_frame)
 {
     std::lock_guard<std::mutex> lk(mutex_live_frame);
     live_view_frame = new_frame;
@@ -25,7 +25,7 @@ void DataManager::SetLiveViewFrame(ImageData new_frame)
     cv_live_frame.notify_all();
 }
 
-ImageData DataManager::GetNextLiveViewFrame()
+ImageData ImageManager::GetNextLiveViewFrame()
 {
     std::unique_lock<std::mutex> lk(mutex_live_frame);
     cv_live_frame.wait(lk, [this] { return new_frame_set; });
@@ -33,9 +33,9 @@ ImageData DataManager::GetNextLiveViewFrame()
     return live_view_frame;
 }
 
-std::filesystem::path DataManager::ExperimentPath() { return exp_path; }
+std::filesystem::path ImageManager::ExperimentPath() { return exp_path; }
 
-void DataManager::SetExperimentPath(std::filesystem::path path)
+void ImageManager::SetExperimentPath(std::filesystem::path path)
 {
     // Default path
     if (path.empty()) {
@@ -67,11 +67,11 @@ void DataManager::SetExperimentPath(std::filesystem::path path)
     });
 }
 
-std::filesystem::path DataManager::ImagePath() { return exp_path / "images"; }
+std::filesystem::path ImageManager::ImagePath() { return exp_path / "images"; }
 
-std::vector<NDImage *> DataManager::ListNDImage() { return dataset; }
+std::vector<NDImage *> ImageManager::ListNDImage() { return dataset; }
 
-bool DataManager::HasNDImage(std::string ndimage_name)
+bool ImageManager::HasNDImage(std::string ndimage_name)
 {
     std::shared_lock<std::shared_mutex> lk(dataset_mutex);
 
@@ -82,7 +82,7 @@ bool DataManager::HasNDImage(std::string ndimage_name)
     return true;
 }
 
-NDImage *DataManager::GetNDImage(std::string ndimage_name)
+NDImage *ImageManager::GetNDImage(std::string ndimage_name)
 {
     std::shared_lock<std::shared_mutex> lk(dataset_mutex);
 
@@ -93,7 +93,7 @@ NDImage *DataManager::GetNDImage(std::string ndimage_name)
     return it->second;
 }
 
-void DataManager::NewNDImage(std::string ndimage_name,
+void ImageManager::NewNDImage(std::string ndimage_name,
                              std::vector<NDImageChannel> channel_info)
 {
     std::unique_lock<std::shared_mutex> lk(dataset_mutex);
@@ -125,7 +125,7 @@ void DataManager::NewNDImage(std::string ndimage_name,
     });
 }
 
-void DataManager::AddImage(std::string ndimage_name, int i_ch, int i_z, int i_t,
+void ImageManager::AddImage(std::string ndimage_name, int i_ch, int i_z, int i_t,
                            ImageData data, nlohmann::ordered_json metadata)
 
 {
@@ -143,7 +143,7 @@ void DataManager::AddImage(std::string ndimage_name, int i_ch, int i_z, int i_t,
     });
 }
 
-int DataManager::QuantifyRegions(std::string ndimage_name, int i_z, int i_t,
+int ImageManager::QuantifyRegions(std::string ndimage_name, int i_z, int i_t,
                                 std::string segmentation_ch)
 {
     // Find image
@@ -250,7 +250,7 @@ int DataManager::QuantifyRegions(std::string ndimage_name, int i_z, int i_t,
 
     for (int i = 1; i < region_prop_filtered.size(); i++) {
         im::ImageRegionProp rp = region_prop_filtered[i];
-        out.print("{},{},{},{},{},", rp.label, rp.bbbox_x0, rp.bbbox_y0, rp.bbbox_width, rp.bbbox_height);
+        out.print("{},{},{},{},{},", rp.label, rp.bbox_x0, rp.bbox_y0, rp.bbox_width, rp.bbox_height);
         out.print("{},{},{},{}", rp.area, rp.centroid_x, rp.centroid_y, rp.mean_score);
         for (int i_ch = 0; i_ch < ndimage->NChannels(); i_ch++) {
             out.print(",{}", results.ch_means[i_ch][i]);

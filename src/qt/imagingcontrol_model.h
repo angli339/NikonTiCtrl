@@ -6,22 +6,22 @@
 #include <QObject>
 
 #include "eventstream.h"
-#include "imagingcontrol.h"
+#include "experimentcontrol.h"
 #include "logging.h"
 
 #include "channelcontrol_model.h"
 #include "datamanager_model.h"
 #include "samplemanager_model.h"
 
-class ImagingControlModel : public QObject {
+class ExperimentControlModel : public QObject {
     Q_OBJECT
 public:
-    explicit ImagingControlModel(ImagingControl *imagingControl,
+    explicit ExperimentControlModel(ExperimentControl *imagingControl,
                                  QObject *parent = nullptr);
-    ~ImagingControlModel();
+    ~ExperimentControlModel();
 
     ChannelControlModel *ChannelControlModel();
-    DataManagerModel *DataManagerModel();
+    ImageManagerModel *DataManagerModel();
     SampleManagerModel *SampleManagerModel();
 
     void SetSelectedSite(Site *site)
@@ -49,11 +49,11 @@ signals:
     void liveViewStarted();
 
 private:
-    ImagingControl *imagingControl;
+    ExperimentControl *experimentControl;
 
     ::ChannelControlModel *channelControlModel;
-    ::DataManagerModel *dataManagerModel;
     ::SampleManagerModel *sampleManagerModel;
+    ::ImageManagerModel *imageManagerModel;
 
     SampleArray *selected_array = nullptr;
     Sample *selected_sample = nullptr;

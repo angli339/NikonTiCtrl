@@ -7,7 +7,7 @@
 #include <QWidget>
 
 #include "device/devicehub.h"
-#include "imagingcontrol.h"
+#include "experimentcontrol.h"
 
 #include "qt/acquirepage.h"
 #include "qt/datapage.h"
@@ -25,7 +25,7 @@ public:
     ~MainWindow();
 
     void setDeviceHub(DeviceHub *hub);
-    void setImagingControl(ImagingControl *imagingControl);
+    void setExperimentControl(ExperimentControl *experimentControl);
     void updateLabels();
 
 public slots:
@@ -42,7 +42,7 @@ public:
     DataPage *dataPage;
 
     DeviceControlModel *deviceControlModel;
-    ImagingControlModel *imagingControlModel;
+    ExperimentControlModel *imagingControlModel;
 };
 
 class NavBar : public QWidget {

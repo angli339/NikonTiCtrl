@@ -6,7 +6,7 @@
 #include <memory>
 
 #include "device/devicehub.h"
-#include "imagingcontrol.h"
+#include "experimentcontrol.h"
 
 #include "api.grpc.pb.h"
 #include "api.pb.h"
@@ -17,7 +17,7 @@ namespace protobuf = google::protobuf;
 class APIServer final : public api::NikonTiCtrl::Service {
 public:
     APIServer(std::string listen_addr, DeviceHub *hub,
-              ImagingControl *imaging_control);
+              ExperimentControl *experiment_control);
 
     void Wait()
     {
@@ -81,7 +81,7 @@ private:
     std::shared_ptr<grpc::Server> server;
 
     DeviceHub *hub;
-    ImagingControl *imaging_control;
+    ExperimentControl *experiment_control;
 };
 
 #endif // APISERVER_H

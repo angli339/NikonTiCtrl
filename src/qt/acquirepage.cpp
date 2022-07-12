@@ -58,16 +58,16 @@ AcquirePage::AcquirePage(QWidget *parent) : QWidget(parent)
             &AcquirePage::handleNDImageSelection);
 }
 
-void AcquirePage::setImagingControlModel(ImagingControlModel *model)
+void AcquirePage::setImagingControlModel(ExperimentControlModel *model)
 {
     sampleManagerView->setModel(model->SampleManagerModel());
     dataManagerView->setModel(model->DataManagerModel());
     imagingControlView->setModel(model);
     imagingControlModel = model;
 
-    connect(model->DataManagerModel(), &DataManagerModel::ndImageCreated, this,
+    connect(model->DataManagerModel(), &ImageManagerModel::ndImageCreated, this,
             &AcquirePage::handleNDImageUpdate);
-    connect(model->DataManagerModel(), &DataManagerModel::ndImageChanged, this,
+    connect(model->DataManagerModel(), &ImageManagerModel::ndImageChanged, this,
             &AcquirePage::handleNDImageUpdate);
     
     connect(ndImageView->tSlider, &QSlider::valueChanged, this, &AcquirePage::handleTSliderValueChange);

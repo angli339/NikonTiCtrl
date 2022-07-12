@@ -246,17 +246,17 @@ add_executable(NikonTiControl
     src/config.cpp
     src/eventstream.cpp
     src/logging.cpp
-    src/imagingcontrol.cpp
+    src/experimentcontrol.cpp
     ${version_srcs}
     ${QT_SOURCES}
 
     src/sample/sample.cpp
     src/sample/samplemanager.cpp
-    src/data/datamanager.cpp
-    src/data/imageio.cpp
-    src/data/imagedata.cpp
-    src/data/imageutils.cpp
-    src/data/ndimage.cpp
+    src/image/imagemanager.cpp
+    src/image/imageio.cpp
+    src/image/imagedata.cpp
+    src/image/imageutils.cpp
+    src/image/ndimage.cpp
     src/task/channelcontrol.cpp
     src/task/live_view_task.cpp
     src/task/multi_channel_task.cpp

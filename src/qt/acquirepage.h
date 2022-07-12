@@ -7,7 +7,7 @@
 #include <QTreeView>
 #include <QWidget>
 
-#include "imagingcontrol.h"
+#include "experimentcontrol.h"
 #include "qt/datamanager_view.h"
 #include "qt/devicecontrol_view.h"
 #include "qt/imagingcontrol_view.h"
@@ -18,7 +18,7 @@ class AcquirePage : public QWidget {
     Q_OBJECT
 public:
     explicit AcquirePage(QWidget *parent = nullptr);
-    void setImagingControlModel(ImagingControlModel *model);
+    void setImagingControlModel(ExperimentControlModel *model);
     void setDeviceControlModel(DeviceControlModel *model);
 
     void runLiveViewDisplay();
@@ -33,7 +33,7 @@ public slots:
     void startLiveViewDisplay();
 
 public:
-    ImagingControlModel *imagingControlModel;
+    ExperimentControlModel *imagingControlModel;
     DeviceControlModel *deviceControlModel;
 
     std::future<void> liveViewDisplayFuture;

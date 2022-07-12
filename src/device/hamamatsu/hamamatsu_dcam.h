@@ -14,7 +14,7 @@
 #include <absl/status/status.h>
 #include <absl/status/statusor.h>
 
-#include "data/imagedata.h"
+#include "image/imagedata.h"
 #include "device/device.h"
 
 // dcamapi4.h

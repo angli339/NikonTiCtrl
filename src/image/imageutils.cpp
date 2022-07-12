@@ -1,4 +1,4 @@
-#include "data/imageutils.h"
+#include "image/imageutils.h"
 
 #include <stdexcept>
 
@@ -71,13 +71,13 @@ ImageData RegionLabel(ImageData im_score,
     for (int label = 0; label < n_labels; label++) {
         ImageRegionProp prop;
         prop.label = label;
-        prop.bbbox_x0 = stats_mat.at<int32_t>(
+        prop.bbox_x0 = stats_mat.at<int32_t>(
             label, cv::ConnectedComponentsTypes::CC_STAT_LEFT);
-        prop.bbbox_y0 = stats_mat.at<int32_t>(
+        prop.bbox_y0 = stats_mat.at<int32_t>(
             label, cv::ConnectedComponentsTypes::CC_STAT_TOP);
-        prop.bbbox_width = stats_mat.at<int32_t>(
+        prop.bbox_width = stats_mat.at<int32_t>(
             label, cv::ConnectedComponentsTypes::CC_STAT_WIDTH);
-        prop.bbbox_height = stats_mat.at<int32_t>(
+        prop.bbox_height = stats_mat.at<int32_t>(
             label, cv::ConnectedComponentsTypes::CC_STAT_HEIGHT);
         prop.area = stats_mat.at<int32_t>(
             label, cv::ConnectedComponentsTypes::CC_STAT_AREA);

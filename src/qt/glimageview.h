@@ -11,7 +11,7 @@
 #include <QOpenGLWidget>
 #include <QSlider>
 
-#include "data/ndimage.h"
+#include "image/ndimage.h"
 #include "qt/imagehistview.h"
 
 QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram);

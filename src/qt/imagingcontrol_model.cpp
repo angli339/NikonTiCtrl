@@ -2,67 +2,67 @@
 
 #include "logging.h"
 
-ImagingControlModel::ImagingControlModel(ImagingControl *imagingControl,
+ExperimentControlModel::ExperimentControlModel(ExperimentControl *imagingControl,
                                          QObject *parent)
     : QObject(parent)
 {
-    this->imagingControl = imagingControl;
+    this->experimentControl = imagingControl;
 
     channelControlModel =
         new ::ChannelControlModel(imagingControl->ChannelControl());
-    dataManagerModel = new ::DataManagerModel(imagingControl->DataManager());
+    imageManagerModel = new ::ImageManagerModel(imagingControl->Images());
     sampleManagerModel =
-        new ::SampleManagerModel(imagingControl->SampleManager());
+        new ::SampleManagerModel(imagingControl->Samples());
 
     handleEventFuture = std::async(std::launch::async,
-                                   &ImagingControlModel::handleEvents, this);
+                                   &ExperimentControlModel::handleEvents, this);
     imagingControl->SubscribeEvents(&eventStream);
 }
 
-ImagingControlModel::~ImagingControlModel()
+ExperimentControlModel::~ExperimentControlModel()
 {
     eventStream.Close();
     handleEventFuture.get();
 
     delete channelControlModel;
-    delete dataManagerModel;
+    delete imageManagerModel;
     delete sampleManagerModel;
 }
 
-ChannelControlModel *ImagingControlModel::ChannelControlModel()
+ChannelControlModel *ExperimentControlModel::ChannelControlModel()
 {
     return channelControlModel;
 }
 
-DataManagerModel *ImagingControlModel::DataManagerModel()
+ImageManagerModel *ExperimentControlModel::DataManagerModel()
 {
-    return dataManagerModel;
+    return imageManagerModel;
 }
 
-SampleManagerModel *ImagingControlModel::SampleManagerModel()
+SampleManagerModel *ExperimentControlModel::SampleManagerModel()
 {
     return sampleManagerModel;
 }
 
-void ImagingControlModel::StartLiveView()
+void ExperimentControlModel::StartLiveView()
 {
     try {
-        imagingControl->StartLiveView();
+        experimentControl->StartLiveView();
     } catch (std::exception &e) {
         LOG_ERROR(e.what());
     }
 }
 
-void ImagingControlModel::StopLiveView()
+void ExperimentControlModel::StopLiveView()
 {
     try {
-        imagingControl->StopLiveView();
+        experimentControl->StopLiveView();
     } catch (std::exception &e) {
         LOG_ERROR(e.what());
     }
 }
 
-void ImagingControlModel::handleEvents()
+void ExperimentControlModel::handleEvents()
 {
     Event e;
     while (eventStream.Receive(&e)) {
@@ -77,20 +77,20 @@ void ImagingControlModel::handleEvents()
             emit messageReceived(e.value.c_str());
             break;
         case EventType::ExperimentPathChanged:
-            dataManagerModel->handleExperimentPathChanged(e.value);
+            imageManagerModel->handleExperimentPathChanged(e.value);
             break;
         case EventType::NDImageCreated:
-            dataManagerModel->handleNDImageCreated(e.value);
+            imageManagerModel->handleNDImageCreated(e.value);
             break;
         case EventType::NDImageChanged:
-            dataManagerModel->handleNDImageChanged(e.value);
+            imageManagerModel->handleNDImageChanged(e.value);
             break;
         }
     }
 }
 
-void ImagingControlModel::StartMultiChannelTask()
+void ExperimentControlModel::StartMultiChannelTask()
 {
     std::vector<Channel> channels = channelControlModel->GetEnabledChannels();
-    imagingControl->AcquireMultiChannel("test", channels, 0, 0);
+    experimentControl->AcquireMultiChannel("test", channels, 0, 0);
 }

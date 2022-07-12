@@ -1,9 +1,9 @@
-#ifndef IMAGINGCONTROL_H
-#define IMAGINGCONTROL_H
+#ifndef EXPERIMENTCONTROL_H
+#define EXPERIMENTCONTROL_H
 
 #include <future>
 
-#include "data/datamanager.h"
+#include "image/imagemanager.h"
 #include "device/devicehub.h"
 #include "device/hamamatsu/hamamatsu_dcam.h"
 #include "eventstream.h"
@@ -12,14 +12,14 @@
 #include "task/live_view_task.h"
 #include "task/multi_channel_task.h"
 
-class ImagingControl : public EventSender {
+class ExperimentControl : public EventSender {
 public:
-    ImagingControl(DeviceHub *hub, Hamamatsu::DCam *dcam);
-    ~ImagingControl();
+    ExperimentControl(DeviceHub *hub, Hamamatsu::DCam *dcam);
+    ~ExperimentControl();
 
     void SubscribeEvents(EventStream *channel) override;
 
-    SampleManager *SampleManager()
+    SampleManager *Samples()
     {
         return &sample_manager;
     }
@@ -27,9 +27,9 @@ public:
     {
         return &channel_control;
     }
-    DataManager *DataManager()
+    ImageManager *Images()
     {
-        return &data_manager;
+        return &image_manager;
     }
 
     void StartLiveView();
@@ -53,7 +53,7 @@ private:
 
     ::SampleManager sample_manager;
     ::ChannelControl channel_control;
-    ::DataManager data_manager;
+    ::ImageManager image_manager;
 
     LiveViewTask *live_view_task;
     MultiChannelTask *multichannel_task;

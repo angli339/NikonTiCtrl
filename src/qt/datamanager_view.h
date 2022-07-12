@@ -11,7 +11,7 @@ class DataManagerView : public QWidget {
     Q_OBJECT
 public:
     explicit DataManagerView(QWidget *parent = nullptr);
-    void setModel(DataManagerModel *model);
+    void setModel(ImageManagerModel *model);
 
     bool eventFilter(QObject *source, QEvent *event);
     void handleSelectionChanged(const QItemSelection &selected,
@@ -21,7 +21,7 @@ signals:
     void ndImageSelected(QString name);
 
 private:
-    DataManagerModel *model;
+    ImageManagerModel *model;
 
     QLabel *experimentPath;
     QTreeView *dataView;

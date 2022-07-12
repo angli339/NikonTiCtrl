@@ -13,15 +13,15 @@ void LiveViewTask::Run()
             ImageData frame = GetFrame();
             if (frame.empty()) {
                 is_running = false;
-                data_manager->SetLiveViewFrame(frame);
+                image_manager->SetLiveViewFrame(frame);
                 return;
             }
-            data_manager->SetLiveViewFrame(frame);
+            image_manager->SetLiveViewFrame(frame);
         }
     } catch (std::exception &e) {
         StopAcqusition();
         is_running = false;
-        data_manager->SetLiveViewFrame(ImageData());
+        image_manager->SetLiveViewFrame(ImageData());
     }
 }
 

@@ -63,9 +63,9 @@ void MainWindow::setDeviceHub(DeviceHub *hub)
     acquirePage->setDeviceControlModel(deviceControlModel);
 }
 
-void MainWindow::setImagingControl(ImagingControl *imagingControl)
+void MainWindow::setExperimentControl(ExperimentControl *imagingControl)
 {
-    imagingControlModel = new ImagingControlModel(imagingControl);
+    imagingControlModel = new ExperimentControlModel(imagingControl);
     acquirePage->setImagingControlModel(imagingControlModel);
 }
 

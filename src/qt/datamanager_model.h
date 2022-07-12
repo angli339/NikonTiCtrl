@@ -6,19 +6,19 @@
 
 #include <QAbstractItemModel>
 
-#include "data/datamanager.h"
+#include "image/imagemanager.h"
 
-class ImagingControlModel;
-class DataManagerTreeItem;
+class ExperimentControlModel;
+class ImageManagerTreeItem;
 
-class DataManagerModel : public QAbstractItemModel {
+class ImageManagerModel : public QAbstractItemModel {
     Q_OBJECT
-    friend class ImagingControlModel;
+    friend class ExperimentControlModel;
 
 public:
-    explicit DataManagerModel(DataManager *dataManager,
+    explicit ImageManagerModel(ImageManager *imageManager,
                               QObject *parent = nullptr);
-    ~DataManagerModel();
+    ~ImageManagerModel();
 
     QString ExperimentPath();
 
@@ -44,11 +44,11 @@ signals:
     void ndImageChanged(QString name);
 
 private:
-    DataManager *dataManager;
+    ImageManager *imageManager;
 
-    DataManagerTreeItem *rootItem;
+    ImageManagerTreeItem *rootItem;
     void buildTree();
-    void deleteTree(DataManagerTreeItem *item);
+    void deleteTree(ImageManagerTreeItem *item);
     void addNDImage(NDImage *ndimage);
 
     void handleExperimentPathChanged(std::string path);
@@ -56,12 +56,12 @@ private:
     void handleNDImageChanged(std::string name);
 };
 
-class DataManagerTreeItem {
+class ImageManagerTreeItem {
 public:
     std::string ndimage_name;
 
-    DataManagerTreeItem *parent;
-    std::vector<DataManagerTreeItem *> child;
+    ImageManagerTreeItem *parent;
+    std::vector<ImageManagerTreeItem *> child;
 
     // backend type
     NDImage *ndimage;

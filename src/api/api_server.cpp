@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-#include "data/imageutils.h"
+#include "image/imageutils.h"
 #include "logging.h"
 
 api::DataType DataTypeToAPI(DataType dtype)
@@ -90,10 +90,10 @@ ColorType ColorTypeFromAPI(api::ColorType api_ctype)
 }
 
 APIServer::APIServer(std::string listen_addr, DeviceHub *hub,
-                     ImagingControl *imaging_control)
+                     ExperimentControl *experiment_control)
 {
     this->hub = hub;
-    this->imaging_control = imaging_control;
+    this->experiment_control = experiment_control;
 
     grpc::ServerBuilder builder;
     builder.SetMaxSendMessageSize(20 * 1024 * 1024);
@@ -211,11 +211,11 @@ grpc::Status APIServer::ListChannel(ServerContext *context,
                                     api::ListChannelResponse *resp)
 {
     std::vector<std::string> preset_names =
-        imaging_control->ChannelControl()->ListPresetNames();
+        experiment_control->ChannelControl()->ListPresetNames();
 
     for (const auto &preset_name : preset_names) {
         ChannelPreset preset =
-            imaging_control->ChannelControl()->GetPreset(preset_name);
+            experiment_control->ChannelControl()->GetPreset(preset_name);
         auto ch = resp->add_channels();
         ch->set_preset_name(preset_name);
         ch->set_exposure_ms(preset.default_exposure_ms);
@@ -232,7 +232,7 @@ grpc::Status APIServer::SwitchChannel(ServerContext *context,
                                       protobuf::Empty *resp)
 {
     try {
-        imaging_control->ChannelControl()->SwitchChannel(
+        experiment_control->ChannelControl()->SwitchChannel(
             req->channel().preset_name(), req->channel().exposure_ms(),
             req->channel().illumination_intensity());
     } catch (std::exception &e) {
@@ -248,7 +248,7 @@ APIServer::SetExperimentPath(ServerContext *context,
                              google::protobuf::Empty *resp)
 {
     try {
-        imaging_control->DataManager()->SetExperimentPath(req->path());
+        experiment_control->Images()->SetExperimentPath(req->path());
     } catch (std::exception &e) {
         return grpc::Status(grpc::StatusCode::INTERNAL,
                             fmt::format("unexpected exception: {}", e.what()));
@@ -271,9 +271,9 @@ APIServer::AcquireMultiChannel(ServerContext *context,
         });
     }
     try {
-        imaging_control->AcquireMultiChannel(req->ndimage_name(), channels,
+        experiment_control->AcquireMultiChannel(req->ndimage_name(), channels,
                                              req->i_z(), req->i_t(), metadata);
-        imaging_control->WaitMultiChannelTask();
+        experiment_control->WaitMultiChannelTask();
     } catch (std::exception &e) {
         return grpc::Status(grpc::StatusCode::INTERNAL,
                             fmt::format("unexpected exception: {}", e.what()));
@@ -285,7 +285,7 @@ grpc::Status APIServer::ListNDImage(ServerContext *context,
                                     const google::protobuf::Empty *req,
                                     api::ListNDImageResponse *resp)
 {
-    auto ndimage_list = imaging_control->DataManager()->ListNDImage();
+    auto ndimage_list = experiment_control->Images()->ListNDImage();
     for (const auto &im : ndimage_list) {
         auto ndimage_pb = resp->add_ndimages();
         ndimage_pb->set_name(im->Name());
@@ -310,7 +310,7 @@ grpc::Status APIServer::GetImage(ServerContext *context,
                                  api::GetImageResponse *resp)
 {
     NDImage *ndimage =
-        imaging_control->DataManager()->GetNDImage(req->ndimage_name());
+        experiment_control->Images()->GetNDImage(req->ndimage_name());
     if (ndimage == nullptr) {
         return grpc::Status(grpc::StatusCode::NOT_FOUND, "ndimage not found");
     }
@@ -373,7 +373,7 @@ APIServer::QuantifyRegions(ServerContext *context,
 {
     int n_regions;
     try {
-        n_regions = imaging_control->DataManager()->QuantifyRegions(req->ndimage_name(), req->i_z(), req->i_t(), req->segmentation_ch());
+        n_regions = experiment_control->Images()->QuantifyRegions(req->ndimage_name(), req->i_z(), req->i_t(), req->segmentation_ch());
     } catch (std::exception &e) {
         return grpc::Status(grpc::StatusCode::INTERNAL,
                             fmt::format("unexpected exception: {}", e.what()));

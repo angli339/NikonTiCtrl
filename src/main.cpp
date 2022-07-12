@@ -9,7 +9,7 @@
 #include "api/api_server.h"
 #include "config.h"
 #include "device/devicehub.h"
-#include "imagingcontrol.h"
+#include "experimentcontrol.h"
 #include "logging.h"
 #include "qt/mainwindow.h"
 #include "utils/time_utils.h"
@@ -102,29 +102,12 @@ int main(int argc, char *argv[])
         LOG_ERROR("Failed to add device: {}", e.what());
     }
 
-    ImagingControl imaging_control(&hub, dcam);
-
-    imaging_control.SampleManager()->NewSample("1", "test sample 1");
-
-    SampleArray *plate1 = imaging_control.SampleManager()->NewSampleArray(
-        "plate1", "test plate", SampleArrayLayout::Wellplate96);
-    plate1->CreateSamplesRange("B01", 5, 2);
-    // Create sites
-    for (Sample *sample : plate1->GetSamples()) {
-        sample->CreateSitesOnCenteredGrid(3, 2, -250, -250);
-    }
-
-    // Set up channels
-    std::vector<Channel> channels = {
-        {"BF", 25},
-        {"YFP", 40, 50},
-    };
-    plate1->SetChannels(channels);
+    ExperimentControl experiment_control(&hub, dcam);
 
     //
     // Start API Server
     //
-    APIServer api_server(api_listen_addr, &hub, &imaging_control);
+    APIServer api_server(api_listen_addr, &hub, &experiment_control);
     auto api_server_future =
         std::async(std::launch::async, &APIServer::Wait, &api_server);
     LOG_INFO("Listening {}...", api_listen_addr);
@@ -132,14 +115,12 @@ int main(int argc, char *argv[])
     //
     // Init and show UI window
     //
-    qApp->setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication app(argc, argv);
     configApp();
     MainWindow w;
     w.setDeviceHub(&hub);
-    w.setImagingControl(&imaging_control);
+    w.setExperimentControl(&experiment_control);
     w.showMaximized();
-    LOG_INFO("window shown");
     utils::StopWatch sw;
 
     //

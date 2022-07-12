@@ -7,7 +7,7 @@
 #include <nlohmann/json.hpp>
 
 #include "device/propertypath.h"
-#include "data/imagedata.h"
+#include "image/imagedata.h"
 
 struct TiffMetadata {
     nlohmann::ordered_json metadata;

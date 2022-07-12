@@ -16,7 +16,7 @@ class ImagingControlView : public QWidget {
     Q_OBJECT
 public:
     explicit ImagingControlView(QWidget *parent = nullptr);
-    void setModel(ImagingControlModel *model);
+    void setModel(ExperimentControlModel *model);
 
     void setControlButtonEnabled(bool enabled);
 
@@ -33,7 +33,7 @@ signals:
     void liveViewStarted();
 
 public:
-    ImagingControlModel *model;
+    ExperimentControlModel *model;
 
     QPushButton *buttonLiveOrStop;
     QPushButton *buttonSnap;

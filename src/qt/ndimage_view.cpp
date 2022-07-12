@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-#include "data/imageutils.h"
+#include "image/imageutils.h"
 
 NDImageView::NDImageView(QWidget *parent) : QWidget(parent)
 {

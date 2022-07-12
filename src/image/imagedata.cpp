@@ -1,4 +1,4 @@
-#include "data/imagedata.h"
+#include "image/imagedata.h"
 
 #include <stdexcept>
 

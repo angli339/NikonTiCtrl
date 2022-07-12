@@ -83,7 +83,7 @@ ImagingControlView::ImagingControlView(QWidget *parent) : QWidget(parent)
     setControlButtonEnabled(false);
 }
 
-void ImagingControlView::setModel(ImagingControlModel *model)
+void ImagingControlView::setModel(ExperimentControlModel *model)
 {
     this->model = model;
 
@@ -151,15 +151,15 @@ void ImagingControlView::setModel(ImagingControlModel *model)
                 });
     }
 
-    connect(model, &ImagingControlModel::stateChanged, this,
+    connect(model, &ExperimentControlModel::stateChanged, this,
             &ImagingControlView::setState);
     connect(buttonLiveOrStop, &QPushButton::clicked, this,
             &ImagingControlView::toggleLiveView);
     connect(buttonStart, &QPushButton::clicked, model,
-            &ImagingControlModel::StartMultiChannelTask);
-    connect(model, &ImagingControlModel::channelChanged, this,
+            &ExperimentControlModel::StartMultiChannelTask);
+    connect(model, &ExperimentControlModel::channelChanged, this,
             &ImagingControlView::setChannel);
-    connect(model, &ImagingControlModel::messageReceived, this,
+    connect(model, &ExperimentControlModel::messageReceived, this,
             &ImagingControlView::setMessage);
 }
 

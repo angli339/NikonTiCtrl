@@ -8,12 +8,12 @@
 
 MultiChannelTask::MultiChannelTask(DeviceHub *hub, Hamamatsu::DCam *dcam,
                                    ChannelControl *channel_control,
-                                   DataManager *data_manager)
+                                   ImageManager *data_manager)
 {
     this->hub = hub;
     this->dcam = dcam;
     this->channel_control = channel_control;
-    this->data_manager = data_manager;
+    this->image_manager = data_manager;
 }
 
 Status MultiChannelTask::EnableTrigger()
@@ -247,7 +247,7 @@ Status MultiChannelTask::Acquire(std::string ndimage_name,
         nd_channel.ctype = ctype;
         nd_channels.push_back(nd_channel);
     }
-    data_manager->NewNDImage(ndimage_name, nd_channels);
+    image_manager->NewNDImage(ndimage_name, nd_channels);
 
     //
     // Start acquisition
@@ -320,7 +320,7 @@ Status MultiChannelTask::Acquire(std::string ndimage_name,
                 new_metadata["device_property"][k.ToString()] = v;
             }
 
-            data_manager->AddImage(ndimage_name, i_ch, i_z, i_t, data,
+            image_manager->AddImage(ndimage_name, i_ch, i_z, i_t, data,
                                    new_metadata);
             LOG_INFO("[{}][{}] Frame completed [{:.0f} ms]", ndimage_name,
                      i_ch + 1, sw_frame.Milliseconds());

@@ -8,7 +8,7 @@ namespace fs = std::filesystem;
 #include <grpcpp/channel.h>
 #include <tensorflow_serving/apis/prediction_service.grpc.pb.h>
 
-#include "data/imagedata.h"
+#include "image/imagedata.h"
 
 namespace im {
 
@@ -17,10 +17,10 @@ ImageData EqualizeCLAHE(ImageData im, double clip_limit = 2);
 
 struct ImageRegionProp {
     uint16_t label;
-    uint32_t bbbox_x0;
-    uint32_t bbbox_y0;
-    uint32_t bbbox_width;
-    uint32_t bbbox_height;
+    uint32_t bbox_x0;
+    uint32_t bbox_y0;
+    uint32_t bbox_width;
+    uint32_t bbox_height;
     double area;
     double centroid_x;
     double centroid_y;

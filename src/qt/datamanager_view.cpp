@@ -25,12 +25,12 @@ DataManagerView::DataManagerView(QWidget *parent) : QWidget(parent)
 }
 
 
-void DataManagerView::setModel(DataManagerModel *model)
+void DataManagerView::setModel(ImageManagerModel *model)
 {
     this->model = model;
 
     this->experimentPath->setText(model->ExperimentPath());
-    connect(model, &DataManagerModel::experimentPathChanged,
+    connect(model, &ImageManagerModel::experimentPathChanged,
             this->experimentPath, &QLabel::setText);
 
     this->dataView->setModel(model);

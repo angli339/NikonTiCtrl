@@ -1,4 +1,4 @@
-#include "data/imageio.h"
+#include "image/imageio.h"
 
 #include <stdexcept>
 
