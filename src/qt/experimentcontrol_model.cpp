@@ -63,13 +63,13 @@ QString ExperimentControlModel::ExperimentDir()
 void ExperimentControlModel::SetSelectedSite(Site *site)
 {
     if (site != nullptr) {
-        LOG_DEBUG("site {} selected", site->FullID());
+        LOG_DEBUG("site {}/{}/{} selected", site->Well()->Plate()->ID(), site->Well()->ID(), site->ID());
     } else {
         LOG_DEBUG("site selection cleared");
     }
 
-    selected_array = nullptr;
-    selected_sample = nullptr;
+    selected_plate = nullptr;
+    selected_well = nullptr;
     selected_site = site;
 }
 

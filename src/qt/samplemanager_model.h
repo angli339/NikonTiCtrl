@@ -34,15 +34,15 @@ private:
     SampleManagerTreeItem *rootItem;
     void buildTree();
     void deleteTree(SampleManagerTreeItem *item);
-    void addSampleArray(SampleManagerTreeItem *parent, SampleArray *array);
-    void addSample(SampleManagerTreeItem *parent, Sample *sample);
+    void addPlate(SampleManagerTreeItem *parent, Plate *array);
+    void addWell(SampleManagerTreeItem *parent, Well *sample);
     void addSite(SampleManagerTreeItem *parent, Site *site);
 };
 
 enum class SampleManagerTreeItemType
 {
-    SampleArray,
-    Sample,
+    Plate,
+    Well,
     Site,
     NDImage,
 };
@@ -57,8 +57,8 @@ public:
     std::vector<SampleManagerTreeItem *> child;
 
     // backend type
-    SampleArray *array;
-    Sample *sample;
+    Plate *plate;
+    Well *well;
     Site *site;
 
     int columnCount();

@@ -2,557 +2,277 @@
 
 #include <fmt/format.h>
 
-SampleArray::SampleArray(std::string id, std::string name,
-                         SampleArrayLayout layout)
+Plate::Plate(PlateType type, std::string id, std::string uuid)
 {
-    this->uuid = utils::uuid();
+    if (id.empty()) {
+        throw std::invalid_argument("id cannot be empty");
+    }
+
+    this->type = type;
     this->id = id;
-    this->name = name;
-    this->layout = layout;
-    switch (layout) {
-    case SampleArrayLayout::Wellplate96:
+
+    if (uuid.empty()) {
+        this->uuid = utils::uuid();
+    } else {
+        this->uuid = uuid;
+    }
+    
+    int n_rows;
+    int n_cols;
+    double spacing_x;
+    double spacing_y;
+
+    switch (type) {
+    case PlateType::Slide:
+        n_rows = 1;
+        n_cols = 1;
+        spacing_x = 0;
+        spacing_y = 0;
+        break;
+    case PlateType::Wellplate96:
+        n_rows = 8;
+        n_cols = 12;
         spacing_x = -9000;
         spacing_y = -9000;
         break;
-    case SampleArrayLayout::Wellplate384:
+    case PlateType::Wellplate384:
+        n_rows = 16;
+        n_cols = 24;
         spacing_x = -4500;
         spacing_y = -4500;
         break;
     default:
-        throw std::invalid_argument("invalid layout");
-    }
-}
-
-SampleArray::~SampleArray()
-{
-    std::unique_lock<std::shared_mutex> lk(samples_mutex);
-    for (Sample *sample : samples) {
-        delete sample;
-    }
-}
-
-bool SampleArray::PosIDValid(std::string pos_id) const
-{
-    if (pos_id.size() < 2) {
-        return false;
-    }
-    int i_row, i_col;
-    std::tie(i_row, i_col) = PosIDToRowCol(pos_id);
-
-    switch (layout) {
-    case SampleArrayLayout::Wellplate96:
-        if ((i_row < 0) || (i_row >= 8)) {
-            return false;
-        }
-        if ((i_col < 0) || (i_col >= 12)) {
-            return false;
-        }
-        return true;
-    case SampleArrayLayout::Wellplate384:
-        if ((i_row < 0) || (i_row >= 16)) {
-            return false;
-        }
-        if ((i_col < 0) || (i_col >= 24)) {
-            return false;
-        }
-        return true;
-    default:
-        throw std::invalid_argument("invalid layout");
-    }
-}
-
-std::pair<int, int> SampleArray::PosIDToRowCol(std::string pos_id) const
-{
-    const char row_name = pos_id[0];
-    int i_row = row_name - 'A';
-    int i_col = std::stoi(pos_id.substr(1, std::string::npos)) - 1;
-    return {i_row, i_col};
-}
-
-std::string SampleArray::RowColToPosID(int i_row, int i_col) const
-{
-    switch (layout) {
-    case SampleArrayLayout::Wellplate96:
-        if ((i_row < 0) || (i_row >= 8)) {
-            throw std::out_of_range("i_row out of range");
-        }
-        if ((i_col < 0) || (i_col >= 12)) {
-            throw std::out_of_range("i_col out of range");
-        }
-        break;
-    case SampleArrayLayout::Wellplate384:
-        if ((i_row < 0) || (i_row >= 16)) {
-            throw std::out_of_range("i_row out of range");
-        }
-        if ((i_col < 0) || (i_col >= 24)) {
-            throw std::out_of_range("i_col out of range");
-        }
-        break;
-    default:
-        throw std::invalid_argument("invalid layout");
+        throw std::invalid_argument("invalid plate type");
     }
 
-    char row_name = 'A' + i_row;
-    std::string col_name = fmt::format("{:02d}", i_col + 1);
-    return row_name + col_name;
-}
-
-Sample *SampleArray::newSample(std::string pos_id, std::string name)
-{
-    if (id_set.contains(pos_id)) {
-        throw std::invalid_argument("pos_id already exists");
-    }
-    Sample *sample = new Sample(pos_id, name, this);
-    samples.push_back(sample);
-    id_set.insert(pos_id);
-    id_sample_map[pos_id] = sample;
-    return sample;
-}
-
-Sample *SampleArray::NewSample(std::string pos_id, std::string name)
-{
-    std::unique_lock<std::shared_mutex> lk(samples_mutex);
-    return newSample(pos_id, name);
-}
-
-void SampleArray::CreateSamplesRange(std::string pos_id, int n_row, int n_col)
-{
-    std::unique_lock<std::shared_mutex> lk(samples_mutex);
-    if (!PosIDValid(pos_id)) {
-        throw std::invalid_argument("invalid pos_id");
+    if (n_rows * n_cols == 1) {
+        addWell("", Pos2D{0, 0});
+        return;
     }
 
-    int offset_i_row, offset_i_col;
-    std::tie(offset_i_row, offset_i_col) = PosIDToRowCol(pos_id);
-    for (int i_row = 0; i_row < n_row; i_row++) {
-        if (i_row % 2 == 0) {
-            for (int i_col = 0; i_col < n_col; i_col++) {
-                std::string pos_id =
-                    RowColToPosID(i_row + offset_i_row, i_col + offset_i_col);
-                newSample(pos_id, "");
-            }
-        } else {
-            for (int i_col = n_col - 1; i_col >= 0; i_col--) {
-                std::string pos_id =
-                    RowColToPosID(i_row + offset_i_row, i_col + offset_i_col);
-                newSample(pos_id, "");
-            }
+    for (int i_row = 0; i_row < n_rows; i_row++) {
+        for (int i_col = 0; i_col < n_cols; i_col++) {
+            std::string col_id = fmt::format("{:02d}", i_col + 1);
+            std::string row_id = fmt::format("{}", 'A' + i_row);
+            std::string well_id = fmt::format("{}{}", row_id, col_id);
+            
+            Pos2D rel_pos;
+            rel_pos.x = i_col * spacing_x;
+            rel_pos.y = i_row * spacing_y;
+            
+            addWell(well_id, rel_pos);
         }
     }
 }
 
-Sample *SampleArray::GetSample(std::string pos_id)
+Plate::~Plate()
 {
-    std::shared_lock<std::shared_mutex> lk(samples_mutex);
-    auto it = id_sample_map.find(pos_id);
-    if (it == id_sample_map.end()) {
+    for (::Well *well : wells) {
+        delete well;
+    }
+}
+
+PlateType Plate::Type() const
+{
+    return type;
+}
+
+
+std::string Plate::ID() const
+{
+    return id;
+}
+
+std::string Plate::UUID() const
+{
+    return uuid;
+}
+
+std::string Plate::Name() const
+{
+    return name;
+}
+
+std::optional<Pos2D> Plate::PositionOrigin() const
+{
+    return pos_origin;
+}
+
+void Plate::SetName(std::string name)
+{
+    this->name = name;
+}
+
+void Plate::SetPositionOrigin(double x, double y)
+{
+    this->pos_origin = Pos2D{x, y};
+}
+
+::Well *Plate::Well(std::string id) const
+{
+    auto it = well_map.find(id);
+    if (it == well_map.end()) {
         return nullptr;
     }
     return it->second;
 }
 
-int SampleArray::TotalNumSites() const
+std::vector<::Well *> Plate::Wells() const
 {
-    int total = 0;
-    for (const auto &sample : samples) {
-        total += sample->NumSites();
-    }
-    return total;
+    return wells;
 }
 
-std::vector<std::string> SampleArray::GetChannelNames() const
+Well *Plate::addWell(std::string id, Pos2D rel_pos)
 {
-    std::vector<std::string> names;
-    names.reserve(channels.size());
-    for (const auto &channel : channels) {
-        names.push_back(channel.preset_name);
+    auto it = well_map.find(id);
+    if (it != well_map.end()) {
+        throw std::invalid_argument("id already exists");
     }
-    return names;
+    
+    ::Well *well = new ::Well(this, id, rel_pos);
+    wells.push_back(well);
+    well_map[id] = well;
+    return well;
 }
 
-Sample::Sample(std::string id, std::string name)
+Well::Well(const ::Plate *plate, std::string id, Pos2D rel_pos, std::string UUID)
 {
-    if (id.empty()) {
-        throw std::invalid_argument("id cannot be empty");
+    if (plate == nullptr) {
+        throw std::invalid_argument("plate cannot be null");
     }
-    this->uuid = utils::uuid();
+
+    if (uuid.empty()) {
+        this->uuid = utils::uuid();
+    } else {
+        this->uuid = uuid;
+    }
+    this->plate = plate;
     this->id = id;
-    this->name = name;
 }
 
-Sample::Sample(std::string pos_id, std::string name, const SampleArray *parent)
-{
-    if (parent == nullptr) {
-        throw std::invalid_argument("parent SampleArray cannot be null");
-    }
-    if (!parent->PosIDValid(pos_id)) {
-        throw std::invalid_argument("invalid pos_id");
-    }
-
-    this->uuid = utils::uuid();
-    this->id = pos_id;
-    this->name = name;
-    this->parent = parent;
-}
-
-Sample::~Sample()
+Well::~Well()
 {
     for (Site *site : sites) {
         delete site;
     }
 }
 
-std::string Sample::FullID() const
+std::string Well::ID() const
 {
-    if (parent) {
-        return parent->ID() + "-" + id;
-    }
     return id;
 }
 
-bool Sample::PositionValid() const
+std::string Well::UUID() const
 {
-    if (parent) {
-        return parent->RefPositionValid();
-    }
-    return pos_x.has_value() && pos_y.has_value();
+    return uuid;
 }
 
-std::pair<double, double> Sample::Position() const
+Pos2D Well::RelativePosition() const
 {
-    if (parent) {
-        // Check local overwrite
-        if (pos_x.has_value() && pos_y.has_value()) {
-            return {pos_x.value(), pos_y.value()};
-        }
-
-        int i_row, i_col;
-        std::tie(i_row, i_col) = parent->PosIDToRowCol(id);
-
-        return {parent->RefPositionX() + i_col * parent->SampleSpacingX(),
-                parent->RefPositionY() + i_row * parent->SampleSpacingY()};
-    }
-    return {pos_x.value(), pos_y.value()};
+    return this->rel_pos;
 }
 
-double Sample::PositionX() const
+std::optional<Pos2D> Well::Position() const
 {
-    if (parent) {
-        if (pos_x.has_value()) {
-            return pos_x.value();
-        }
-        int i_row, i_col;
-        std::tie(i_row, i_col) = parent->PosIDToRowCol(id);
-
-        return parent->RefPositionX() + i_col * parent->SampleSpacingX();
+    std::optional<Pos2D> plate_pos = plate->PositionOrigin();
+    if (!plate_pos.has_value()) {
+        return std::nullopt;
     }
-    return pos_x.value();
+    Pos2D pos;
+    pos.x = plate_pos.value().x + rel_pos.x;
+    pos.y = plate_pos.value().y + rel_pos.y;
+    return pos;
 }
 
-double Sample::PositionY() const
+bool Well::IsEnabled() const
 {
-    if (parent) {
-        if (pos_y.has_value()) {
-            return pos_y.value();
-        }
-        int i_row, i_col;
-        std::tie(i_row, i_col) = parent->PosIDToRowCol(id);
-
-        return parent->RefPositionY() + i_row * parent->SampleSpacingY();
-    }
-    return pos_y.value();
+    return this->enabled;
 }
 
-void Sample::SetPosition(double x, double y)
+std::string Well::PresetName() const
 {
-    if (parent) {
-        throw std::runtime_error(
-            "sample is part of an array, OverwritePosition() should be used to "
-            "overwrite the position based on position id");
-    }
-    pos_x = x;
-    pos_y = y;
+    return this->preset_name;
 }
 
-void Sample::OverwritePosition(double x, double y)
+void Well::Enable(bool enabled)
 {
-    if (!parent) {
-        throw std::runtime_error("sample is not part of an array, use "
-                                 "SetPosition() to set the position");
-    }
-    pos_x = x;
-    pos_y = y;
+    this->enabled = enabled;
 }
 
-Site *Sample::NewSite(std::string id, std::string name)
+void Well::SetPresetName(std::string preset_name)
+{
+    this->preset_name = preset_name;
+}
+
+const ::Plate *Well::Plate() const
+{
+    return this->plate;
+}
+
+std::vector<Site *> Well::Sites()
+{
+    return sites;
+}
+
+int Well::NumSites() const
+{
+    return sites.size();
+}
+
+Site *Well::NewSite(std::string id, std::string name, Pos2D rel_pos)
 {
     std::unique_lock<std::shared_mutex> lk(sites_mutex);
-    if (id_set.contains(id)) {
+    if (site_id_set.contains(id)) {
         throw std::invalid_argument("id already exists");
     }
-    Site *site = new Site(id, name, this);
+    Site *site = new Site(this, id, name, rel_pos);
     sites.push_back(site);
-    id_set.insert(id);
+    site_id_set.insert(id);
     return site;
 }
 
-Site *Sample::NewSite(std::string id, std::string name, double delta_x,
-                      double delta_y)
+Site::Site(const ::Well *well, std::string id, std::string name, Pos2D rel_pos)
 {
-    std::unique_lock<std::shared_mutex> lk(sites_mutex);
-    return newSite(id, name, delta_x, delta_y);
-}
-
-Site *Sample::newSite(std::string id, std::string name, double delta_x,
-                      double delta_y)
-{
-    if (id_set.contains(id)) {
-        throw std::invalid_argument("id already exists");
+    if (well == nullptr) {
+        throw std::invalid_argument("well cannot be null");
     }
-    Site *site = new Site(id, name, this);
-    site->SetRelativePosition(delta_x, delta_y);
-    sites.push_back(site);
-    id_set.insert(id);
-    return site;
-}
-
-void Sample::CreateSitesOnCenteredGrid(int n_col, int n_row, double spacing_x,
-                                       double spacing_y)
-{
-    if (n_col < 1) {
-        throw std::invalid_argument("invalid n_col or n_row");
-    }
-    if (n_row < 1) {
-        throw std::invalid_argument("invalid n_col or n_row");
-    }
-
-    double corner_x = -((double)(n_col - 1) / 2) * spacing_x;
-    double corner_y = -((double)(n_row - 1) / 2) * spacing_y;
-
-    int i_site = 0;
-    int n_site = n_col * n_row;
-    if (n_site >= 1000000) {
-        throw std::invalid_argument(
-            "too many sites, site_id formatter is not implemented");
-    }
-
-    std::unique_lock<std::shared_mutex> lk(sites_mutex);
-
-    for (int i_row = 0; i_row < n_row; i_row++) {
-        if (i_row % 2 == 0) {
-            for (int i_col = 0; i_col < n_col; i_col++) {
-                double x = corner_x + i_col * spacing_x;
-                double y = corner_y + i_row * spacing_y;
-                std::string site_id;
-                if (n_site < 1000) {
-                    site_id = fmt::format("{:03d}", i_site);
-                } else if (n_site < 10000) {
-                    site_id = fmt::format("{:04d}", i_site);
-                } else if (n_site < 100000) {
-                    site_id = fmt::format("{:05d}", i_site);
-                } else if (n_site < 1000000) {
-                    site_id = fmt::format("{:06d}", i_site);
-                }
-                newSite(site_id, "", x, y);
-                i_site++;
-            }
-        } else {
-            for (int i_col = n_col - 1; i_col >= 0; i_col--) {
-                double x = corner_x + i_col * spacing_x;
-                double y = corner_y + i_row * spacing_y;
-                std::string site_id;
-                if (n_site < 1000) {
-                    site_id = fmt::format("{:03d}", i_site);
-                } else if (n_site < 10000) {
-                    site_id = fmt::format("{:04d}", i_site);
-                } else if (n_site < 100000) {
-                    site_id = fmt::format("{:05d}", i_site);
-                } else if (n_site < 1000000) {
-                    site_id = fmt::format("{:06d}", i_site);
-                }
-                newSite(site_id, "", x, y);
-                i_site++;
-            }
-        }
-    }
-}
-
-bool Sample::ChannelsValid() const
-{
-    if (!channels.empty()) {
-        return true;
-    } else if (parent) {
-        return parent->ChannelsValid();
-    } else {
-        return false;
-    }
-}
-
-std::vector<std::string> Sample::GetChannelNames() const
-{
-    if (!channels.empty()) {
-        std::vector<std::string> names;
-        for (const auto &channel : channels) {
-            names.push_back(channel.preset_name);
-        }
-        return names;
-    } else if (parent) {
-        return parent->GetChannelNames();
-    } else {
-        return {};
-    }
-}
-
-std::vector<Channel> Sample::GetChannels() const
-{
-    if (!channels.empty()) {
-        return channels;
-    } else if (parent) {
-        return parent->GetChannels();
-    } else {
-        return {};
-    }
-}
-
-Site::Site(std::string id, std::string name, const Sample *parent)
-{
     if (id.empty()) {
         throw std::invalid_argument("id cannot be empty");
     }
-    if (parent == nullptr) {
-        throw std::invalid_argument("parent cannot be null");
-    }
-
+    
+    this->well = well;
     this->id = id;
     this->name = name;
-    this->parent = parent;
+    this->rel_pos = rel_pos;
 }
 
-std::pair<double, double> Site::Position() const
+const Well *Site::Well() const
 {
-    double sample_pos_x, sample_pos_y;
-    std::tie(sample_pos_x, sample_pos_y) = parent->Position();
-    return {
-        sample_pos_x + delta_x.value(),
-        sample_pos_y + delta_y.value(),
-    };
+    return this->well;
 }
 
-bool Site::ChannelsValid() const
+std::string Site::ID() const
 {
-    if (!channels.empty()) {
-        return true;
-    } else if (parent) {
-        return parent->ChannelsValid();
-    } else {
-        return false;
-    }
+    return id;
+}
+std::string Site::Name() const
+{
+    return name;
 }
 
-std::vector<std::string> Site::GetChannelNames() const
+Pos2D Site::RelativePosition() const
 {
-    if (!channels.empty()) {
-        std::vector<std::string> names;
-        names.reserve(channels.size());
-        for (const auto &channel : channels) {
-            names.push_back(channel.preset_name);
-        }
-        return names;
-    } else if (parent) {
-        return parent->GetChannelNames();
-    } else {
-        return {};
-    }
+    return this->rel_pos;
 }
 
-std::vector<Channel> Site::GetChannels() const
+std::optional<Pos2D> Site::Position() const
 {
-    if (!channels.empty()) {
-        return channels;
-    } else if (parent) {
-        return parent->GetChannels();
-    } else {
-        return {};
+    std::optional<Pos2D> well_pos = well->Position();
+    if (!well_pos.has_value()) {
+        return std::nullopt;
     }
-}
-
-void to_json(json &j, const SampleArray &array)
-{
-    j["uuid"] = array.uuid;
-    j["id"] = array.id;
-    j["name"] = array.name;
-    j["layout"] = array.layout;
-    j["description"] = array.description;
-
-    if (array.ref_pos_x.has_value() && array.ref_pos_y.has_value()) {
-        j["ref_pos_x"] = array.ref_pos_x.value();
-        j["ref_pos_y"] = array.ref_pos_y.value();
-    }
-    j["spacing_x"] = array.spacing_x;
-    j["spacing_y"] = array.spacing_y;
-
-    if (!array.channels.empty()) {
-        for (const auto &ch : array.channels) {
-            j["channels"].push_back({
-                {"preset_name", ch.preset_name},
-                {"exposure_ms", ch.exposure_ms},
-                {"illumination_intensity", ch.illumination_intensity},
-            });
-        }
-    }
-
-    j["samples"] = json::array();
-    for (auto &samples : array.samples) {
-        j["samples"].push_back(json(*samples));
-    }
-}
-
-void to_json(json &j, const Sample &sample)
-{
-    j["uuid"] = sample.uuid;
-    j["id"] = sample.id;
-    j["name"] = sample.name;
-    j["description"] = sample.description;
-
-    if (sample.pos_x.has_value() && sample.pos_y.has_value()) {
-        j["pos_x"] = sample.pos_x.value();
-        j["pos_y"] = sample.pos_y.value();
-    }
-
-    if (!sample.channels.empty()) {
-        for (const auto &ch : sample.channels) {
-            j["channels"].push_back({
-                {"preset_name", ch.preset_name},
-                {"exposure_ms", ch.exposure_ms},
-                {"illumination_intensity", ch.illumination_intensity},
-            });
-        }
-    }
-
-    j["sites"] = json::array();
-    for (auto &site : sample.sites) {
-        j["sites"].push_back(json(*site));
-    }
-}
-
-void to_json(json &j, const Site &site)
-{
-    j["id"] = site.id;
-    j["name"] = site.name;
-    j["description"] = site.description;
-
-    if (site.delta_x.has_value() && site.delta_y.has_value()) {
-        j["delta_x"] = site.delta_x.value();
-        j["delta_y"] = site.delta_y.value();
-    }
-
-    if (!site.channels.empty()) {
-        for (const auto &ch : site.channels) {
-            j["channels"].push_back({
-                {"preset_name", ch.preset_name},
-                {"exposure_ms", ch.exposure_ms},
-                {"illumination_intensity", ch.illumination_intensity},
-            });
-        }
-    }
+    Pos2D pos;
+    pos.x = well_pos.value().x + rel_pos.x;
+    pos.y = well_pos.value().y + rel_pos.y;
+    return pos;
 }

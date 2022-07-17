@@ -19,14 +19,8 @@ SampleManagerModel::~SampleManagerModel()
 void SampleManagerModel::buildTree()
 {
     rootItem = new SampleManagerTreeItem;
-    for (const auto &item : sampleManager->GetItems()) {
-        if (std::holds_alternative<SampleArray *>(item)) {
-            SampleArray *array = std::get<SampleArray *>(item);
-            addSampleArray(rootItem, array);
-        } else if (std::holds_alternative<Sample *>(item)) {
-            Sample *sample = std::get<Sample *>(item);
-            addSample(rootItem, sample);
-        }
+    for (Plate *plate : sampleManager->Plates()) {
+        addPlate(rootItem, plate);
     }
 }
 
@@ -38,37 +32,36 @@ void SampleManagerModel::deleteTree(SampleManagerTreeItem *item)
     delete item;
 }
 
-void SampleManagerModel::addSampleArray(SampleManagerTreeItem *parent,
-                                        SampleArray *array)
+void SampleManagerModel::addPlate(SampleManagerTreeItem *parent,
+                                        Plate *plate)
 {
 
     SampleManagerTreeItem *item = new SampleManagerTreeItem;
     parent->child.push_back(item);
 
-    item->type = SampleManagerTreeItemType::SampleArray;
-    item->id = array->ID();
-    item->name = array->Name();
+    item->type = SampleManagerTreeItemType::Plate;
+    item->id = plate->ID();
+    item->name = plate->Name();
     item->parent = parent;
-    item->array = array;
+    item->plate = plate;
 
-    for (const auto &sample : array->GetSamples()) {
-        addSample(item, sample);
+    for (const auto &well : plate->Wells()) {
+        addWell(item, well);
     }
 }
 
-void SampleManagerModel::addSample(SampleManagerTreeItem *parent,
-                                   Sample *sample)
+void SampleManagerModel::addWell(SampleManagerTreeItem *parent,
+                                   Well *well)
 {
     SampleManagerTreeItem *item = new SampleManagerTreeItem;
     parent->child.push_back(item);
 
-    item->type = SampleManagerTreeItemType::Sample;
-    item->id = sample->ID();
-    item->name = sample->Name();
+    item->type = SampleManagerTreeItemType::Well;
+    item->id = well->ID();
     item->parent = parent;
-    item->sample = sample;
+    item->well = well;
 
-    for (const auto &site : sample->GetSites()) {
+    for (const auto &site : well->Sites()) {
         addSite(item, site);
     }
 }

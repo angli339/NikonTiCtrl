@@ -19,29 +19,16 @@ public:
     SampleManager(ExperimentControl *exp);
     ~SampleManager();
 
-    SampleArray *NewSampleArray(std::string id, std::string name,
-                                SampleArrayLayout layout);
-    Sample *NewSample(std::string id, std::string name);
-
-    SampleArray *GetSampleArray(std::string id);
-    Sample *GetSample(std::string id);
-    Sample *GetSample(std::string array_id, std::string pos_id);
-    std::vector<std::variant<Sample *, SampleArray *>> GetItems()
-    {
-        return items;
-    }
-
+    ::Plate *NewPlate(PlateType type, std::string id, std::string uuid="");
+    ::Plate *Plate(std::string id);
+    std::vector<::Plate *> Plates();
 
 private:
     ExperimentControl *exp;
 
-    std::shared_mutex items_mutex;
-    // data container
-    std::vector<std::variant<Sample *, SampleArray *>> items;
-    // index
-    std::set<std::string> id_set;
-    std::map<std::string, SampleArray *> id_array_map;
-    std::map<std::string, Sample *> id_sample_map;
+    std::shared_mutex plate_mutex;
+    std::vector<::Plate *> plates;
+    std::map<std::string, ::Plate *> plate_map;
 };
 
 #endif

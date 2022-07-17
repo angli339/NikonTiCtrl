@@ -25,15 +25,15 @@ WELLPLATE_CONFIG = {
 
 
 class Site():
-    def __init__(self, well, id: str, rel_pos: Tuple[float, float], index=None):
+    def __init__(self, well, id: str, rel_pos: Tuple[float, float], name=None):
         self._well = well
         self._id = id
         self._rel_pos = rel_pos
-        self._index = index
+        self._name = name
 
     def __repr__(self):
         if self._index:
-            return "Site(well='{}', id='{}', index={}, rel_pos={})".format(self._well.id, self._id, self._index, self._rel_pos)
+            return "Site(well='{}', id='{}', name={}, rel_pos={})".format(self._well.id, self._id, self._name, self._rel_pos)
         else:
             return "Site(well='{}', id='{}', rel_pos={})".format(self._well.id, self._id, self._rel_pos)
 
@@ -46,8 +46,8 @@ class Site():
         return self._id
 
     @property
-    def index(self):
-        return self.index
+    def name(self):
+        return self._name
 
     @property
     def rel_pos(self) -> Tuple[float, float]:
@@ -55,8 +55,8 @@ class Site():
 
     @property
     def pos(self) -> Tuple[float, float]:
-        pos_x = self._well.pos_origin[0] + self._rel_pos[0]
-        pos_y = self._well.pos_origin[1] + self._rel_pos[1]
+        pos_x = self._well.pos[0] + self._rel_pos[0]
+        pos_y = self._well.pos[1] + self._rel_pos[1]
         return (pos_x, pos_y)
 
 class Well():
@@ -65,7 +65,7 @@ class Well():
         self._id = id
         self._enabled = False
         self._preset_name = None
-        self._pos_origin = None
+        self._rel_pos = None
         self._sites = []
         self.metadata = {}
 
@@ -86,16 +86,22 @@ class Well():
         return self._enabled
 
     @property
-    def pos_origin(self) -> Tuple[float, float]:
-        if self._pos_origin is None:
-            raise ValueError("well origin is not set up")
+    def pos(self) -> Tuple[float, float]:
+        pos_x = self._wellplate.pos_origin[0] + self._rel_pos[0]
+        pos_y = self._wellplate.pos_origin[1] + self._rel_pos[1]
+        return (pos_x, pos_y)
 
-        return self._pos_origin
+    @property
+    def rel_pos(self) -> Tuple[float, float]:
+        if self._rel_pos is None:
+            raise ValueError("well position is not set up")
 
-    @pos_origin.setter
-    def pos_origin(self, pos:  Tuple[float, float]):
+        return self._rel_pos
+
+    @rel_pos.setter
+    def rel_pos(self, rel_pos:  Tuple[float, float]):
         # TODO: check safety range
-        self._pos_origin = pos
+        self._rel_pos = rel_pos
 
     @property
     def preset_name(self) -> str:
@@ -148,11 +154,17 @@ class Wellplate():
 
         self._wells = {}
 
-        for row_id in self._rows:
-            for col_id in self._cols:
+        for i_row, row_id in enumerate(self._rows):
+            for i_col, col_id in enumerate(self._cols):
                 well_id = row_id + col_id
-                self._wells[well_id] = Well(self, well_id)
+                well = Well(self, well_id)
 
+                rel_pos_x = self._spacing[0] * i_col
+                rel_pos_y = self._spacing[1] * i_row
+                well.rel_pos = (rel_pos_x, rel_pos_y)
+
+                self._wells[well_id] = well
+            
         self._pos_origin = None
     
     def __repr__(self):
@@ -215,12 +227,6 @@ class Wellplate():
     def pos_origin(self, pos: Tuple[float, float]):
         # TODO check against safety range
         self._pos_origin = pos
-        for i_col in range(self._n_cols):
-            for i_row in range(self._n_rows):
-                well_pos_x = pos[0] + self._spacing[0] * i_col
-                well_pos_y = pos[1] + self._spacing[1] * i_row
-                well_id = self.rowcol_to_id(i_row, i_col)
-                self._wells[well_id].pos_origin = (well_pos_x, well_pos_y)
 
     def define_origin(self, current_well_id: str, pos:Optional[Tuple[float, float]]=None):
         if pos is None:

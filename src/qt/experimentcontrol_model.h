@@ -49,8 +49,8 @@ private:
     ::SampleManagerModel *sampleManagerModel;
     ::ImageManagerModel *imageManagerModel;
 
-    SampleArray *selected_array = nullptr;
-    Sample *selected_sample = nullptr;
+    Plate *selected_plate = nullptr;
+    Well *selected_well = nullptr;
     Site *selected_site = nullptr;
 
     EventStream eventStream;
