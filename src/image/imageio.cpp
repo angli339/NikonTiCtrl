@@ -7,6 +7,58 @@
 
 #include "version.h"
 
+ImageData ImageRead(std::filesystem::path filepath)
+{
+    if (!std::filesystem::exists(filepath)) {
+        throw std::runtime_error("file not found");
+    }
+
+    TIFF *tif = TIFFOpen(filepath.string().c_str(), "r");
+    if (tif == NULL) {
+        // TODO get text descrption of the error
+        throw std::runtime_error(fmt::format(
+            "failed to open tiff for read \"{}\"", filepath.string()));
+    }
+
+    uint32_t width, height;
+    uint16_t bits_per_sample, sampleformat, samples_per_pixel;
+    TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
+    TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
+    TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &bits_per_sample);
+    TIFFGetField(tif, TIFFTAG_SAMPLEFORMAT, &sampleformat);
+    TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &samples_per_pixel);
+
+    DataType dtype;
+    ColorType ctype;
+    if ((samples_per_pixel == 1) && (bits_per_sample == 16) && (sampleformat == SAMPLEFORMAT_UINT)) {
+        dtype = DataType::Uint16;
+        ctype = ColorType::Mono16;
+    } else {
+        throw std::runtime_error("format not yet supported");
+    }
+
+    uint16_t planar_config;
+    TIFFGetField(tif, TIFFTAG_PLANARCONFIG, &planar_config);
+    if (planar_config != PLANARCONFIG_CONTIG) {
+        throw std::runtime_error("format not supported: expecting PLANARCONFIG_CONTIG");
+    }
+
+    uint32_t rows_per_strip;
+    TIFFGetField(tif, TIFFTAG_ROWSPERSTRIP, &rows_per_strip);
+    if (rows_per_strip != height) {
+        throw std::runtime_error("format not yet supported: expecting single strip");
+    }
+
+    ImageData frame(height, width, dtype, ctype);
+    if (frame.BufSize() != TIFFStripSize(tif)) {
+        throw std::runtime_error("strip size does not match buf size");
+    }
+    TIFFReadEncodedStrip(tif, 0, frame.Buf().get(), frame.BufSize());
+    TIFFClose(tif);
+
+    return frame;
+}
+
 void ImageWrite(std::filesystem::path filepath, ImageData data,
                 TiffMetadata tiff_meta)
 {

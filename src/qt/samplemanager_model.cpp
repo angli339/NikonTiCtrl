@@ -13,7 +13,19 @@ SampleManagerModel::SampleManagerModel(SampleManager *sampleManager,
 
 SampleManagerModel::~SampleManagerModel()
 {
-    deleteTree(rootItem);
+    if (rootItem) {
+        deleteTree(rootItem);
+    }
+}
+
+void SampleManagerModel::handleExperimentOpen()
+{
+    beginResetModel();
+    if (rootItem) {
+        deleteTree(rootItem);
+    }
+    buildTree();
+    endResetModel();
 }
 
 void SampleManagerModel::buildTree()

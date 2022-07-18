@@ -20,6 +20,8 @@ public:
                               QObject *parent = nullptr);
     ~ImageManagerModel();
 
+    void handleExperimentOpen();
+
     ImageData GetNextLiveViewFrame();
     NDImage *GetNDImage(QString name);
 
@@ -43,7 +45,7 @@ signals:
 private:
     ImageManager *imageManager;
 
-    ImageManagerTreeItem *rootItem;
+    ImageManagerTreeItem *rootItem = nullptr;
     void buildTree();
     void deleteTree(ImageManagerTreeItem *item);
     void addNDImage(NDImage *ndimage);

@@ -23,6 +23,16 @@ NDImage *ImageManagerModel::GetNDImage(QString name)
     return imageManager->GetNDImage(name.toStdString());
 }
 
+void ImageManagerModel::handleExperimentOpen()
+{
+    beginResetModel();
+    if (rootItem) {
+        deleteTree(rootItem);
+    }
+    buildTree();
+    endResetModel();
+}
+
 void ImageManagerModel::buildTree()
 {
     rootItem = new ImageManagerTreeItem;

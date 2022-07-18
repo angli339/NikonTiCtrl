@@ -28,10 +28,12 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role = Qt::DisplayRole) const override;
 
+    void handleExperimentOpen();
+
 private:
     SampleManager *sampleManager;
 
-    SampleManagerTreeItem *rootItem;
+    SampleManagerTreeItem *rootItem = nullptr;
     void buildTree();
     void deleteTree(SampleManagerTreeItem *item);
     void addPlate(SampleManagerTreeItem *parent, Plate *array);

@@ -21,6 +21,7 @@ struct TiffMetadata {
     std::string software_version;
 };
 
+ImageData ImageRead(std::filesystem::path filepath);
 void ImageWrite(std::filesystem::path filepath, ImageData data,
                 TiffMetadata tiff_meta);
 

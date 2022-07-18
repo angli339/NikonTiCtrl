@@ -296,18 +296,17 @@ grpc::Status APIServer::ListNDImage(ServerContext *context,
     for (const auto &im : ndimage_list) {
         auto ndimage_pb = resp->add_ndimages();
         ndimage_pb->set_name(im->Name());
-        ndimage_pb->set_n_images(im->NumImages());
+        for (const auto &ch_name : im->ChannelNames()) {
+            ndimage_pb->add_channel_names(ch_name);
+        }
+        ndimage_pb->set_width(im->Width());
+        ndimage_pb->set_height(im->Height());
         ndimage_pb->set_n_ch(im->NChannels());
         ndimage_pb->set_n_z(im->NDimZ());
         ndimage_pb->set_n_t(im->NDimT());
-        for (const auto &ch_info : im->ChannelInfo()) {
-            auto ch_info_pb = ndimage_pb->add_channel_info();
-            ch_info_pb->set_name(ch_info.name);
-            ch_info_pb->set_width(ch_info.width);
-            ch_info_pb->set_height(ch_info.height);
-            ch_info_pb->set_dtype(DataTypeToPB(ch_info.dtype));
-            ch_info_pb->set_ctype(ColorTypeToPB(ch_info.ctype));
-        }
+        ndimage_pb->set_dtype(DataTypeToPB(im->DataType()));
+        ndimage_pb->set_ctype(ColorTypeToPB(im->ColorType()));
+        
     }
     return grpc::Status::OK;
 }

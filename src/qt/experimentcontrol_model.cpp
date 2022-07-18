@@ -107,6 +107,8 @@ void ExperimentControlModel::handleEvents()
             break;
         case EventType::ExperimentPathChanged:
             emit experimentPathChanged(e.value.c_str());
+            sampleManagerModel->handleExperimentOpen();
+            imageManagerModel->handleExperimentOpen();
             break;
         case EventType::NDImageCreated:
             imageManagerModel->handleNDImageCreated(e.value);

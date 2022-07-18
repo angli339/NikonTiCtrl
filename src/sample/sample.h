@@ -14,6 +14,7 @@
 #include "channel.h"
 #include "utils/uuid.h"
 
+class SampleManager;
 class Plate;
 class Well;
 class Site;
@@ -40,6 +41,7 @@ struct Pos2D {
 };
 
 class Plate {
+    friend class SampleManager;
 public:
     Plate(PlateType type, std::string id, std::string uuid="");
     ~Plate();
@@ -57,13 +59,12 @@ public:
     std::vector<::Well *> Wells() const;
 
 private:
+    Plate() {}
     PlateType type;
     std::string id;
     std::string uuid;
     std::string name;
     std::optional<Pos2D> pos_origin;
-
-    std::string preset_name;
 
     std::vector<::Well *> wells;
     std::map<std::string, ::Well *> well_map;
@@ -71,6 +72,7 @@ private:
 };
 
 class Well {
+    friend class SampleManager;
 public:
     Well(const ::Plate *plate, std::string id, Pos2D rel_pos, std::string uuid="");
     ~Well();
@@ -91,6 +93,7 @@ public:
     Site *NewSite(std::string id, std::string name, Pos2D rel_pos);
 
 private:
+    Well() {}
     const ::Plate *plate;
     std::string id;
     std::string uuid;
@@ -105,6 +108,7 @@ private:
 };
 
 class Site {
+    friend class SampleManager;
 public:
     Site(const ::Well *well, std::string id, std::string name, Pos2D rel_pos);
 
@@ -116,6 +120,7 @@ public:
     const ::Well *Well() const;
 
 private:
+    Site() {}
     const ::Well *well;
     std::string id;
     std::string name;

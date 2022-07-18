@@ -5,6 +5,7 @@
     "dependencies": [
         "fmt",
         "nlohmann-json",
+        "sqlite3",
         {
             "name": "grpc",
             "features": [

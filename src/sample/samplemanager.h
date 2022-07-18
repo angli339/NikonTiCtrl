@@ -19,6 +19,8 @@ public:
     SampleManager(ExperimentControl *exp);
     ~SampleManager();
 
+    void LoadFromDB();
+
     ::Plate *NewPlate(PlateType type, std::string id, std::string uuid="");
     ::Plate *Plate(std::string id);
     std::vector<::Plate *> Plates();

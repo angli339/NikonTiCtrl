@@ -4,11 +4,11 @@
 #include "utils/uuid.h"
 #include "version.h"
 
-NDImage::NDImage(std::string name, std::vector<NDImageChannel> channel_info)
+NDImage::NDImage(std::string name, std::vector<std::string> channel_names)
 {
     this->name = name;
-    this->channel_info = channel_info;
-    n_ch = channel_info.size();
+    this->channel_names = channel_names;
+    n_ch = channel_names.size();
 }
 
 std::string NDImage::Name()
@@ -19,6 +19,16 @@ std::string NDImage::Name()
 int NDImage::NumImages()
 {
     return dataset.size();
+}
+
+int NDImage::Width()
+{
+    return width;
+}
+
+int NDImage::Height()
+{
+    return height;
 }
 
 int NDImage::NChannels()
@@ -36,20 +46,30 @@ int NDImage::NDimT()
     return n_t;
 }
 
-std::vector<NDImageChannel> NDImage::ChannelInfo()
+::DataType NDImage::DataType() 
 {
-    return channel_info;
+    return dtype;
+}
+
+::ColorType NDImage::ColorType()
+{
+    return ctype;
+}
+
+std::vector<std::string> NDImage::ChannelNames()
+{
+    return channel_names;
 }
 
 std::string NDImage::ChannelName(int i_ch)
 {
-    return channel_info[i_ch].name;
+    return channel_names[i_ch];
 }
 
 int NDImage::ChannelIndex(std::string channel_name)
 {
-    for (int i = 0; i < channel_info.size(); i++) {
-        if (channel_info[i].name == channel_name) {
+    for (int i = 0; i < channel_names.size(); i++) {
+        if (channel_names[i] == channel_name) {
             return i;
         }
     }
@@ -77,7 +97,7 @@ void NDImage::AddImage(int i_ch, int i_z, int i_t, ImageData data,
     // Prepend NDImage info to metadata
     nlohmann::ordered_json new_metadata;
     new_metadata["ndimage"] = {
-        {"name", name}, {"channel", channel_info[i_ch].name},
+        {"name", name}, {"channel", channel_names[i_ch]},
         {"i_ch", i_ch}, {"i_z", i_z},
         {"i_t", i_t},
     };
@@ -94,6 +114,7 @@ void NDImage::AddImage(int i_ch, int i_z, int i_t, ImageData data,
     }
     dataset[{i_ch, i_z, i_t}] = data;
     metadata_map[{i_ch, i_z, i_t}] = new_metadata;
+    filepath_map[{i_ch, i_z, i_t}] = folder / getImageName(i_ch, i_z, i_t);
 }
 
 void NDImage::SaveImage(int i_ch, int i_z, int i_t)
@@ -113,15 +134,14 @@ void NDImage::SaveImage(int i_ch, int i_z, int i_t)
     TiffMetadata t_meta;
     t_meta.metadata = metadata;
 
-    std::filesystem::path filepath = folder / getImageName(i_ch, i_z, i_t);
+    std::filesystem::path filepath = filepath_map[{i_ch, i_z, i_t}];
     ImageWrite(filepath, data, t_meta);
 }
 
-
 bool NDImage::HasData(int i_ch, int i_z, int i_t)
 {
-    auto it = dataset.find({i_ch, i_z, i_t});
-    if (it == dataset.end()) {
+    auto it = filepath_map.find({i_ch, i_z, i_t});
+    if (it == filepath_map.end()) {
         return false;
     }
     return true;
@@ -129,16 +149,23 @@ bool NDImage::HasData(int i_ch, int i_z, int i_t)
 
 ImageData NDImage::GetData(int i_ch, int i_z, int i_t)
 {
-    auto it = dataset.find({i_ch, i_z, i_t});
-    if (it == dataset.end()) {
+    auto it_file = filepath_map.find({i_ch, i_z, i_t});
+    if (it_file == filepath_map.end()) {
         throw std::invalid_argument("index not found");
     }
-    return it->second;
+    std::filesystem::path filepath = it_file->second;
+
+    auto it_data = dataset.find({i_ch, i_z, i_t});
+    if (it_data != dataset.end()) {
+        return it_data->second;
+    } else {
+        ImageData data = ImageRead(filepath);
+        dataset[{i_ch, i_z, i_t}] = data;
+        return data;
+    }
 }
 
 std::string NDImage::getImageName(int i_ch, int i_z, int i_t)
 {
-    std::string channel_name = channel_info[i_ch].name;
-
-    return fmt::format("{}-{}-{:03d}-{:04d}.tif", name, channel_name, i_z, i_t);
+    return fmt::format("{}-{}-{:03d}-{:04d}.tif", name, channel_names[i_ch], i_z, i_t);
 }

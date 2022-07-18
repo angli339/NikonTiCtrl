@@ -3,6 +3,7 @@
 
 #include <future>
 
+#include "experimentdb.h"
 #include "image/imagemanager.h"
 #include "device/devicehub.h"
 #include "eventstream.h"
@@ -21,6 +22,7 @@ public:
     std::filesystem::path UserDataRoot();
     void OpenExperiment(std::filesystem::path exp_dir);
     std::filesystem::path ExperimentDir();
+    ExperimentDB *DB();
 
     DeviceHub *Devices();
     SampleManager *Samples();
@@ -43,6 +45,7 @@ private:
     ImageManager *image_manager;
 
     std::filesystem::path exp_dir;
+    ExperimentDB *db =  nullptr;
 
     EventStream dev_event_stream;
     std::future<void> handle_dev_event_future;

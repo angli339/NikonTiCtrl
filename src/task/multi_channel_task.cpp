@@ -234,17 +234,11 @@ Status MultiChannelTask::Acquire(std::string ndimage_name,
     ColorType ctype = dcam->GetColorType();
     uint32_t width = dcam->GetWidth();
     uint32_t height = dcam->GetHeight();
-    std::vector<NDImageChannel> nd_channels;
+    std::vector<std::string> ch_names;
     for (const auto &channel : channels) {
-        NDImageChannel nd_channel;
-        nd_channel.name = channel.preset_name;
-        nd_channel.width = width;
-        nd_channel.height = height;
-        nd_channel.dtype = dtype;
-        nd_channel.ctype = ctype;
-        nd_channels.push_back(nd_channel);
+        ch_names.push_back(channel.preset_name);
     }
-    exp->Images()->NewNDImage(ndimage_name, nd_channels);
+    exp->Images()->NewNDImage(ndimage_name, ch_names);
 
     //
     // Start acquisition

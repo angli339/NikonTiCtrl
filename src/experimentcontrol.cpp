@@ -24,6 +24,10 @@ ExperimentControl::~ExperimentControl()
     dev_event_stream.Close();
     handle_dev_event_future.get();
     
+    if (db) {
+        delete db;
+    }
+
     delete sample_manager;
     delete image_manager;
 
@@ -64,9 +68,23 @@ void ExperimentControl::OpenExperiment(std::filesystem::path exp_dir)
                 fmt::format("failed to create dir {}", exp_dir.string()));
         }
     }
+    
+    // Close DB
+    if (this->db) {
+        delete this->db;
+        this->db = nullptr;
+    }
 
+    // Open or create experiment DB
+    std::filesystem::path filename = exp_dir / "index.db";
+    this->db = new ExperimentDB(filename);
+
+    // Switch to experiment dir and load DB
     this->exp_dir = exp_dir;
+    sample_manager->LoadFromDB();
+    image_manager->LoadFromDB();
 
+    // Done
     SendEvent({
         .type = EventType::ExperimentPathChanged,
         .value = exp_dir.string(),
@@ -76,6 +94,11 @@ void ExperimentControl::OpenExperiment(std::filesystem::path exp_dir)
 std::filesystem::path ExperimentControl::ExperimentDir()
 {
     return exp_dir;
+}
+
+ExperimentDB *ExperimentControl::DB()
+{
+    return db;
 }
 
 DeviceHub *ExperimentControl::Devices()

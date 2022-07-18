@@ -4,6 +4,7 @@
 #include <fmt/chrono.h>
 #include <fmt/os.h>
 #include <stdexcept>
+#include <nlohmann/json.hpp>
 
 #include "config.h"
 #include "logging.h"
@@ -17,6 +18,34 @@ ImageManager::ImageManager(ExperimentControl *exp)
            config.system.unet_model.output_name)
 {
     this->exp = exp;
+}
+
+void ImageManager::LoadFromDB()
+{
+    std::unique_lock<std::shared_mutex> lk(dataset_mutex);
+    for (const auto& ndimage_row : exp->DB()->GetAllNDImages()) {
+        NDImage *ndimage = new NDImage;
+        ndimage->name = ndimage_row.name;
+        ndimage->channel_names = ndimage_row.ch_names.get<std::vector<std::string>>();
+        ndimage->width = ndimage_row.width;
+        ndimage->height = ndimage_row.height;
+        ndimage->n_ch = ndimage_row.n_ch;
+        ndimage->n_z = ndimage_row.n_z;
+        ndimage->n_t = ndimage_row.n_t;
+        ndimage->dtype = DataType::Uint16;
+        ndimage->ctype = ColorType::Mono16;
+
+        dataset.push_back(ndimage);
+        dataset_map[ndimage->name] = ndimage;
+    }
+
+    for (const auto& image_row : exp->DB()->GetAllImages()) {
+        NDImage *ndimage = dataset_map[image_row.ndimage_name];
+        int i_ch = ndimage->ChannelIndex(image_row.ch_name);
+        int i_z = image_row.i_z;
+        int i_t = image_row.i_t;
+        ndimage->filepath_map[{i_ch, i_z, i_t}] = exp->ExperimentDir() / image_row.path;
+    }
 }
 
 void ImageManager::SetLiveViewFrame(ImageData new_frame)
@@ -60,7 +89,7 @@ NDImage *ImageManager::GetNDImage(std::string ndimage_name)
 }
 
 void ImageManager::NewNDImage(std::string ndimage_name,
-                             std::vector<NDImageChannel> channel_info)
+                             std::vector<std::string> ch_names)
 {
     std::filesystem::path im_path = GetImageDir();
 
@@ -68,14 +97,12 @@ void ImageManager::NewNDImage(std::string ndimage_name,
 
     auto it = dataset_map.find(ndimage_name);
     if (it != dataset_map.end()) {
-        if (it->second->ChannelInfo() == channel_info) {
-            return;
-        }
-        throw std::invalid_argument(
-            "duplicated name but different channel_infof");
+        // Overwrite
+        delete it->second;
+        dataset_map.erase(it);
     }
 
-    NDImage *ndimage = new NDImage(ndimage_name, channel_info);
+    NDImage *ndimage = new NDImage(ndimage_name, ch_names);
     ndimage->SetFolder(im_path);
     dataset.push_back(ndimage);
     dataset_map[ndimage_name] = ndimage;

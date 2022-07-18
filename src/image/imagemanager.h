@@ -18,6 +18,7 @@ class ExperimentControl;
 class ImageManager : public EventSender {
 public:
     ImageManager(ExperimentControl *exp);
+    void LoadFromDB();
 
     void SetLiveViewFrame(ImageData new_frame);
     ImageData GetNextLiveViewFrame();
@@ -27,7 +28,7 @@ public:
     NDImage *GetNDImage(std::string ndimage_name);
 
     void NewNDImage(std::string ndimage_name,
-                    std::vector<NDImageChannel> channel_info);
+                    std::vector<std::string> ch_names);
     void AddImage(std::string ndimage_name, int i_ch, int i_z, int i_t,
                   ImageData data, nlohmann::ordered_json metadata);
 

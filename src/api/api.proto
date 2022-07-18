@@ -42,19 +42,16 @@ enum ColorType {
 
 message NDImage {
     string name = 1;
-    repeated NDImageChannel channel_info = 2;
-    int32 n_images = 3;
-    int32 n_ch = 4;
-    int32 n_z = 5;
-    int32 n_t = 6;
-}
+    repeated string channel_names = 2;
 
-message NDImageChannel {
-    string name = 1;
-    uint32 width = 2;
-    uint32 height = 3;
-    DataType dtype = 4;
-    ColorType ctype = 5;
+    uint32 width = 3;
+    uint32 height = 4;
+    int32 n_ch = 5;
+    int32 n_z = 6;
+    int32 n_t = 7;
+    
+    DataType dtype = 8;
+    ColorType ctype = 9;
 }
 
 message ImageData {

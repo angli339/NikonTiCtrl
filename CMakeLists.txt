@@ -29,6 +29,7 @@ add_compile_definitions(_HAS_DEPRECATED_RESULT_OF=1)
 
 find_package(fmt CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
+find_package(unofficial-sqlite3 CONFIG REQUIRED)
 find_package(Protobuf CONFIG REQUIRED)
 get_target_property(Protobuf_PROTOC_EXECUTABLE protobuf::protoc IMPORTED_LOCATION_RELEASE)
 find_package(TIFF REQUIRED)
@@ -249,6 +250,7 @@ add_executable(NikonTiControl
     src/eventstream.cpp
     src/logging.cpp
     src/experimentcontrol.cpp
+    src/experimentdb.cpp
     ${version_srcs}
     ${QT_SOURCES}
 
@@ -303,6 +305,7 @@ target_link_libraries(NikonTiControl PRIVATE
     gRPC::grpc++
     gRPC::grpc++_reflection
     nlohmann_json::nlohmann_json
+    unofficial::sqlite3::sqlite3
     protobuf::libprotobuf
     TIFF::TIFF
     opencv_core
