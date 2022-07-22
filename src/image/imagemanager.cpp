@@ -20,9 +20,25 @@ ImageManager::ImageManager(ExperimentControl *exp)
     this->exp = exp;
 }
 
+ImageManager::~ImageManager()
+{
+    std::unique_lock<std::shared_mutex> lk(dataset_mutex);
+    for (NDImage *ndimage : dataset) {
+        delete ndimage;
+    }
+    dataset.clear();
+    dataset_map.clear();
+}
+
 void ImageManager::LoadFromDB()
 {
     std::unique_lock<std::shared_mutex> lk(dataset_mutex);
+    for (NDImage *ndimage : dataset) {
+        delete ndimage;
+    }
+    dataset.clear();
+    dataset_map.clear();
+
     for (const auto& ndimage_row : exp->DB()->GetAllNDImages()) {
         NDImage *ndimage = new NDImage;
         ndimage->name = ndimage_row.name;

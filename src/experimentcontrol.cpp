@@ -48,32 +48,59 @@ void ExperimentControl::SubscribeEvents(EventStream *channel)
     multichannel_task->SubscribeEvents(channel);
 }
 
-std::filesystem::path ExperimentControl::UserDataRoot()
+std::filesystem::path ExperimentControl::BaseDir()
 {
-    std::filesystem::path data_root(config.user.data_root);
-    return data_root;
-}
-
-void ExperimentControl::OpenExperiment(std::filesystem::path exp_dir)
-{
-    // Check path
-    if (exp_dir.empty()) {
-        throw std::invalid_argument("empty path");
+    if (!base_dir.empty()) {
+        return base_dir;
     }
 
-    // Create dir
+    if (!fs::exists(config.user.data_root)) {
+        if (!fs::create_directories(config.user.data_root)) {
+            throw std::runtime_error(
+                fmt::format("failed to create base dir {}", config.user.data_root.string()));
+        }
+    }
+    base_dir = config.user.data_root;
+    return base_dir;
+}
+
+void ExperimentControl::SetBaseDir(std::filesystem::path base_dir)
+{
+    if (base_dir.empty()) {
+        throw std::invalid_argument("empty base dir");
+    }
+
+    if (!fs::exists(base_dir)) {
+        if (!fs::create_directories(base_dir)) {
+            throw std::runtime_error(
+                fmt::format("failed to create base dir {}", base_dir.string()));
+        }
+    }
+    this->base_dir = base_dir;
+}
+
+void ExperimentControl::OpenExperiment(std::string name)
+{
+    if (name.empty()) {
+        throw std::invalid_argument("empty experiment name");
+    }
+
+    // Create experiment dir
+    std::filesystem::path exp_dir = BaseDir() / name;
     if (!fs::exists(exp_dir)) {
         if (!fs::create_directories(exp_dir)) {
             throw std::runtime_error(
-                fmt::format("failed to create dir {}", exp_dir.string()));
+                fmt::format("failed to create exp dir {}", exp_dir.string()));
         }
     }
-    
-    // Close DB
-    if (this->db) {
-        delete this->db;
-        this->db = nullptr;
-    }
+    OpenExperimentDir(exp_dir);
+}
+
+void ExperimentControl::OpenExperimentDir(std::filesystem::path exp_dir)
+{
+    CloseExperiment();
+
+    this->exp_dir = exp_dir;
 
     // Open or create experiment DB
     std::filesystem::path filename = exp_dir / "index.db";
@@ -89,6 +116,16 @@ void ExperimentControl::OpenExperiment(std::filesystem::path exp_dir)
         .type = EventType::ExperimentPathChanged,
         .value = exp_dir.string(),
     });
+}
+
+void ExperimentControl::CloseExperiment()
+{
+    if (this->db) {
+        delete this->db;
+        this->db = nullptr;
+    }
+    this->exp_dir = "";
+    // TODO: notify
 }
 
 std::filesystem::path ExperimentControl::ExperimentDir()
@@ -225,7 +262,7 @@ bool ExperimentControl::IsLiveRunning()
 
 void ExperimentControl::runMultiChannelTask(std::string ndimage_name,
                                          std::vector<Channel> channels, int i_z,
-                                         int i_t,
+                                         int i_t, Site *site,
                                          nlohmann::ordered_json metadata)
 {
     if (is_busy) {
@@ -243,7 +280,7 @@ void ExperimentControl::runMultiChannelTask(std::string ndimage_name,
     is_busy = true;
     try {
         Status status = multichannel_task->Acquire(ndimage_name, channels, i_z,
-                                                   i_t, metadata);
+                                                   i_t, site, metadata);
         if (!status.ok()) {
             throw std::runtime_error(status.ToString());
         }
@@ -272,7 +309,7 @@ void ExperimentControl::runMultiChannelTask(std::string ndimage_name,
 
 void ExperimentControl::AcquireMultiChannel(std::string ndimage_name,
                                          std::vector<Channel> channels, int i_z,
-                                         int i_t,
+                                         int i_t, Site *site,
                                          nlohmann::ordered_json metadata)
 {
     //
@@ -299,7 +336,7 @@ void ExperimentControl::AcquireMultiChannel(std::string ndimage_name,
     //
     current_task_future =
         std::async(std::launch::async, &ExperimentControl::runMultiChannelTask,
-                   this, ndimage_name, channels, i_z, i_t, metadata);
+                   this, ndimage_name, channels, i_z, i_t, site, metadata);
 }
 
 void ExperimentControl::WaitMultiChannelTask()

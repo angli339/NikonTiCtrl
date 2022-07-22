@@ -73,4 +73,7 @@ void loadUserConfig(std::filesystem::path filename)
     config.user.name = j.at("name").get<std::string>();
     config.user.email = j.at("email").get<std::string>();
     config.user.data_root = j.at("data_root").get<std::string>();
+    if (config.user.data_root.empty()) {
+        throw std::runtime_error(fmt::format("data_root is not set up"));
+    }
 }

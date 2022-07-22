@@ -1,10 +1,14 @@
+from cgitb import enable
+from re import X
 import string
 import warnings
+import json
 
 import pandas as pd
 
 from typing import Tuple, Optional
-from .api import API
+
+from . import api_pb2
 
 WELLPLATE_CONFIG = {
     "wellplate96": {
@@ -25,21 +29,26 @@ WELLPLATE_CONFIG = {
 
 
 class Site():
-    def __init__(self, well, id: str, rel_pos: Tuple[float, float], name=None):
+    def __init__(self, well, id: str, rel_pos: Tuple[float, float]):
         self._well = well
+        self._uuid = ""
         self._id = id
         self._rel_pos = rel_pos
-        self._name = name
+        self._metadata = {}
 
     def __repr__(self):
-        if self._index:
-            return "Site(well='{}', id='{}', name={}, rel_pos={})".format(self._well.id, self._id, self._name, self._rel_pos)
+        if self.name:
+            return "Site(well='{}', id='{}', name={}, rel_pos={})".format(self._well.id, self._id, self.name, self._rel_pos)
         else:
             return "Site(well='{}', id='{}', rel_pos={})".format(self._well.id, self._id, self._rel_pos)
 
     @property
     def well_id(self) -> str:
         return self._well.id
+    
+    @property
+    def uuid(self):
+        return self._uuid
 
     @property
     def id(self) -> str:
@@ -47,7 +56,10 @@ class Site():
 
     @property
     def name(self):
-        return self._name
+        if "name" in self._metadata:
+            return self._metadata["name"]
+        else:
+            return None
 
     @property
     def rel_pos(self) -> Tuple[float, float]:
@@ -62,13 +74,17 @@ class Site():
 class Well():
     def __init__(self, wellplate, id: str):
         self._wellplate = wellplate
+        self._uuid = ""
         self._id = id
         self._enabled = False
-        self._preset_name = None
         self._rel_pos = None
         self._sites = []
         self.metadata = {}
 
+    @property
+    def uuid(self):
+        return self._uuid
+    
     @property
     def id(self) -> str:
         return self._id
@@ -76,13 +92,23 @@ class Well():
     def __repr__(self):
         return "Well('{}')".format(self._id)
 
-    def enable(self):
-        self._enabled = True
+    def set_enabled(self):
+        req_list = []
+        req = api_pb2.ModifyWellRequest(
+                well_uuid = self.uuid,
+                enable = True)
+        req_list.append(req)
+        self._wellplate._api.stub.ModifyWell(req for req in req_list)
 
-    def disable(self):
-        self._enabled = False
+    def set_disabled(self):
+        req_list = []
+        req = api_pb2.ModifyWellRequest(
+                well_uuid = self.uuid,
+                enable = False)
+        req_list.append(req)
+        self._wellplate._api.stub.ModifyWell(req for req in req_list)
 
-    def is_enabled(self) -> bool:
+    def enabled(self) -> bool:
         return self._enabled
 
     @property
@@ -98,49 +124,36 @@ class Well():
 
         return self._rel_pos
 
-    @rel_pos.setter
-    def rel_pos(self, rel_pos:  Tuple[float, float]):
-        # TODO: check safety range
-        self._rel_pos = rel_pos
-
     @property
     def preset_name(self) -> str:
-        return self._preset_name
+        if "preset_name" in self._metadata:
+            return self._metadata["preset_name"]
+        return None
 
     @preset_name.setter
     def preset_name(self, preset_name: str):
-        self._preset_name = preset_name
+        raise NotImplementedError()
 
-    def setup_sites(self, n_x: int, n_y: int, n_sites: Optional[int]=None, spacing: float =-250):
-        sites = []
-        for i_y in range(n_y):
-            i_x_list = list(range(n_x))
-            if i_y % 2 != 0:
-                i_x_list = i_x_list[::-1]
-            for i_x in i_x_list:
-                site_id = "{:03d}".format(len(sites))
-                site_index = (i_x, i_y)
-                site_rel_pos = (i_x * spacing, i_y * spacing)
-                sites.append(Site(self, site_id, site_rel_pos, site_index))
-        
-        if n_sites:
-            self._sites = sites[:n_sites]
-        else:
-            self._sites = sites
+    def create_sites(self, n_x: int, n_y: int, spacing: float =-250):
+        raise NotImplementedError()
 
     @property
     def sites(self):
         return self._sites
 
 
-class Wellplate():
-    def __init__(self, type: str, id: str, api: API=None):
+class Plate():
+    def __init__(self, type: str, id: str, api=None):
+        self._uuid = ""
+        self._type = type
         self._id = id
+        self._pos_origin = None
+        self._metadata = {}
+        self._wells = {}
         self._api = api
-
+        
         if type not in WELLPLATE_CONFIG:
             raise ValueError("unknown type {}".format(type))
-        self._type = type
 
         wp_config = WELLPLATE_CONFIG[type]
         self._spacing = wp_config["spacing"]
@@ -151,25 +164,14 @@ class Wellplate():
         self._n_wells = self.n_rows * self.n_cols
         self._rows = string.ascii_uppercase[:self.n_rows]
         self._cols = ["{:02d}".format(i_col) for i_col in range(1, self.n_cols+1)]
-
-        self._wells = {}
-
-        for i_row, row_id in enumerate(self._rows):
-            for i_col, col_id in enumerate(self._cols):
-                well_id = row_id + col_id
-                well = Well(self, well_id)
-
-                rel_pos_x = self._spacing[0] * i_col
-                rel_pos_y = self._spacing[1] * i_row
-                well.rel_pos = (rel_pos_x, rel_pos_y)
-
-                self._wells[well_id] = well
-            
-        self._pos_origin = None
     
     def __repr__(self):
-        return "Wellplate(id='{}', type='{}')".format(self._id, self._type)
+        return "Wellplate(type='{}', id='{}')".format(self._id, self._type)
 
+    @property
+    def uuid(self):
+        return self._uuid
+    
     @property
     def id(self) -> str:
         return self._id
@@ -177,6 +179,21 @@ class Wellplate():
     @property
     def type(self) -> str:
         return self._type
+
+    @property
+    def name(self):
+        if "name" in self._metadata:
+            return self._metadata["name"]
+        else:
+            return None
+
+    @name.setter
+    def name(self, name: str):
+        req = api_pb2.SetPlateMetadataRequest(
+                plate_uuid = self.uuid,
+                key = "name",
+                json_value = json.dumps(name))
+        self._api.stub.SetPlateMetadata(req)
 
     @property
     def n_rows(self) -> int:
@@ -226,20 +243,25 @@ class Wellplate():
     @pos_origin.setter
     def pos_origin(self, pos: Tuple[float, float]):
         # TODO check against safety range
-        self._pos_origin = pos
+        req = api_pb2.SetPlatePositionOriginRequest(
+                plate_uuid = self.uuid,
+                x = pos[0],
+                y = pos[1])
+        self._api.stub.SetPlatePositionOrigin(req)
 
     def define_origin(self, current_well_id: str, pos:Optional[Tuple[float, float]]=None):
         if pos is None:
             pos = self._api.get_xy_stage_position()
-        i_row, i_col = self.id_to_rowcol(current_well_id)
-        pos_origin_x = pos[0] - self._spacing[0] * i_col
-        pos_origin_y = pos[1] - self._spacing[1] * i_row
+        
+        rel_pos = self._wells[self.normalize_id(current_well_id)].rel_pos
+        pos_origin_x = pos[0] - rel_pos[0]
+        pos_origin_y = pos[1] - rel_pos[1]
         self.pos_origin = (pos_origin_x, pos_origin_y)
 
     def move_to_position(self, well_id: str, i_x: int, i_y: int, grid_spacing=-250, wait=True):
         # TODO validate i_x, i_y
         well = self._wells[well_id]
-        well_pos_x, well_pos_y = well.pos_origin
+        well_pos_x, well_pos_y = well.pos()
         pos_x = well_pos_x + i_x * grid_spacing
         pos_y = well_pos_y + i_y * grid_spacing
         self._api.set_xy_stage_position(pos_x, pos_y)
@@ -249,7 +271,7 @@ class Wellplate():
     def enabled_wells(self):
         selected_well_ids = []
         for well_id in self._wells:
-            if self._wells[well_id].is_enabled():
+            if self._wells[well_id].enabled():
                 selected_well_ids.append(well_id)
         return WellplateSlice(self, selected_well_ids)
 
@@ -462,20 +484,36 @@ class WellplateSlice():
 
     @preset_name.setter
     def preset_name(self, preset_name):
-        for well_id in self._well_ids:
-            self._wellplate[well_id].preset_name = preset_name
+        req = api_pb2.SetWellsMetadataRequest(
+                plate_uuid = self._wellplate.uuid,
+                well_id = self._well_ids,
+                key = "preset_name",
+                json_value = json.dumps(preset_name))
+        self._wellplate._api.stub.SetWellsMetadata(req)
 
     def enable(self):
-        for well_id in self._well_ids:
-            self._wellplate[well_id].enable()
+        req = api_pb2.SetWellsEnabledRequest(
+                plate_uuid = self._wellplate.uuid,
+                well_id = self._well_ids,
+                enabled = True)
+        self._wellplate._api.stub.SetWellsEnabled(req)
 
     def disable(self):
-        for well_id in self._well_ids:
-            self._wellplate[well_id].disable()
+        req = api_pb2.SetWellsEnabledRequest(
+                plate_uuid = self._wellplate.uuid,
+                well_id = self._well_ids,
+                enabled = False)
+        self._wellplate._api.stub.SetWellsEnabled(req)
 
-    def setup_sites(self, *args):
-        for well_id in self._well_ids:
-            self._wellplate[well_id].setup_sites(*args)
+    def create_sites(self, n_x: int, n_y: int, spacing: float = -250):
+        req = api_pb2.CreateSitesRequest(
+                plate_uuid = self._wellplate.uuid,
+                well_id = self._well_ids,
+                n_x = n_x,
+                n_y = n_y,
+                spacing_x = spacing,
+                spacing_y = spacing)
+        self._wellplate._api.stub.CreateSites(req)
 
     @property
     def metadata(self):

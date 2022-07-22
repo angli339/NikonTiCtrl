@@ -2,33 +2,128 @@
 
 #include <fmt/format.h>
 
-Plate::Plate(PlateType type, std::string id, std::string uuid)
+PlateType PlateTypeFromString(std::string value)
 {
-    if (id.empty()) {
-        throw std::invalid_argument("id cannot be empty");
-    }
-
-    this->type = type;
-    this->id = id;
-
-    if (uuid.empty()) {
-        this->uuid = utils::uuid();
+    if (value == "slide") {
+        return PlateType::Slide;
+    } else if (value == "wellplate96") {
+        return PlateType::Wellplate96;
+    } else if (value == "wellplate384") {
+        return PlateType::Wellplate384;
     } else {
-        this->uuid = uuid;
+        throw std::invalid_argument(fmt::format("invalid PlateType '{}'", value));
     }
-    
+}
+
+std::string PlateTypeToString(PlateType plate_type)
+{
+    switch (plate_type) {
+    case PlateType::Slide:
+        return "slide";
+    case PlateType::Wellplate96:
+        return "wellplate96";
+    case PlateType::Wellplate384:
+        return "wellplate384";
+    default:
+        throw std::invalid_argument("invalid PlateType");
+    }
+}
+
+Plate::Plate(PlateType plate_type, std::string plate_id)
+{
+    if (plate_id.empty()) {
+        throw std::invalid_argument("plate_id cannot be empty");
+    }
+
+    this->uuid = utils::uuid();
+    this->type = plate_type;
+    this->id = plate_id;
+    createWells(plate_type);
+}
+
+Plate::~Plate()
+{
+    for (::Well *well : wells) {
+        delete well;
+    }
+    wells.clear();
+    well_map.clear();
+}
+
+int Plate::Index() const
+{
+    return index;
+}
+
+std::string Plate::UUID() const
+{
+    return uuid;
+}
+
+PlateType Plate::Type() const
+{
+    return type;
+}
+
+
+std::string Plate::ID() const
+{
+    return id;
+}
+
+const std::optional<Pos2D> Plate::PositionOrigin() const
+{
+    return pos_origin;
+}
+
+const nlohmann::ordered_json Plate::Metadata()  const
+{
+    return metadata;
+}
+
+::Well *Plate::Well(std::string well_id) const
+{
+    auto it = well_map.find(well_id);
+    if (it == well_map.end()) {
+        return nullptr;
+    }
+    return it->second;
+}
+
+const std::vector<::Well *> Plate::Wells() const
+{
+    return wells;
+}
+
+int Plate::NumWells() const
+{
+    return wells.size();
+}
+
+int Plate::NumEnabledWells() const
+{
+    int n_enabled = 0;
+    for (const auto & well : wells) {
+        if (well->Enabled()) {
+            n_enabled++;
+        }
+    }
+    return n_enabled;
+}
+
+void Plate::createWells(PlateType plate_type)
+{
+    if (plate_type == PlateType::Slide) {
+        addWell(new ::Well(this, "", Pos2D{0, 0}));
+        return;
+    }
+
     int n_rows;
     int n_cols;
     double spacing_x;
     double spacing_y;
 
     switch (type) {
-    case PlateType::Slide:
-        n_rows = 1;
-        n_cols = 1;
-        spacing_x = 0;
-        spacing_y = 0;
-        break;
     case PlateType::Wellplate96:
         n_rows = 8;
         n_cols = 12;
@@ -45,121 +140,54 @@ Plate::Plate(PlateType type, std::string id, std::string uuid)
         throw std::invalid_argument("invalid plate type");
     }
 
-    if (n_rows * n_cols == 1) {
-        addWell("", Pos2D{0, 0});
-        return;
-    }
-
     for (int i_row = 0; i_row < n_rows; i_row++) {
         for (int i_col = 0; i_col < n_cols; i_col++) {
             std::string col_id = fmt::format("{:02d}", i_col + 1);
-            std::string row_id = fmt::format("{}", 'A' + i_row);
+            std::string row_id = fmt::format("{:c}", 'A' + i_row);
             std::string well_id = fmt::format("{}{}", row_id, col_id);
             
             Pos2D rel_pos;
             rel_pos.x = i_col * spacing_x;
             rel_pos.y = i_row * spacing_y;
             
-            addWell(well_id, rel_pos);
+            addWell(new ::Well(this, well_id, rel_pos));
         }
     }
 }
 
-Plate::~Plate()
+void Plate::addWell(::Well *well)
 {
-    for (::Well *well : wells) {
-        delete well;
-    }
-}
-
-PlateType Plate::Type() const
-{
-    return type;
-}
-
-
-std::string Plate::ID() const
-{
-    return id;
-}
-
-std::string Plate::UUID() const
-{
-    return uuid;
-}
-
-std::string Plate::Name() const
-{
-    return name;
-}
-
-std::optional<Pos2D> Plate::PositionOrigin() const
-{
-    return pos_origin;
-}
-
-void Plate::SetName(std::string name)
-{
-    this->name = name;
-}
-
-void Plate::SetPositionOrigin(double x, double y)
-{
-    this->pos_origin = Pos2D{x, y};
-}
-
-::Well *Plate::Well(std::string id) const
-{
-    auto it = well_map.find(id);
-    if (it == well_map.end()) {
-        return nullptr;
-    }
-    return it->second;
-}
-
-std::vector<::Well *> Plate::Wells() const
-{
-    return wells;
-}
-
-Well *Plate::addWell(std::string id, Pos2D rel_pos)
-{
-    auto it = well_map.find(id);
+    auto it = well_map.find(well->ID());
     if (it != well_map.end()) {
-        throw std::invalid_argument("id already exists");
+        throw std::invalid_argument(fmt::format("cannot add well with duplicated id '{}'", well->ID()));
     }
-    
-    ::Well *well = new ::Well(this, id, rel_pos);
+    well->index = wells.size();
     wells.push_back(well);
-    well_map[id] = well;
-    return well;
+    well_map[well->ID()] = well;
+    return;
 }
 
-Well::Well(const ::Plate *plate, std::string id, Pos2D rel_pos, std::string UUID)
+Well::Well(::Plate *plate, std::string id, Pos2D rel_pos)
 {
     if (plate == nullptr) {
         throw std::invalid_argument("plate cannot be null");
     }
-
-    if (uuid.empty()) {
-        this->uuid = utils::uuid();
-    } else {
-        this->uuid = uuid;
-    }
     this->plate = plate;
+
+    this->uuid = utils::uuid();
     this->id = id;
+    this->rel_pos = rel_pos;
+    this->enabled = false;
 }
 
 Well::~Well()
 {
-    for (Site *site : sites) {
-        delete site;
-    }
+    clearSites();
 }
 
-std::string Well::ID() const
+int Well::Index() const
 {
-    return id;
+    return index;
 }
 
 std::string Well::UUID() const
@@ -167,12 +195,17 @@ std::string Well::UUID() const
     return uuid;
 }
 
+std::string Well::ID() const
+{
+    return id;
+}
+
 Pos2D Well::RelativePosition() const
 {
     return this->rel_pos;
 }
 
-std::optional<Pos2D> Well::Position() const
+const std::optional<Pos2D> Well::Position() const
 {
     std::optional<Pos2D> plate_pos = plate->PositionOrigin();
     if (!plate_pos.has_value()) {
@@ -184,32 +217,33 @@ std::optional<Pos2D> Well::Position() const
     return pos;
 }
 
-bool Well::IsEnabled() const
+bool Well::Enabled() const
 {
     return this->enabled;
 }
 
-std::string Well::PresetName() const
+const nlohmann::ordered_json Well::Metadata() const
 {
-    return this->preset_name;
+    return metadata;
 }
 
-void Well::Enable(bool enabled)
-{
-    this->enabled = enabled;
-}
-
-void Well::SetPresetName(std::string preset_name)
-{
-    this->preset_name = preset_name;
-}
-
-const ::Plate *Well::Plate() const
+::Plate *Well::Plate() const
 {
     return this->plate;
 }
 
-std::vector<Site *> Well::Sites()
+::Site *Well::Site(std::string site_id)
+{
+    std::shared_lock<std::shared_mutex> lk(sites_mutex);
+
+    auto it = site_map.find(site_id);
+    if (it == site_map.end()) {
+        return nullptr;
+    }
+    return it->second;
+}
+
+const std::vector<::Site *> Well::Sites() const
 {
     return sites;
 }
@@ -219,19 +253,40 @@ int Well::NumSites() const
     return sites.size();
 }
 
-Site *Well::NewSite(std::string id, std::string name, Pos2D rel_pos)
+int Well::NumEnabledSites() const
 {
-    std::unique_lock<std::shared_mutex> lk(sites_mutex);
-    if (site_id_set.contains(id)) {
-        throw std::invalid_argument("id already exists");
+    int n_enabled = 0;
+    for (const auto & site : sites) {
+        if (site->Enabled()) {
+            n_enabled++;
+        }
     }
-    Site *site = new Site(this, id, name, rel_pos);
-    sites.push_back(site);
-    site_id_set.insert(id);
-    return site;
+    return n_enabled;
 }
 
-Site::Site(const ::Well *well, std::string id, std::string name, Pos2D rel_pos)
+void Well::addSite(::Site *site)
+{
+    std::unique_lock<std::shared_mutex> lk(sites_mutex);
+    auto it = site_map.find(site->ID());
+    if (it != site_map.end()) {
+        throw std::invalid_argument(fmt::format("cannot add site with duplicated id '{}'", site->ID()));
+    }
+    site->index = sites.size();
+    sites.push_back(site);
+    site_map[site->ID()] = site;
+    return;
+}
+
+void Well::clearSites()
+{
+    for (::Site *site : sites) {
+        delete site;
+    }
+    sites.clear();
+    site_map.clear();
+}
+
+Site::Site(::Well *well, std::string id, Pos2D rel_pos)
 {
     if (well == nullptr) {
         throw std::invalid_argument("well cannot be null");
@@ -241,23 +296,25 @@ Site::Site(const ::Well *well, std::string id, std::string name, Pos2D rel_pos)
     }
     
     this->well = well;
+
+    this->uuid = utils::uuid();
     this->id = id;
-    this->name = name;
     this->rel_pos = rel_pos;
 }
 
-const Well *Site::Well() const
+int Site::Index() const
 {
-    return this->well;
+    return index;
+}
+
+std::string Site::UUID() const
+{
+    return uuid;
 }
 
 std::string Site::ID() const
 {
     return id;
-}
-std::string Site::Name() const
-{
-    return name;
 }
 
 Pos2D Site::RelativePosition() const
@@ -265,7 +322,7 @@ Pos2D Site::RelativePosition() const
     return this->rel_pos;
 }
 
-std::optional<Pos2D> Site::Position() const
+const std::optional<Pos2D> Site::Position() const
 {
     std::optional<Pos2D> well_pos = well->Position();
     if (!well_pos.has_value()) {
@@ -275,4 +332,19 @@ std::optional<Pos2D> Site::Position() const
     pos.x = well_pos.value().x + rel_pos.x;
     pos.y = well_pos.value().y + rel_pos.y;
     return pos;
+}
+
+bool Site::Enabled() const
+{
+    return this->enabled;
+}
+
+const nlohmann::ordered_json Site::Metadata() const
+{
+    return this->metadata;
+}
+
+Well *Site::Well() const
+{
+    return this->well;
 }

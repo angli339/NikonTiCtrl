@@ -46,12 +46,12 @@ SampleManagerModel *ExperimentControlModel::SampleManagerModel()
 
 QString ExperimentControlModel::GetUserDataRoot()
 {
-    return exp->UserDataRoot().string().c_str();
+    return exp->BaseDir().string().c_str();
 }
 
 void ExperimentControlModel::SetExperimentDir(QString exp_dir)
 {
-    exp->OpenExperiment(exp_dir.toStdString());
+    exp->OpenExperimentDir(exp_dir.toStdString());
 }
 
 QString ExperimentControlModel::ExperimentDir()
@@ -109,6 +109,12 @@ void ExperimentControlModel::handleEvents()
             emit experimentPathChanged(e.value.c_str());
             sampleManagerModel->handleExperimentOpen();
             imageManagerModel->handleExperimentOpen();
+            break;
+        case EventType::PlateCreated:
+            sampleManagerModel->handlePlateCreated(e.value.c_str());
+            break;
+        case EventType::PlateChanged:
+            sampleManagerModel->handlePlateChanged(e.value.c_str());
             break;
         case EventType::NDImageCreated:
             imageManagerModel->handleNDImageCreated(e.value);

@@ -12,6 +12,7 @@
 #include "api.pb.h"
 
 using grpc::ServerContext;
+using grpc::ServerReader;
 namespace protobuf = google::protobuf;
 
 class APIServer final : public api::NikonTiCtrl::Service {
@@ -43,9 +44,32 @@ public:
                                protobuf::Empty *resp) override;
 
     // Experiment
-    grpc::Status SetExperimentPath(ServerContext *context,
-                                   const api::SetExperimentPathRequest *req,
+    grpc::Status OpenExperiment(ServerContext *context,
+                                   const api::OpenExperimentRequest *req,
                                    google::protobuf::Empty *resp) override;
+
+    // Sample
+    grpc::Status ListPlate(ServerContext *context,
+                             const google::protobuf::Empty *req,
+                             api::ListPlateResponse *resp) override;
+    grpc::Status AddPlate(ServerContext *context,
+                             const api::AddPlateRequest *req,
+                             google::protobuf::Empty *resp) override;
+    grpc::Status SetPlatePositionOrigin(ServerContext *context,
+                             const api::SetPlatePositionOriginRequest *req,
+                             google::protobuf::Empty *resp) override;
+    grpc::Status SetPlateMetadata(ServerContext *context,
+                             const api::SetPlateMetadataRequest *req,
+                             google::protobuf::Empty *resp) override;
+    grpc::Status SetWellsEnabled(ServerContext *context,
+                             const api::SetWellsEnabledRequest *req,
+                             google::protobuf::Empty *resp) override;
+    grpc::Status SetWellsMetadata(ServerContext *context,
+                             const api::SetWellsMetadataRequest *req,
+                             google::protobuf::Empty *resp) override;
+    grpc::Status CreateSites(ServerContext *context,
+                             const api::CreateSitesRequest *req,
+                             google::protobuf::Empty *resp) override;
 
     // Task
     grpc::Status AcquireMultiChannel(ServerContext *context,
@@ -55,9 +79,12 @@ public:
     grpc::Status ListNDImage(ServerContext *context,
                              const google::protobuf::Empty *req,
                              api::ListNDImageResponse *resp) override;
-    grpc::Status GetImage(ServerContext *context,
-                          const api::GetImageRequest *req,
-                          api::GetImageResponse *resp) override;
+    grpc::Status GetNDImage(ServerContext *context,
+                            const api::GetNDImageRequest *req,
+                            api::GetNDImageResponse *resp) override;
+    grpc::Status GetImageData(ServerContext *context,
+                          const api::GetImageDataRequest *req,
+                          api::GetImageDataResponse *resp) override;
 
     // Image Analysis
     grpc::Status

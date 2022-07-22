@@ -34,7 +34,7 @@ struct ConfigSystem {
 struct ConfigUser {
     std::string name;
     std::string email;
-    std::string data_root;
+    std::filesystem::path data_root;
 };
 
 struct Config {

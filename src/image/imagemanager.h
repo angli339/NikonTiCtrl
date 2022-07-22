@@ -18,6 +18,7 @@ class ExperimentControl;
 class ImageManager : public EventSender {
 public:
     ImageManager(ExperimentControl *exp);
+    ~ImageManager();
     void LoadFromDB();
 
     void SetLiveViewFrame(ImageData new_frame);

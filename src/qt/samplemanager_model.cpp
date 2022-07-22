@@ -28,6 +28,16 @@ void SampleManagerModel::handleExperimentOpen()
     endResetModel();
 }
 
+void SampleManagerModel::handlePlateCreated(QString plate_id)
+{
+    handleExperimentOpen();
+}
+
+void SampleManagerModel::handlePlateChanged(QString plate_id)
+{
+    handleExperimentOpen();
+}
+
 void SampleManagerModel::buildTree()
 {
     rootItem = new SampleManagerTreeItem;
@@ -47,18 +57,28 @@ void SampleManagerModel::deleteTree(SampleManagerTreeItem *item)
 void SampleManagerModel::addPlate(SampleManagerTreeItem *parent,
                                         Plate *plate)
 {
-
     SampleManagerTreeItem *item = new SampleManagerTreeItem;
     parent->child.push_back(item);
 
     item->type = SampleManagerTreeItemType::Plate;
     item->id = plate->ID();
-    item->name = plate->Name();
+    item->summary = fmt::format("{}, {} wells", PlateTypeToString(plate->Type()), plate->NumEnabledWells());
+    if (plate->PositionOrigin().has_value()) {
+        auto pos_origin = plate->PositionOrigin().value();
+        item->summary = fmt::format("{}, xy=({},{})", item->summary, pos_origin.x, pos_origin.y);
+    }
+    auto metadata = plate->Metadata();
+    if (metadata.contains("name")) {
+        item->summary = fmt::format("{}, name='{}'", item->summary, metadata["name"]);
+    }
+    
     item->parent = parent;
     item->plate = plate;
 
     for (const auto &well : plate->Wells()) {
-        addWell(item, well);
+        if (well->Enabled()) {
+            addWell(item, well);
+        }
     }
 }
 
@@ -72,6 +92,11 @@ void SampleManagerModel::addWell(SampleManagerTreeItem *parent,
     item->id = well->ID();
     item->parent = parent;
     item->well = well;
+    item->summary = fmt::format("{} sites", well->NumEnabledSites());
+    auto metadata = well->Metadata();
+    if (metadata.contains("preset_name")) {
+        item->summary = fmt::format("{}, preset='{}'", item->summary, metadata["preset_name"]);
+    }
 
     for (const auto &site : well->Sites()) {
         addSite(item, site);
@@ -85,7 +110,12 @@ void SampleManagerModel::addSite(SampleManagerTreeItem *parent, Site *site)
 
     item->type = SampleManagerTreeItemType::Site;
     item->id = site->ID();
-    item->name = site->Name();
+
+    auto metadata = site->Metadata();
+    if (metadata.contains("name")) {
+        item->summary = fmt::format("Name({})", metadata["name"]);
+    }
+
     item->parent = parent;
     item->site = site;
 }
@@ -193,7 +223,7 @@ QVariant SampleManagerTreeItem::columnName(int col)
     case 0:
         return QVariant("ID");
     case 1:
-        return QVariant("Name");
+        return QVariant("");
     default:
         return QVariant();
     }
@@ -204,7 +234,7 @@ QVariant SampleManagerTreeItem::columnData(int col)
     case 0:
         return QVariant(id.c_str());
     case 1:
-        return QVariant(name.c_str());
+        return QVariant(summary.c_str());
     default:
         return QVariant();
     }

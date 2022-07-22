@@ -5,21 +5,15 @@
 #include <QVBoxLayout>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QSplitter>
 
 #include "logging.h"
 
 AcquirePage::AcquirePage(QWidget *parent) : QWidget(parent)
 {
-    QHBoxLayout *layout = new QHBoxLayout(this);
-    layout->setSpacing(5);
-    layout->setContentsMargins(0, 0, 0, 0);
-
     //
-    // Left
+    // Left Sidebar
     //
-    QVBoxLayout *leftLayout = new QVBoxLayout;
-    leftLayout->setAlignment(Qt::AlignTop);
-
     QLabel *experimentTitle = new QLabel("Experiment");
     experimentTitle->setFixedHeight(20);
     experimentDirButton = new QPushButton("Select directory...");
@@ -27,16 +21,28 @@ AcquirePage::AcquirePage(QWidget *parent) : QWidget(parent)
     experimentDirButton->setStyleSheet("text-align:left");
 
     sampleManagerView = new SampleManagerView;
-    dataManagerView = new ImageManagerView;
-    sampleManagerView->setMaximumWidth(280);
-    sampleManagerView->setMinimumWidth(280);
-    dataManagerView->setMaximumWidth(280);
-    dataManagerView->setMinimumWidth(280);
+    sampleManagerView->setMinimumHeight(100);
 
-    leftLayout->addWidget(experimentTitle);
-    leftLayout->addWidget(experimentDirButton);
-    leftLayout->addWidget(sampleManagerView);
-    leftLayout->addWidget(dataManagerView);
+    dataManagerView = new ImageManagerView;
+    dataManagerView->setMinimumHeight(100);
+
+    QWidget *leftTopGroup = new QWidget;
+    leftTopGroup->setLayout(new QVBoxLayout);
+    leftTopGroup->layout()->setAlignment(Qt::AlignTop);
+    leftTopGroup->layout()->setSpacing(5);
+    leftTopGroup->layout()->setContentsMargins(0, 0, 0, 0);
+    leftTopGroup->layout()->addWidget(experimentTitle);
+    leftTopGroup->layout()->addWidget(experimentDirButton);
+    leftTopGroup->layout()->addWidget(sampleManagerView);
+
+    QSplitter *leftSidebar = new QSplitter(Qt::Vertical);
+    leftSidebar->setChildrenCollapsible(false);
+    leftSidebar->setHandleWidth(leftSidebar->handleWidth() / 4);
+    leftSidebar->addWidget(leftTopGroup);
+    leftSidebar->addWidget(dataManagerView);
+    leftSidebar->setMinimumWidth(300);
+    leftSidebar->setStretchFactor(0, 1);
+    leftSidebar->setStretchFactor(1, 2);
 
     //
     // Middle
@@ -58,10 +64,34 @@ AcquirePage::AcquirePage(QWidget *parent) : QWidget(parent)
     deviceControlView->setMaximumWidth(235);
     deviceControlView->setMinimumWidth(235);
 
-    layout->addLayout(leftLayout);
-    layout->addLayout(middleLayout);
-    layout->addWidget(deviceControlView);
+    //
+    // Main Container = Middle & Right
+    //
+    QWidget *mainContainer = new QWidget;
+    QHBoxLayout *mainGroupLayout = new QHBoxLayout(mainContainer);
+    mainGroupLayout->setSpacing(5);
+    mainGroupLayout->setContentsMargins(5, 0, 0, 0);
+    mainGroupLayout->addLayout(middleLayout);
+    mainGroupLayout->addWidget(deviceControlView);
+    // mainContainer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
+    //
+    // Left Sidebar | Main Container
+    //
+    QSplitter *mainSplitter = new QSplitter(Qt::Horizontal);
+    mainSplitter->setChildrenCollapsible(false);
+    mainSplitter->setHandleWidth(mainSplitter->handleWidth() / 4);
+    mainSplitter->addWidget(leftSidebar);
+    mainSplitter->addWidget(mainContainer);
+    mainSplitter->setStretchFactor(0, 1);
+    mainSplitter->setStretchFactor(1, 3);
+
+    //
+    // Add Left/Right Splitter
+    //
+    this->setLayout(new QHBoxLayout);
+    this->layout()->addWidget(mainSplitter);
+    
     connect(imagingControlView, &AcquisitionControlView::liveViewStarted, this,
             &AcquirePage::startLiveViewDisplay);
     connect(dataManagerView, &ImageManagerView::ndImageSelected, this,

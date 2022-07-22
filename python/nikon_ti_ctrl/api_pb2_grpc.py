@@ -45,9 +45,44 @@ class NikonTiCtrlStub(object):
                 request_serializer=api__pb2.SwitchChannelRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
-        self.SetExperimentPath = channel.unary_unary(
-                '/api.NikonTiCtrl/SetExperimentPath',
-                request_serializer=api__pb2.SetExperimentPathRequest.SerializeToString,
+        self.OpenExperiment = channel.unary_unary(
+                '/api.NikonTiCtrl/OpenExperiment',
+                request_serializer=api__pb2.OpenExperimentRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.ListPlate = channel.unary_unary(
+                '/api.NikonTiCtrl/ListPlate',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=api__pb2.ListPlateResponse.FromString,
+                )
+        self.AddPlate = channel.unary_unary(
+                '/api.NikonTiCtrl/AddPlate',
+                request_serializer=api__pb2.AddPlateRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.SetPlatePositionOrigin = channel.unary_unary(
+                '/api.NikonTiCtrl/SetPlatePositionOrigin',
+                request_serializer=api__pb2.SetPlatePositionOriginRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.SetPlateMetadata = channel.unary_unary(
+                '/api.NikonTiCtrl/SetPlateMetadata',
+                request_serializer=api__pb2.SetPlateMetadataRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.SetWellsEnabled = channel.unary_unary(
+                '/api.NikonTiCtrl/SetWellsEnabled',
+                request_serializer=api__pb2.SetWellsEnabledRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.SetWellsMetadata = channel.unary_unary(
+                '/api.NikonTiCtrl/SetWellsMetadata',
+                request_serializer=api__pb2.SetWellsMetadataRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.CreateSites = channel.unary_unary(
+                '/api.NikonTiCtrl/CreateSites',
+                request_serializer=api__pb2.CreateSitesRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
         self.AcquireMultiChannel = channel.unary_unary(
@@ -60,10 +95,15 @@ class NikonTiCtrlStub(object):
                 request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
                 response_deserializer=api__pb2.ListNDImageResponse.FromString,
                 )
-        self.GetImage = channel.unary_unary(
-                '/api.NikonTiCtrl/GetImage',
-                request_serializer=api__pb2.GetImageRequest.SerializeToString,
-                response_deserializer=api__pb2.GetImageResponse.FromString,
+        self.GetNDImage = channel.unary_unary(
+                '/api.NikonTiCtrl/GetNDImage',
+                request_serializer=api__pb2.GetNDImageRequest.SerializeToString,
+                response_deserializer=api__pb2.GetNDImageResponse.FromString,
+                )
+        self.GetImageData = channel.unary_unary(
+                '/api.NikonTiCtrl/GetImageData',
+                request_serializer=api__pb2.GetImageDataRequest.SerializeToString,
+                response_deserializer=api__pb2.GetImageDataResponse.FromString,
                 )
         self.GetSegmentationScore = channel.unary_unary(
                 '/api.NikonTiCtrl/GetSegmentationScore',
@@ -118,20 +158,58 @@ class NikonTiCtrlServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def SetExperimentPath(self, request, context):
+    def OpenExperiment(self, request, context):
         """Experiment
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def AcquireMultiChannel(self, request, context):
+    def ListPlate(self, request, context):
         """Sample
-        rpc AddSamples(AddSamplesRequest) returns (google.protobuf.Empty) {}
-        rpc AddSites(AddSitesRequest) returns (google.protobuf.Empty) {}
-        rpc MoveToSite(MoveToSiteRequest) returns (google.protobuf.Empty) {}
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
-        Task
+    def AddPlate(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SetPlatePositionOrigin(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SetPlateMetadata(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SetWellsEnabled(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SetWellsMetadata(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateSites(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def AcquireMultiChannel(self, request, context):
+        """Task
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -144,7 +222,13 @@ class NikonTiCtrlServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetImage(self, request, context):
+    def GetNDImage(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetImageData(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -196,9 +280,44 @@ def add_NikonTiCtrlServicer_to_server(servicer, server):
                     request_deserializer=api__pb2.SwitchChannelRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
-            'SetExperimentPath': grpc.unary_unary_rpc_method_handler(
-                    servicer.SetExperimentPath,
-                    request_deserializer=api__pb2.SetExperimentPathRequest.FromString,
+            'OpenExperiment': grpc.unary_unary_rpc_method_handler(
+                    servicer.OpenExperiment,
+                    request_deserializer=api__pb2.OpenExperimentRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'ListPlate': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListPlate,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=api__pb2.ListPlateResponse.SerializeToString,
+            ),
+            'AddPlate': grpc.unary_unary_rpc_method_handler(
+                    servicer.AddPlate,
+                    request_deserializer=api__pb2.AddPlateRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'SetPlatePositionOrigin': grpc.unary_unary_rpc_method_handler(
+                    servicer.SetPlatePositionOrigin,
+                    request_deserializer=api__pb2.SetPlatePositionOriginRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'SetPlateMetadata': grpc.unary_unary_rpc_method_handler(
+                    servicer.SetPlateMetadata,
+                    request_deserializer=api__pb2.SetPlateMetadataRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'SetWellsEnabled': grpc.unary_unary_rpc_method_handler(
+                    servicer.SetWellsEnabled,
+                    request_deserializer=api__pb2.SetWellsEnabledRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'SetWellsMetadata': grpc.unary_unary_rpc_method_handler(
+                    servicer.SetWellsMetadata,
+                    request_deserializer=api__pb2.SetWellsMetadataRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'CreateSites': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateSites,
+                    request_deserializer=api__pb2.CreateSitesRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'AcquireMultiChannel': grpc.unary_unary_rpc_method_handler(
@@ -211,10 +330,15 @@ def add_NikonTiCtrlServicer_to_server(servicer, server):
                     request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                     response_serializer=api__pb2.ListNDImageResponse.SerializeToString,
             ),
-            'GetImage': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetImage,
-                    request_deserializer=api__pb2.GetImageRequest.FromString,
-                    response_serializer=api__pb2.GetImageResponse.SerializeToString,
+            'GetNDImage': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetNDImage,
+                    request_deserializer=api__pb2.GetNDImageRequest.FromString,
+                    response_serializer=api__pb2.GetNDImageResponse.SerializeToString,
+            ),
+            'GetImageData': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetImageData,
+                    request_deserializer=api__pb2.GetImageDataRequest.FromString,
+                    response_serializer=api__pb2.GetImageDataResponse.SerializeToString,
             ),
             'GetSegmentationScore': grpc.unary_unary_rpc_method_handler(
                     servicer.GetSegmentationScore,
@@ -339,7 +463,7 @@ class NikonTiCtrl(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def SetExperimentPath(request,
+    def OpenExperiment(request,
             target,
             options=(),
             channel_credentials=None,
@@ -349,8 +473,127 @@ class NikonTiCtrl(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/api.NikonTiCtrl/SetExperimentPath',
-            api__pb2.SetExperimentPathRequest.SerializeToString,
+        return grpc.experimental.unary_unary(request, target, '/api.NikonTiCtrl/OpenExperiment',
+            api__pb2.OpenExperimentRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListPlate(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/api.NikonTiCtrl/ListPlate',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            api__pb2.ListPlateResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def AddPlate(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/api.NikonTiCtrl/AddPlate',
+            api__pb2.AddPlateRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SetPlatePositionOrigin(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/api.NikonTiCtrl/SetPlatePositionOrigin',
+            api__pb2.SetPlatePositionOriginRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SetPlateMetadata(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/api.NikonTiCtrl/SetPlateMetadata',
+            api__pb2.SetPlateMetadataRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SetWellsEnabled(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/api.NikonTiCtrl/SetWellsEnabled',
+            api__pb2.SetWellsEnabledRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SetWellsMetadata(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/api.NikonTiCtrl/SetWellsMetadata',
+            api__pb2.SetWellsMetadataRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CreateSites(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/api.NikonTiCtrl/CreateSites',
+            api__pb2.CreateSitesRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
@@ -390,7 +633,7 @@ class NikonTiCtrl(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def GetImage(request,
+    def GetNDImage(request,
             target,
             options=(),
             channel_credentials=None,
@@ -400,9 +643,26 @@ class NikonTiCtrl(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/api.NikonTiCtrl/GetImage',
-            api__pb2.GetImageRequest.SerializeToString,
-            api__pb2.GetImageResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/api.NikonTiCtrl/GetNDImage',
+            api__pb2.GetNDImageRequest.SerializeToString,
+            api__pb2.GetNDImageResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetImageData(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/api.NikonTiCtrl/GetImageData',
+            api__pb2.GetImageDataRequest.SerializeToString,
+            api__pb2.GetImageDataResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

@@ -193,7 +193,7 @@ Status MultiChannelTask::StopAcqusition()
 
 Status MultiChannelTask::Acquire(std::string ndimage_name,
                                  std::vector<Channel> channels, int i_z,
-                                 int i_t, nlohmann::ordered_json metadata)
+                                 int i_t, Site *site, nlohmann::ordered_json metadata)
 {
     if (channels.empty()) {
         throw std::invalid_argument("channel not set");

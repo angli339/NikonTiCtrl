@@ -1,15 +1,17 @@
 import numpy as np
 import numpy.typing as npt
+import json
 
 import grpc
 from . import api_pb2_grpc
 from . import api_pb2
 from google.protobuf import empty_pb2
 
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Tuple, Union, Optional
 Channel = Union[Tuple[str, int], Tuple[str, int, int]]
 
 from .data import NDImage
+from .sample import Plate, Well, Site
 
 dtype_to_pb = {
     np.bool8: api_pb2.DataType.BOOL8,
@@ -31,6 +33,17 @@ dtype_from_pb = {
     api_pb2.DataType.FLOAT64:      np.float64,
 }
 
+platetype_to_pb = {
+    "slide": api_pb2.PlateType.SLIDE,
+    "wellplate96": api_pb2.PlateType.WELLPLATE96,
+    "wellplate384": api_pb2.PlateType.WELLPLATE384,
+}
+
+platetype_from_pb = {
+    api_pb2.PlateType.SLIDE: "slide",
+    api_pb2.PlateType.WELLPLATE96: "wellplate96",
+    api_pb2.PlateType.WELLPLATE384: "wellplate384",
+}
 
 class API():
     def __init__(self, server_addr='localhost:50051'):
@@ -74,10 +87,55 @@ class API():
         resp = self.stub.ListChannel(empty_pb2.Empty())
         return [(ch.preset_name, ch.exposure_ms, ch.illumination_intensity) for ch in resp.channels]
 
-    def set_experiment_path(self, path: str) -> None:
-        req = api_pb2.SetExperimentPathRequest(path=path)
-        self.stub.SetExperimentPath(req)
+    def open_experiment(self, name: str, base_dir: Optional[str] = None) -> None:
+        if base_dir:
+            req = api_pb2.OpenExperimentRequest(name=name, base_dir=base_dir)
+        else:
+            req = api_pb2.OpenExperimentRequest(name=name)
+        self.stub.OpenExperiment(req)
 
+    def _plate_from_pb(self, plate_pb):
+        plate = Plate(platetype_from_pb[plate_pb.type], plate_pb.id, self)
+        plate._uuid = plate_pb.uuid
+        if plate_pb.HasField("pos_origin"):
+            plate._pos_origin = (plate_pb.pos_origin.x, plate_pb.pos_origin.y)
+        else:
+            plate._pos_origin = None
+        
+        plate._metadata = json.loads(plate_pb.metadata)
+        
+        for well_pb in plate_pb.well:
+            well = Well(plate, well_pb.id)
+            well._uuid = well_pb.uuid
+            well._rel_pos = (well_pb.rel_pos.x, well_pb.rel_pos.y)
+            well._enabled = well_pb.enabled
+            well._metadata = json.loads(well_pb.metadata)
+            plate._wells[well.id] = well
+            
+            for site_pb in well_pb.site:
+                site = Site(well, site_pb.id, (site_pb.rel_pos.x, site_pb.rel_pos.y))
+                site._enabled = site_pb.enabled
+                site._metadata = json.loads(site_pb.metadata)
+                well._sites.append(site)
+        return plate
+
+    def list_plate(self):
+        resp = self.stub.ListPlate(empty_pb2.Empty())
+        plate_list = []
+        for plate_pb in resp.plate:
+            plate_list.append(self._plate_from_pb(plate_pb))
+        return plate_list
+
+    def get_plate(self, id):
+        return [plate for plate in self.list_plate() if plate._id == id][0]
+    
+    def add_plate(self, plate_type, plate_id):
+        req = api_pb2.AddPlateRequest(
+            plate_type=platetype_to_pb[plate_type],
+            plate_id=plate_id)
+        self.stub.AddPlate(req)
+        return
+    
     def acquire_multi_channel(self, ndimage_name: str, channels: List[Channel], i_z: int, i_t: int, metadata: Dict[str, str] = None):
         req = api_pb2.AcquireMultiChannelRequest()
         req.ndimage_name = ndimage_name
@@ -101,49 +159,25 @@ class API():
     def list_ndimage(self):
         resp = self.stub.ListNDImage(empty_pb2.Empty())
         ndimage_list = []
-        for im in resp.ndimages:
-            channel_info = []
-            for ch in im.channel_info:
-                channel_info.append(
-                    {"name": ch.name, "width": ch.width, "height": ch.height})
-            ndimage_list.append({"name": im.name, "channel_info": channel_info,
-                                "n_images": im.n_images, "n_z": im.n_z, "n_t": im.n_t})
+        for im_pb in resp.ndimage:
+            ndimage = NDImage(im_pb.name, im_pb.ch_name, im_pb.height, im_pb.width, im_pb.n_ch, im_pb.n_z, im_pb.n_t, api=self)
+            ndimage_list.append(ndimage)
         return ndimage_list
 
-    def get_image(self, ndimage_name: str, channel_name: str, i_z: int, i_t: int):
-        req = api_pb2.GetImageRequest(
+    def get_ndimage(self, ndimage_name: str):
+        req = api_pb2.GetNDImageRequest(ndimage_name=ndimage_name)
+        resp = self.stub.GetNDImage(req)
+        im_pb = resp.ndimage
+        ndimage = NDImage(im_pb.name, im_pb.ch_name, im_pb.height, im_pb.width, im_pb.n_ch, im_pb.n_z, im_pb.n_t, api=self)
+        return ndimage
+
+    def get_image_data(self, ndimage_name: str, channel_name: str, i_z: int, i_t: int):
+        req = api_pb2.GetImageDataRequest(
             ndimage_name=ndimage_name, channel_name=channel_name, i_z=i_z, i_t=i_t)
-        resp = self.stub.GetImage(req)
+        resp = self.stub.GetImageData(req)
 
         data_dtype = dtype_from_pb[resp.data.dtype]
         return np.frombuffer(resp.data.buf, dtype=data_dtype).reshape(resp.data.height, resp.data.width)
-
-    def get_ndimage(self, ndimage_name: str):
-        ndinfo = [info for info in self.list_ndimage() if info['name'] == ndimage_name]
-        if len(ndinfo) == 1:
-            ndinfo = ndinfo[0]
-        else:
-            raise RuntimeError("multiple images with the same name found in ndinfo")
-
-        n_t = ndinfo['n_t']
-        n_z = ndinfo['n_z']
-        ch_info = ndinfo['channel_info']
-        ch_list = [ch['name'] for ch in ch_info]
-        im_width = ch_info[0]['width']
-        im_height = ch_info[0]['height']
-        for ch in ch_info:
-            if ch['width'] != im_width or ch['height'] != im_height:
-                print("channel {} has different width or height".format(ch['name']))
-        ims = []
-        for i_t in range(ndinfo['n_t']):
-            for i_z in range(ndinfo['n_z']):
-                for ch in ch_list:
-                    im = self.get_image(ndimage_name, ch, i_z, i_t)
-                    ims.append(im)
-        ims = np.array(ims)
-        ims = ims.reshape([n_t, n_z, len(ch_list), ims.shape[1], ims.shape[2]])
-
-        return NDImage(ndimage_name, ims, ch_list)
 
     def get_segmentation_score(self, im: npt.ArrayLike):
         if len(im.shape) != 2:

@@ -19,8 +19,11 @@ public:
 
     void SubscribeEvents(EventStream *channel) override;
 
-    std::filesystem::path UserDataRoot();
-    void OpenExperiment(std::filesystem::path exp_dir);
+    void SetBaseDir(std::filesystem::path base_dir);
+    std::filesystem::path BaseDir();
+    void OpenExperimentDir(std::filesystem::path exp_dir);
+    void OpenExperiment(std::string name);
+    void CloseExperiment();
     std::filesystem::path ExperimentDir();
     ExperimentDB *DB();
 
@@ -35,6 +38,7 @@ public:
 
     void AcquireMultiChannel(std::string ndimage_name,
                              std::vector<Channel> channels, int i_z, int i_t,
+                             Site *site = nullptr,
                              nlohmann::ordered_json metadata = nullptr);
     void WaitMultiChannelTask();
 
@@ -44,6 +48,7 @@ private:
     ChannelControl *channel_control;
     ImageManager *image_manager;
 
+    std::filesystem::path base_dir;
     std::filesystem::path exp_dir;
     ExperimentDB *db =  nullptr;
 
@@ -59,7 +64,7 @@ private:
     std::future<void> current_task_future;
     void runLiveView();
     void runMultiChannelTask(std::string ndimage_name,
-                             std::vector<Channel> channels, int i_z, int i_t,
+                             std::vector<Channel> channels, int i_z, int i_t, Site *site,
                              nlohmann::ordered_json metadata);
 };
 

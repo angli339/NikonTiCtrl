@@ -24,6 +24,8 @@ enum class EventType
     TaskMessage,
 
     ExperimentPathChanged,
+    PlateCreated,
+    PlateChanged,
     NDImageCreated,
     NDImageChanged,
 };

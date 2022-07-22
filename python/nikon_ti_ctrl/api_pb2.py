@@ -22,10 +22,46 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\tapi.proto\x12\x03\x61pi\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1egoogle/protobuf/duration.proto\",\n\rPropertyValue\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"S\n\x07\x43hannel\x12\x13\n\x0bpreset_name\x18\x01 \x01(\t\x12\x13\n\x0b\x65xposure_ms\x18\x02 \x01(\x01\x12\x1e\n\x16illumination_intensity\x18\x03 \x01(\x01\"|\n\x07NDImage\x12\x0c\n\x04name\x18\x01 \x01(\t\x12)\n\x0c\x63hannel_info\x18\x02 \x03(\x0b\x32\x13.api.NDImageChannel\x12\x10\n\x08n_images\x18\x03 \x01(\x05\x12\x0c\n\x04n_ch\x18\x04 \x01(\x05\x12\x0b\n\x03n_z\x18\x05 \x01(\x05\x12\x0b\n\x03n_t\x18\x06 \x01(\x05\"z\n\x0eNDImageChannel\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05width\x18\x02 \x01(\r\x12\x0e\n\x06height\x18\x03 \x01(\r\x12\x1c\n\x05\x64type\x18\x04 \x01(\x0e\x32\r.api.DataType\x12\x1d\n\x05\x63type\x18\x05 \x01(\x0e\x32\x0e.api.ColorType\"t\n\tImageData\x12\r\n\x05width\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\r\x12\x1c\n\x05\x64type\x18\x03 \x01(\x0e\x32\r.api.DataType\x12\x1d\n\x05\x63type\x18\x04 \x01(\x0e\x32\x0e.api.ColorType\x12\x0b\n\x03\x62uf\x18\x05 \x01(\x0c\"\x14\n\x06Sample\x12\n\n\x02id\x18\x01 \x01(\t\"/\n\x04Site\x12\x1b\n\x06sample\x18\x01 \x01(\x0b\x32\x0b.api.Sample\x12\n\n\x02id\x18\x02 \x01(\t\"Y\n\nSampleInfo\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x1c\n\x05sites\x18\x04 \x03(\x0b\x32\r.api.SiteInfo\"i\n\x08SiteInfo\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x16\n\x0erelative_pos_x\x18\x04 \x01(\x01\x12\x16\n\x0erelative_pos_y\x18\x05 \x01(\x01\"#\n\x13ListPropertyRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"$\n\x14ListPropertyResponse\x12\x0c\n\x04name\x18\x01 \x03(\t\"\"\n\x12GetPropertyRequest\x12\x0c\n\x04name\x18\x01 \x03(\t\";\n\x13GetPropertyResponse\x12$\n\x08property\x18\x01 \x03(\x0b\x32\x12.api.PropertyValue\":\n\x12SetPropertyRequest\x12$\n\x08property\x18\x01 \x03(\x0b\x32\x12.api.PropertyValue\"O\n\x13WaitPropertyRequest\x12\x0c\n\x04name\x18\x01 \x03(\t\x12*\n\x07timeout\x18\x02 \x01(\x0b\x32\x19.google.protobuf.Duration\"5\n\x13ListChannelResponse\x12\x1e\n\x08\x63hannels\x18\x01 \x03(\x0b\x32\x0c.api.Channel\"5\n\x14SwitchChannelRequest\x12\x1d\n\x07\x63hannel\x18\x01 \x01(\x0b\x32\x0c.api.Channel\"(\n\x18SetExperimentPathRequest\x12\x0c\n\x04path\x18\x01 \x01(\t\"5\n\x11\x41\x64\x64SamplesRequest\x12 \n\x07samples\x18\x01 \x03(\x0b\x32\x0f.api.SampleInfo\"L\n\x0f\x41\x64\x64SitesRequest\x12\x1b\n\x06sample\x18\x01 \x01(\x0b\x32\x0b.api.Sample\x12\x1c\n\x05sites\x18\x02 \x03(\x0b\x32\r.api.SiteInfo\",\n\x11MoveToSiteRequest\x12\x17\n\x04site\x18\x01 \x01(\x0b\x32\t.api.Site\"\xde\x01\n\x1a\x41\x63quireMultiChannelRequest\x12\x14\n\x0cndimage_name\x18\x01 \x01(\t\x12\x1e\n\x08\x63hannels\x18\x02 \x03(\x0b\x32\x0c.api.Channel\x12\x0b\n\x03i_z\x18\x03 \x01(\x05\x12\x0b\n\x03i_t\x18\x04 \x01(\x05\x12?\n\x08metadata\x18\x05 \x03(\x0b\x32-.api.AcquireMultiChannelRequest.MetadataEntry\x1a/\n\rMetadataEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"5\n\x13ListNDImageResponse\x12\x1e\n\x08ndimages\x18\x01 \x03(\x0b\x32\x0c.api.NDImage\"W\n\x0fGetImageRequest\x12\x14\n\x0cndimage_name\x18\x01 \x01(\t\x12\x14\n\x0c\x63hannel_name\x18\x02 \x01(\t\x12\x0b\n\x03i_z\x18\x03 \x01(\x05\x12\x0b\n\x03i_t\x18\x04 \x01(\x05\"0\n\x10GetImageResponse\x12\x1c\n\x04\x64\x61ta\x18\x01 \x01(\x0b\x32\x0e.api.ImageData\";\n\x1bGetSegmentationScoreRequest\x12\x1c\n\x04\x64\x61ta\x18\x01 \x01(\x0b\x32\x0e.api.ImageData\"<\n\x1cGetSegmentationScoreResponse\x12\x1c\n\x04\x64\x61ta\x18\x01 \x01(\x0b\x32\x0e.api.ImageData\"a\n\x16QuantifyRegionsRequest\x12\x14\n\x0cndimage_name\x18\x01 \x01(\t\x12\x0b\n\x03i_z\x18\x02 \x01(\x05\x12\x0b\n\x03i_t\x18\x03 \x01(\x05\x12\x17\n\x0fsegmentation_ch\x18\x04 \x01(\t\",\n\x17QuantifyRegionsResponse\x12\x11\n\tn_regions\x18\x01 \x01(\x05*o\n\x08\x44\x61taType\x12\x11\n\rUNKNOWN_DTYPE\x10\x00\x12\t\n\x05\x42OOL8\x10\x01\x12\t\n\x05UINT8\x10\x02\x12\n\n\x06UINT16\x10\x03\x12\t\n\x05INT16\x10\x04\x12\t\n\x05INT32\x10\x05\x12\x0b\n\x07\x46LOAT32\x10\x06\x12\x0b\n\x07\x46LOAT64\x10\x07*v\n\tColorType\x12\x11\n\rUNKNOWN_CTYPE\x10\x00\x12\t\n\x05MONO8\x10\x01\x12\n\n\x06MONO10\x10\x02\x12\n\n\x06MONO12\x10\x03\x12\n\n\x06MONO14\x10\x04\x12\n\n\x06MONO16\x10\x05\x12\x0c\n\x08\x42\x41YERRG8\x10\x06\x12\r\n\tBAYERRG16\x10\x07\x32\xf4\x06\n\x0bNikonTiCtrl\x12\x45\n\x0cListProperty\x12\x18.api.ListPropertyRequest\x1a\x19.api.ListPropertyResponse\"\x00\x12\x42\n\x0bGetProperty\x12\x17.api.GetPropertyRequest\x1a\x18.api.GetPropertyResponse\"\x00\x12@\n\x0bSetProperty\x12\x17.api.SetPropertyRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x42\n\x0cWaitProperty\x12\x18.api.WaitPropertyRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x41\n\x0bListChannel\x12\x16.google.protobuf.Empty\x1a\x18.api.ListChannelResponse\"\x00\x12\x44\n\rSwitchChannel\x12\x19.api.SwitchChannelRequest\x1a\x16.google.protobuf.Empty\"\x00\x12L\n\x11SetExperimentPath\x12\x1d.api.SetExperimentPathRequest\x1a\x16.google.protobuf.Empty\"\x00\x12P\n\x13\x41\x63quireMultiChannel\x12\x1f.api.AcquireMultiChannelRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x41\n\x0bListNDImage\x12\x16.google.protobuf.Empty\x1a\x18.api.ListNDImageResponse\"\x00\x12\x39\n\x08GetImage\x12\x14.api.GetImageRequest\x1a\x15.api.GetImageResponse\"\x00\x12]\n\x14GetSegmentationScore\x12 .api.GetSegmentationScoreRequest\x1a!.api.GetSegmentationScoreResponse\"\x00\x12N\n\x0fQuantifyRegions\x12\x1b.api.QuantifyRegionsRequest\x1a\x1c.api.QuantifyRegionsResponse\"\x00\x62\x06proto3'
+  serialized_pb=b'\n\tapi.proto\x12\x03\x61pi\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1egoogle/protobuf/duration.proto\",\n\rPropertyValue\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"S\n\x07\x43hannel\x12\x13\n\x0bpreset_name\x18\x01 \x01(\t\x12\x13\n\x0b\x65xposure_ms\x18\x02 \x01(\x01\x12\x1e\n\x16illumination_intensity\x18\x03 \x01(\x01\"#\n\x13ListPropertyRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"$\n\x14ListPropertyResponse\x12\x0c\n\x04name\x18\x01 \x03(\t\"\"\n\x12GetPropertyRequest\x12\x0c\n\x04name\x18\x01 \x03(\t\";\n\x13GetPropertyResponse\x12$\n\x08property\x18\x01 \x03(\x0b\x32\x12.api.PropertyValue\":\n\x12SetPropertyRequest\x12$\n\x08property\x18\x01 \x03(\x0b\x32\x12.api.PropertyValue\"O\n\x13WaitPropertyRequest\x12\x0c\n\x04name\x18\x01 \x03(\t\x12*\n\x07timeout\x18\x02 \x01(\x0b\x32\x19.google.protobuf.Duration\"5\n\x13ListChannelResponse\x12\x1e\n\x08\x63hannels\x18\x01 \x03(\x0b\x32\x0c.api.Channel\"5\n\x14SwitchChannelRequest\x12\x1d\n\x07\x63hannel\x18\x01 \x01(\x0b\x32\x0c.api.Channel\"I\n\x15OpenExperimentRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x15\n\x08\x62\x61se_dir\x18\x02 \x01(\tH\x00\x88\x01\x01\x42\x0b\n\t_base_dir\"\x1d\n\x05Pos2D\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\"\xa6\x01\n\tPlateInfo\x12\x0c\n\x04uuid\x18\x01 \x01(\t\x12\x1c\n\x04type\x18\x02 \x01(\x0e\x32\x0e.api.PlateType\x12\n\n\x02id\x18\x03 \x01(\t\x12#\n\npos_origin\x18\x04 \x01(\x0b\x32\n.api.Pos2DH\x00\x88\x01\x01\x12\x10\n\x08metadata\x18\x05 \x01(\t\x12\x1b\n\x04well\x18\x06 \x03(\x0b\x32\r.api.WellInfoB\r\n\x0b_pos_origin\"\x81\x01\n\x08WellInfo\x12\x0c\n\x04uuid\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\t\x12\x1b\n\x07rel_pos\x18\x03 \x01(\x0b\x32\n.api.Pos2D\x12\x0f\n\x07\x65nabled\x18\x04 \x01(\x08\x12\x10\n\x08metadata\x18\x05 \x01(\t\x12\x1b\n\x04site\x18\x06 \x03(\x0b\x32\r.api.SiteInfo\"d\n\x08SiteInfo\x12\x0c\n\x04uuid\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\t\x12\x1b\n\x07rel_pos\x18\x03 \x01(\x0b\x32\n.api.Pos2D\x12\x0f\n\x07\x65nabled\x18\x04 \x01(\x08\x12\x10\n\x08metadata\x18\x05 \x01(\t\"2\n\x11ListPlateResponse\x12\x1d\n\x05plate\x18\x01 \x03(\x0b\x32\x0e.api.PlateInfo\"G\n\x0f\x41\x64\x64PlateRequest\x12\"\n\nplate_type\x18\x01 \x01(\x0e\x32\x0e.api.PlateType\x12\x10\n\x08plate_id\x18\x02 \x01(\t\"I\n\x1dSetPlatePositionOriginRequest\x12\x12\n\nplate_uuid\x18\x01 \x01(\t\x12\t\n\x01x\x18\x02 \x01(\x01\x12\t\n\x01y\x18\x03 \x01(\x01\"N\n\x17SetPlateMetadataRequest\x12\x12\n\nplate_uuid\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\x12\n\njson_value\x18\x03 \x01(\t\"N\n\x16SetWellsEnabledRequest\x12\x12\n\nplate_uuid\x18\x01 \x01(\t\x12\x0f\n\x07well_id\x18\x02 \x03(\t\x12\x0f\n\x07\x65nabled\x18\x03 \x01(\x08\"_\n\x17SetWellsMetadataRequest\x12\x12\n\nplate_uuid\x18\x01 \x01(\t\x12\x0f\n\x07well_id\x18\x02 \x03(\t\x12\x0b\n\x03key\x18\x03 \x01(\t\x12\x12\n\njson_value\x18\x04 \x01(\t\"y\n\x12\x43reateSitesRequest\x12\x12\n\nplate_uuid\x18\x01 \x01(\t\x12\x0f\n\x07well_id\x18\x02 \x03(\t\x12\x0b\n\x03n_x\x18\x03 \x01(\x05\x12\x0b\n\x03n_y\x18\x04 \x01(\x05\x12\x11\n\tspacing_x\x18\x05 \x01(\x01\x12\x11\n\tspacing_y\x18\x06 \x01(\x01\"\x91\x01\n\x1a\x41\x63quireMultiChannelRequest\x12\x14\n\x0cndimage_name\x18\x01 \x01(\t\x12\x1e\n\x08\x63hannels\x18\x02 \x03(\x0b\x32\x0c.api.Channel\x12\x0b\n\x03i_z\x18\x03 \x01(\x05\x12\x0b\n\x03i_t\x18\x04 \x01(\x05\x12\x10\n\x08metadata\x18\x06 \x01(\t\x12\x11\n\tsite_uuid\x18\x07 \x01(\t\"\xac\x01\n\x07NDImage\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07\x63h_name\x18\x02 \x03(\t\x12\r\n\x05width\x18\x03 \x01(\r\x12\x0e\n\x06height\x18\x04 \x01(\r\x12\x0c\n\x04n_ch\x18\x05 \x01(\x05\x12\x0b\n\x03n_z\x18\x06 \x01(\x05\x12\x0b\n\x03n_t\x18\x07 \x01(\x05\x12\x1c\n\x05\x64type\x18\x08 \x01(\x0e\x32\r.api.DataType\x12\x1d\n\x05\x63type\x18\t \x01(\x0e\x32\x0e.api.ColorType\"4\n\x13ListNDImageResponse\x12\x1d\n\x07ndimage\x18\x01 \x03(\x0b\x32\x0c.api.NDImage\")\n\x11GetNDImageRequest\x12\x14\n\x0cndimage_name\x18\x01 \x01(\t\"3\n\x12GetNDImageResponse\x12\x1d\n\x07ndimage\x18\x01 \x01(\x0b\x32\x0c.api.NDImage\"[\n\x13GetImageDataRequest\x12\x14\n\x0cndimage_name\x18\x01 \x01(\t\x12\x14\n\x0c\x63hannel_name\x18\x02 \x01(\t\x12\x0b\n\x03i_z\x18\x03 \x01(\x05\x12\x0b\n\x03i_t\x18\x04 \x01(\x05\"t\n\tImageData\x12\r\n\x05width\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\r\x12\x1c\n\x05\x64type\x18\x03 \x01(\x0e\x32\r.api.DataType\x12\x1d\n\x05\x63type\x18\x04 \x01(\x0e\x32\x0e.api.ColorType\x12\x0b\n\x03\x62uf\x18\x05 \x01(\x0c\"4\n\x14GetImageDataResponse\x12\x1c\n\x04\x64\x61ta\x18\x01 \x01(\x0b\x32\x0e.api.ImageData\";\n\x1bGetSegmentationScoreRequest\x12\x1c\n\x04\x64\x61ta\x18\x01 \x01(\x0b\x32\x0e.api.ImageData\"<\n\x1cGetSegmentationScoreResponse\x12\x1c\n\x04\x64\x61ta\x18\x01 \x01(\x0b\x32\x0e.api.ImageData\"a\n\x16QuantifyRegionsRequest\x12\x14\n\x0cndimage_name\x18\x01 \x01(\t\x12\x0b\n\x03i_z\x18\x02 \x01(\x05\x12\x0b\n\x03i_t\x18\x03 \x01(\x05\x12\x17\n\x0fsegmentation_ch\x18\x04 \x01(\t\",\n\x17QuantifyRegionsResponse\x12\x11\n\tn_regions\x18\x01 \x01(\x05*F\n\tPlateType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\t\n\x05SLIDE\x10\x01\x12\x0f\n\x0bWELLPLATE96\x10\x02\x12\x10\n\x0cWELLPLATE384\x10\x03*o\n\x08\x44\x61taType\x12\x11\n\rUNKNOWN_DTYPE\x10\x00\x12\t\n\x05\x42OOL8\x10\x01\x12\t\n\x05UINT8\x10\x02\x12\n\n\x06UINT16\x10\x03\x12\t\n\x05INT16\x10\x04\x12\t\n\x05INT32\x10\x05\x12\x0b\n\x07\x46LOAT32\x10\x06\x12\x0b\n\x07\x46LOAT64\x10\x07*v\n\tColorType\x12\x11\n\rUNKNOWN_CTYPE\x10\x00\x12\t\n\x05MONO8\x10\x01\x12\n\n\x06MONO10\x10\x02\x12\n\n\x06MONO12\x10\x03\x12\n\n\x06MONO14\x10\x04\x12\n\n\x06MONO16\x10\x05\x12\x0c\n\x08\x42\x41YERRG8\x10\x06\x12\r\n\tBAYERRG16\x10\x07\x32\xb2\x0b\n\x0bNikonTiCtrl\x12\x45\n\x0cListProperty\x12\x18.api.ListPropertyRequest\x1a\x19.api.ListPropertyResponse\"\x00\x12\x42\n\x0bGetProperty\x12\x17.api.GetPropertyRequest\x1a\x18.api.GetPropertyResponse\"\x00\x12@\n\x0bSetProperty\x12\x17.api.SetPropertyRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x42\n\x0cWaitProperty\x12\x18.api.WaitPropertyRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x41\n\x0bListChannel\x12\x16.google.protobuf.Empty\x1a\x18.api.ListChannelResponse\"\x00\x12\x44\n\rSwitchChannel\x12\x19.api.SwitchChannelRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x46\n\x0eOpenExperiment\x12\x1a.api.OpenExperimentRequest\x1a\x16.google.protobuf.Empty\"\x00\x12=\n\tListPlate\x12\x16.google.protobuf.Empty\x1a\x16.api.ListPlateResponse\"\x00\x12:\n\x08\x41\x64\x64Plate\x12\x14.api.AddPlateRequest\x1a\x16.google.protobuf.Empty\"\x00\x12V\n\x16SetPlatePositionOrigin\x12\".api.SetPlatePositionOriginRequest\x1a\x16.google.protobuf.Empty\"\x00\x12J\n\x10SetPlateMetadata\x12\x1c.api.SetPlateMetadataRequest\x1a\x16.google.protobuf.Empty\"\x00\x12H\n\x0fSetWellsEnabled\x12\x1b.api.SetWellsEnabledRequest\x1a\x16.google.protobuf.Empty\"\x00\x12J\n\x10SetWellsMetadata\x12\x1c.api.SetWellsMetadataRequest\x1a\x16.google.protobuf.Empty\"\x00\x12@\n\x0b\x43reateSites\x12\x17.api.CreateSitesRequest\x1a\x16.google.protobuf.Empty\"\x00\x12P\n\x13\x41\x63quireMultiChannel\x12\x1f.api.AcquireMultiChannelRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x41\n\x0bListNDImage\x12\x16.google.protobuf.Empty\x1a\x18.api.ListNDImageResponse\"\x00\x12?\n\nGetNDImage\x12\x16.api.GetNDImageRequest\x1a\x17.api.GetNDImageResponse\"\x00\x12\x45\n\x0cGetImageData\x12\x18.api.GetImageDataRequest\x1a\x19.api.GetImageDataResponse\"\x00\x12]\n\x14GetSegmentationScore\x12 .api.GetSegmentationScoreRequest\x1a!.api.GetSegmentationScoreResponse\"\x00\x12N\n\x0fQuantifyRegions\x12\x1b.api.QuantifyRegionsRequest\x1a\x1c.api.QuantifyRegionsResponse\"\x00\x62\x06proto3'
   ,
   dependencies=[google_dot_protobuf_dot_empty__pb2.DESCRIPTOR,google_dot_protobuf_dot_duration__pb2.DESCRIPTOR,])
 
+_PLATETYPE = _descriptor.EnumDescriptor(
+  name='PlateType',
+  full_name='api.PlateType',
+  filename=None,
+  file=DESCRIPTOR,
+  create_key=_descriptor._internal_create_key,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='UNKNOWN', index=0, number=0,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
+    _descriptor.EnumValueDescriptor(
+      name='SLIDE', index=1, number=1,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
+    _descriptor.EnumValueDescriptor(
+      name='WELLPLATE96', index=2, number=2,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
+    _descriptor.EnumValueDescriptor(
+      name='WELLPLATE384', index=3, number=3,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=2728,
+  serialized_end=2798,
+)
+_sym_db.RegisterEnumDescriptor(_PLATETYPE)
+
+PlateType = enum_type_wrapper.EnumTypeWrapper(_PLATETYPE)
 _DATATYPE = _descriptor.EnumDescriptor(
   name='DataType',
   full_name='api.DataType',
@@ -76,8 +112,8 @@ _DATATYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2178,
-  serialized_end=2289,
+  serialized_start=2800,
+  serialized_end=2911,
 )
 _sym_db.RegisterEnumDescriptor(_DATATYPE)
 
@@ -132,12 +168,16 @@ _COLORTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2291,
-  serialized_end=2409,
+  serialized_start=2913,
+  serialized_end=3031,
 )
 _sym_db.RegisterEnumDescriptor(_COLORTYPE)
 
 ColorType = enum_type_wrapper.EnumTypeWrapper(_COLORTYPE)
+UNKNOWN = 0
+SLIDE = 1
+WELLPLATE96 = 2
+WELLPLATE384 = 3
 UNKNOWN_DTYPE = 0
 BOOL8 = 1
 UINT8 = 2
@@ -242,53 +282,18 @@ _CHANNEL = _descriptor.Descriptor(
 )
 
 
-_NDIMAGE = _descriptor.Descriptor(
-  name='NDImage',
-  full_name='api.NDImage',
+_LISTPROPERTYREQUEST = _descriptor.Descriptor(
+  name='ListPropertyRequest',
+  full_name='api.ListPropertyRequest',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='name', full_name='api.NDImage.name', index=0,
+      name='name', full_name='api.ListPropertyRequest.name', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='channel_info', full_name='api.NDImage.channel_info', index=1,
-      number=2, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='n_images', full_name='api.NDImage.n_images', index=2,
-      number=3, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='n_ch', full_name='api.NDImage.n_ch', index=3,
-      number=4, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='n_z', full_name='api.NDImage.n_z', index=4,
-      number=5, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='n_t', full_name='api.NDImage.n_t', index=5,
-      number=6, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
@@ -305,49 +310,986 @@ _NDIMAGE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=210,
-  serialized_end=334,
+  serialized_end=245,
 )
 
 
-_NDIMAGECHANNEL = _descriptor.Descriptor(
-  name='NDImageChannel',
-  full_name='api.NDImageChannel',
+_LISTPROPERTYRESPONSE = _descriptor.Descriptor(
+  name='ListPropertyResponse',
+  full_name='api.ListPropertyResponse',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='name', full_name='api.NDImageChannel.name', index=0,
+      name='name', full_name='api.ListPropertyResponse.name', index=0,
+      number=1, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=247,
+  serialized_end=283,
+)
+
+
+_GETPROPERTYREQUEST = _descriptor.Descriptor(
+  name='GetPropertyRequest',
+  full_name='api.GetPropertyRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='api.GetPropertyRequest.name', index=0,
+      number=1, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=285,
+  serialized_end=319,
+)
+
+
+_GETPROPERTYRESPONSE = _descriptor.Descriptor(
+  name='GetPropertyResponse',
+  full_name='api.GetPropertyResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='property', full_name='api.GetPropertyResponse.property', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=321,
+  serialized_end=380,
+)
+
+
+_SETPROPERTYREQUEST = _descriptor.Descriptor(
+  name='SetPropertyRequest',
+  full_name='api.SetPropertyRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='property', full_name='api.SetPropertyRequest.property', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=382,
+  serialized_end=440,
+)
+
+
+_WAITPROPERTYREQUEST = _descriptor.Descriptor(
+  name='WaitPropertyRequest',
+  full_name='api.WaitPropertyRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='api.WaitPropertyRequest.name', index=0,
+      number=1, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='timeout', full_name='api.WaitPropertyRequest.timeout', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=442,
+  serialized_end=521,
+)
+
+
+_LISTCHANNELRESPONSE = _descriptor.Descriptor(
+  name='ListChannelResponse',
+  full_name='api.ListChannelResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='channels', full_name='api.ListChannelResponse.channels', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=523,
+  serialized_end=576,
+)
+
+
+_SWITCHCHANNELREQUEST = _descriptor.Descriptor(
+  name='SwitchChannelRequest',
+  full_name='api.SwitchChannelRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='channel', full_name='api.SwitchChannelRequest.channel', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=578,
+  serialized_end=631,
+)
+
+
+_OPENEXPERIMENTREQUEST = _descriptor.Descriptor(
+  name='OpenExperimentRequest',
+  full_name='api.OpenExperimentRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='api.OpenExperimentRequest.name', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='width', full_name='api.NDImageChannel.width', index=1,
-      number=2, type=13, cpp_type=3, label=1,
+      name='base_dir', full_name='api.OpenExperimentRequest.base_dir', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+    _descriptor.OneofDescriptor(
+      name='_base_dir', full_name='api.OpenExperimentRequest._base_dir',
+      index=0, containing_type=None,
+      create_key=_descriptor._internal_create_key,
+    fields=[]),
+  ],
+  serialized_start=633,
+  serialized_end=706,
+)
+
+
+_POS2D = _descriptor.Descriptor(
+  name='Pos2D',
+  full_name='api.Pos2D',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='x', full_name='api.Pos2D.x', index=0,
+      number=1, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='y', full_name='api.Pos2D.y', index=1,
+      number=2, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=708,
+  serialized_end=737,
+)
+
+
+_PLATEINFO = _descriptor.Descriptor(
+  name='PlateInfo',
+  full_name='api.PlateInfo',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='uuid', full_name='api.PlateInfo.uuid', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='type', full_name='api.PlateInfo.type', index=1,
+      number=2, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='height', full_name='api.NDImageChannel.height', index=2,
+      name='id', full_name='api.PlateInfo.id', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='pos_origin', full_name='api.PlateInfo.pos_origin', index=3,
+      number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='metadata', full_name='api.PlateInfo.metadata', index=4,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='well', full_name='api.PlateInfo.well', index=5,
+      number=6, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+    _descriptor.OneofDescriptor(
+      name='_pos_origin', full_name='api.PlateInfo._pos_origin',
+      index=0, containing_type=None,
+      create_key=_descriptor._internal_create_key,
+    fields=[]),
+  ],
+  serialized_start=740,
+  serialized_end=906,
+)
+
+
+_WELLINFO = _descriptor.Descriptor(
+  name='WellInfo',
+  full_name='api.WellInfo',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='uuid', full_name='api.WellInfo.uuid', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='id', full_name='api.WellInfo.id', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='rel_pos', full_name='api.WellInfo.rel_pos', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='enabled', full_name='api.WellInfo.enabled', index=3,
+      number=4, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='metadata', full_name='api.WellInfo.metadata', index=4,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='site', full_name='api.WellInfo.site', index=5,
+      number=6, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=909,
+  serialized_end=1038,
+)
+
+
+_SITEINFO = _descriptor.Descriptor(
+  name='SiteInfo',
+  full_name='api.SiteInfo',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='uuid', full_name='api.SiteInfo.uuid', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='id', full_name='api.SiteInfo.id', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='rel_pos', full_name='api.SiteInfo.rel_pos', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='enabled', full_name='api.SiteInfo.enabled', index=3,
+      number=4, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='metadata', full_name='api.SiteInfo.metadata', index=4,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1040,
+  serialized_end=1140,
+)
+
+
+_LISTPLATERESPONSE = _descriptor.Descriptor(
+  name='ListPlateResponse',
+  full_name='api.ListPlateResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='plate', full_name='api.ListPlateResponse.plate', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1142,
+  serialized_end=1192,
+)
+
+
+_ADDPLATEREQUEST = _descriptor.Descriptor(
+  name='AddPlateRequest',
+  full_name='api.AddPlateRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='plate_type', full_name='api.AddPlateRequest.plate_type', index=0,
+      number=1, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='plate_id', full_name='api.AddPlateRequest.plate_id', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1194,
+  serialized_end=1265,
+)
+
+
+_SETPLATEPOSITIONORIGINREQUEST = _descriptor.Descriptor(
+  name='SetPlatePositionOriginRequest',
+  full_name='api.SetPlatePositionOriginRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='plate_uuid', full_name='api.SetPlatePositionOriginRequest.plate_uuid', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='x', full_name='api.SetPlatePositionOriginRequest.x', index=1,
+      number=2, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='y', full_name='api.SetPlatePositionOriginRequest.y', index=2,
+      number=3, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1267,
+  serialized_end=1340,
+)
+
+
+_SETPLATEMETADATAREQUEST = _descriptor.Descriptor(
+  name='SetPlateMetadataRequest',
+  full_name='api.SetPlateMetadataRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='plate_uuid', full_name='api.SetPlateMetadataRequest.plate_uuid', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='key', full_name='api.SetPlateMetadataRequest.key', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='json_value', full_name='api.SetPlateMetadataRequest.json_value', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1342,
+  serialized_end=1420,
+)
+
+
+_SETWELLSENABLEDREQUEST = _descriptor.Descriptor(
+  name='SetWellsEnabledRequest',
+  full_name='api.SetWellsEnabledRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='plate_uuid', full_name='api.SetWellsEnabledRequest.plate_uuid', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='well_id', full_name='api.SetWellsEnabledRequest.well_id', index=1,
+      number=2, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='enabled', full_name='api.SetWellsEnabledRequest.enabled', index=2,
+      number=3, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1422,
+  serialized_end=1500,
+)
+
+
+_SETWELLSMETADATAREQUEST = _descriptor.Descriptor(
+  name='SetWellsMetadataRequest',
+  full_name='api.SetWellsMetadataRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='plate_uuid', full_name='api.SetWellsMetadataRequest.plate_uuid', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='well_id', full_name='api.SetWellsMetadataRequest.well_id', index=1,
+      number=2, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='key', full_name='api.SetWellsMetadataRequest.key', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='json_value', full_name='api.SetWellsMetadataRequest.json_value', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1502,
+  serialized_end=1597,
+)
+
+
+_CREATESITESREQUEST = _descriptor.Descriptor(
+  name='CreateSitesRequest',
+  full_name='api.CreateSitesRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='plate_uuid', full_name='api.CreateSitesRequest.plate_uuid', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='well_id', full_name='api.CreateSitesRequest.well_id', index=1,
+      number=2, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='n_x', full_name='api.CreateSitesRequest.n_x', index=2,
+      number=3, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='n_y', full_name='api.CreateSitesRequest.n_y', index=3,
+      number=4, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='spacing_x', full_name='api.CreateSitesRequest.spacing_x', index=4,
+      number=5, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='spacing_y', full_name='api.CreateSitesRequest.spacing_y', index=5,
+      number=6, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1599,
+  serialized_end=1720,
+)
+
+
+_ACQUIREMULTICHANNELREQUEST = _descriptor.Descriptor(
+  name='AcquireMultiChannelRequest',
+  full_name='api.AcquireMultiChannelRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='ndimage_name', full_name='api.AcquireMultiChannelRequest.ndimage_name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='channels', full_name='api.AcquireMultiChannelRequest.channels', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='i_z', full_name='api.AcquireMultiChannelRequest.i_z', index=2,
+      number=3, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='i_t', full_name='api.AcquireMultiChannelRequest.i_t', index=3,
+      number=4, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='metadata', full_name='api.AcquireMultiChannelRequest.metadata', index=4,
+      number=6, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='site_uuid', full_name='api.AcquireMultiChannelRequest.site_uuid', index=5,
+      number=7, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1723,
+  serialized_end=1868,
+)
+
+
+_NDIMAGE = _descriptor.Descriptor(
+  name='NDImage',
+  full_name='api.NDImage',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='api.NDImage.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='ch_name', full_name='api.NDImage.ch_name', index=1,
+      number=2, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='width', full_name='api.NDImage.width', index=2,
       number=3, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='dtype', full_name='api.NDImageChannel.dtype', index=3,
-      number=4, type=14, cpp_type=8, label=1,
+      name='height', full_name='api.NDImage.height', index=3,
+      number=4, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='ctype', full_name='api.NDImageChannel.ctype', index=4,
-      number=5, type=14, cpp_type=8, label=1,
+      name='n_ch', full_name='api.NDImage.n_ch', index=4,
+      number=5, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='n_z', full_name='api.NDImage.n_z', index=5,
+      number=6, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='n_t', full_name='api.NDImage.n_t', index=6,
+      number=7, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='dtype', full_name='api.NDImage.dtype', index=7,
+      number=8, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='ctype', full_name='api.NDImage.ctype', index=8,
+      number=9, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -364,8 +1306,157 @@ _NDIMAGECHANNEL = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=336,
-  serialized_end=458,
+  serialized_start=1871,
+  serialized_end=2043,
+)
+
+
+_LISTNDIMAGERESPONSE = _descriptor.Descriptor(
+  name='ListNDImageResponse',
+  full_name='api.ListNDImageResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='ndimage', full_name='api.ListNDImageResponse.ndimage', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2045,
+  serialized_end=2097,
+)
+
+
+_GETNDIMAGEREQUEST = _descriptor.Descriptor(
+  name='GetNDImageRequest',
+  full_name='api.GetNDImageRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='ndimage_name', full_name='api.GetNDImageRequest.ndimage_name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2099,
+  serialized_end=2140,
+)
+
+
+_GETNDIMAGERESPONSE = _descriptor.Descriptor(
+  name='GetNDImageResponse',
+  full_name='api.GetNDImageResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='ndimage', full_name='api.GetNDImageResponse.ndimage', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2142,
+  serialized_end=2193,
+)
+
+
+_GETIMAGEDATAREQUEST = _descriptor.Descriptor(
+  name='GetImageDataRequest',
+  full_name='api.GetImageDataRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='ndimage_name', full_name='api.GetImageDataRequest.ndimage_name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='channel_name', full_name='api.GetImageDataRequest.channel_name', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='i_z', full_name='api.GetImageDataRequest.i_z', index=2,
+      number=3, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='i_t', full_name='api.GetImageDataRequest.i_t', index=3,
+      number=4, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2195,
+  serialized_end=2286,
 )
 
 
@@ -424,436 +1515,21 @@ _IMAGEDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=460,
-  serialized_end=576,
+  serialized_start=2288,
+  serialized_end=2404,
 )
 
 
-_SAMPLE = _descriptor.Descriptor(
-  name='Sample',
-  full_name='api.Sample',
+_GETIMAGEDATARESPONSE = _descriptor.Descriptor(
+  name='GetImageDataResponse',
+  full_name='api.GetImageDataResponse',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='id', full_name='api.Sample.id', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=578,
-  serialized_end=598,
-)
-
-
-_SITE = _descriptor.Descriptor(
-  name='Site',
-  full_name='api.Site',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='sample', full_name='api.Site.sample', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='id', full_name='api.Site.id', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=600,
-  serialized_end=647,
-)
-
-
-_SAMPLEINFO = _descriptor.Descriptor(
-  name='SampleInfo',
-  full_name='api.SampleInfo',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='id', full_name='api.SampleInfo.id', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='name', full_name='api.SampleInfo.name', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='description', full_name='api.SampleInfo.description', index=2,
-      number=3, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='sites', full_name='api.SampleInfo.sites', index=3,
-      number=4, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=649,
-  serialized_end=738,
-)
-
-
-_SITEINFO = _descriptor.Descriptor(
-  name='SiteInfo',
-  full_name='api.SiteInfo',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='id', full_name='api.SiteInfo.id', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='name', full_name='api.SiteInfo.name', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='description', full_name='api.SiteInfo.description', index=2,
-      number=3, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='relative_pos_x', full_name='api.SiteInfo.relative_pos_x', index=3,
-      number=4, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='relative_pos_y', full_name='api.SiteInfo.relative_pos_y', index=4,
-      number=5, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=740,
-  serialized_end=845,
-)
-
-
-_LISTPROPERTYREQUEST = _descriptor.Descriptor(
-  name='ListPropertyRequest',
-  full_name='api.ListPropertyRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='name', full_name='api.ListPropertyRequest.name', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=847,
-  serialized_end=882,
-)
-
-
-_LISTPROPERTYRESPONSE = _descriptor.Descriptor(
-  name='ListPropertyResponse',
-  full_name='api.ListPropertyResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='name', full_name='api.ListPropertyResponse.name', index=0,
-      number=1, type=9, cpp_type=9, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=884,
-  serialized_end=920,
-)
-
-
-_GETPROPERTYREQUEST = _descriptor.Descriptor(
-  name='GetPropertyRequest',
-  full_name='api.GetPropertyRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='name', full_name='api.GetPropertyRequest.name', index=0,
-      number=1, type=9, cpp_type=9, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=922,
-  serialized_end=956,
-)
-
-
-_GETPROPERTYRESPONSE = _descriptor.Descriptor(
-  name='GetPropertyResponse',
-  full_name='api.GetPropertyResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='property', full_name='api.GetPropertyResponse.property', index=0,
-      number=1, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=958,
-  serialized_end=1017,
-)
-
-
-_SETPROPERTYREQUEST = _descriptor.Descriptor(
-  name='SetPropertyRequest',
-  full_name='api.SetPropertyRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='property', full_name='api.SetPropertyRequest.property', index=0,
-      number=1, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1019,
-  serialized_end=1077,
-)
-
-
-_WAITPROPERTYREQUEST = _descriptor.Descriptor(
-  name='WaitPropertyRequest',
-  full_name='api.WaitPropertyRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='name', full_name='api.WaitPropertyRequest.name', index=0,
-      number=1, type=9, cpp_type=9, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='timeout', full_name='api.WaitPropertyRequest.timeout', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1079,
-  serialized_end=1158,
-)
-
-
-_LISTCHANNELRESPONSE = _descriptor.Descriptor(
-  name='ListChannelResponse',
-  full_name='api.ListChannelResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='channels', full_name='api.ListChannelResponse.channels', index=0,
-      number=1, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1160,
-  serialized_end=1213,
-)
-
-
-_SWITCHCHANNELREQUEST = _descriptor.Descriptor(
-  name='SwitchChannelRequest',
-  full_name='api.SwitchChannelRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='channel', full_name='api.SwitchChannelRequest.channel', index=0,
+      name='data', full_name='api.GetImageDataResponse.data', index=0,
       number=1, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -871,358 +1547,8 @@ _SWITCHCHANNELREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1215,
-  serialized_end=1268,
-)
-
-
-_SETEXPERIMENTPATHREQUEST = _descriptor.Descriptor(
-  name='SetExperimentPathRequest',
-  full_name='api.SetExperimentPathRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='path', full_name='api.SetExperimentPathRequest.path', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1270,
-  serialized_end=1310,
-)
-
-
-_ADDSAMPLESREQUEST = _descriptor.Descriptor(
-  name='AddSamplesRequest',
-  full_name='api.AddSamplesRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='samples', full_name='api.AddSamplesRequest.samples', index=0,
-      number=1, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1312,
-  serialized_end=1365,
-)
-
-
-_ADDSITESREQUEST = _descriptor.Descriptor(
-  name='AddSitesRequest',
-  full_name='api.AddSitesRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='sample', full_name='api.AddSitesRequest.sample', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='sites', full_name='api.AddSitesRequest.sites', index=1,
-      number=2, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1367,
-  serialized_end=1443,
-)
-
-
-_MOVETOSITEREQUEST = _descriptor.Descriptor(
-  name='MoveToSiteRequest',
-  full_name='api.MoveToSiteRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='site', full_name='api.MoveToSiteRequest.site', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1445,
-  serialized_end=1489,
-)
-
-
-_ACQUIREMULTICHANNELREQUEST_METADATAENTRY = _descriptor.Descriptor(
-  name='MetadataEntry',
-  full_name='api.AcquireMultiChannelRequest.MetadataEntry',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='key', full_name='api.AcquireMultiChannelRequest.MetadataEntry.key', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='value', full_name='api.AcquireMultiChannelRequest.MetadataEntry.value', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=b'8\001',
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1667,
-  serialized_end=1714,
-)
-
-_ACQUIREMULTICHANNELREQUEST = _descriptor.Descriptor(
-  name='AcquireMultiChannelRequest',
-  full_name='api.AcquireMultiChannelRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='ndimage_name', full_name='api.AcquireMultiChannelRequest.ndimage_name', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='channels', full_name='api.AcquireMultiChannelRequest.channels', index=1,
-      number=2, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='i_z', full_name='api.AcquireMultiChannelRequest.i_z', index=2,
-      number=3, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='i_t', full_name='api.AcquireMultiChannelRequest.i_t', index=3,
-      number=4, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='metadata', full_name='api.AcquireMultiChannelRequest.metadata', index=4,
-      number=5, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[_ACQUIREMULTICHANNELREQUEST_METADATAENTRY, ],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1492,
-  serialized_end=1714,
-)
-
-
-_LISTNDIMAGERESPONSE = _descriptor.Descriptor(
-  name='ListNDImageResponse',
-  full_name='api.ListNDImageResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='ndimages', full_name='api.ListNDImageResponse.ndimages', index=0,
-      number=1, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1716,
-  serialized_end=1769,
-)
-
-
-_GETIMAGEREQUEST = _descriptor.Descriptor(
-  name='GetImageRequest',
-  full_name='api.GetImageRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='ndimage_name', full_name='api.GetImageRequest.ndimage_name', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='channel_name', full_name='api.GetImageRequest.channel_name', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='i_z', full_name='api.GetImageRequest.i_z', index=2,
-      number=3, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='i_t', full_name='api.GetImageRequest.i_t', index=3,
-      number=4, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1771,
-  serialized_end=1858,
-)
-
-
-_GETIMAGERESPONSE = _descriptor.Descriptor(
-  name='GetImageResponse',
-  full_name='api.GetImageResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='data', full_name='api.GetImageResponse.data', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1860,
-  serialized_end=1908,
+  serialized_start=2406,
+  serialized_end=2458,
 )
 
 
@@ -1253,8 +1579,8 @@ _GETSEGMENTATIONSCOREREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1910,
-  serialized_end=1969,
+  serialized_start=2460,
+  serialized_end=2519,
 )
 
 
@@ -1285,8 +1611,8 @@ _GETSEGMENTATIONSCORERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1971,
-  serialized_end=2031,
+  serialized_start=2521,
+  serialized_end=2581,
 )
 
 
@@ -1338,8 +1664,8 @@ _QUANTIFYREGIONSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2033,
-  serialized_end=2130,
+  serialized_start=2583,
+  serialized_end=2680,
 )
 
 
@@ -1370,42 +1696,41 @@ _QUANTIFYREGIONSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2132,
-  serialized_end=2176,
+  serialized_start=2682,
+  serialized_end=2726,
 )
 
-_NDIMAGE.fields_by_name['channel_info'].message_type = _NDIMAGECHANNEL
-_NDIMAGECHANNEL.fields_by_name['dtype'].enum_type = _DATATYPE
-_NDIMAGECHANNEL.fields_by_name['ctype'].enum_type = _COLORTYPE
-_IMAGEDATA.fields_by_name['dtype'].enum_type = _DATATYPE
-_IMAGEDATA.fields_by_name['ctype'].enum_type = _COLORTYPE
-_SITE.fields_by_name['sample'].message_type = _SAMPLE
-_SAMPLEINFO.fields_by_name['sites'].message_type = _SITEINFO
 _GETPROPERTYRESPONSE.fields_by_name['property'].message_type = _PROPERTYVALUE
 _SETPROPERTYREQUEST.fields_by_name['property'].message_type = _PROPERTYVALUE
 _WAITPROPERTYREQUEST.fields_by_name['timeout'].message_type = google_dot_protobuf_dot_duration__pb2._DURATION
 _LISTCHANNELRESPONSE.fields_by_name['channels'].message_type = _CHANNEL
 _SWITCHCHANNELREQUEST.fields_by_name['channel'].message_type = _CHANNEL
-_ADDSAMPLESREQUEST.fields_by_name['samples'].message_type = _SAMPLEINFO
-_ADDSITESREQUEST.fields_by_name['sample'].message_type = _SAMPLE
-_ADDSITESREQUEST.fields_by_name['sites'].message_type = _SITEINFO
-_MOVETOSITEREQUEST.fields_by_name['site'].message_type = _SITE
-_ACQUIREMULTICHANNELREQUEST_METADATAENTRY.containing_type = _ACQUIREMULTICHANNELREQUEST
+_OPENEXPERIMENTREQUEST.oneofs_by_name['_base_dir'].fields.append(
+  _OPENEXPERIMENTREQUEST.fields_by_name['base_dir'])
+_OPENEXPERIMENTREQUEST.fields_by_name['base_dir'].containing_oneof = _OPENEXPERIMENTREQUEST.oneofs_by_name['_base_dir']
+_PLATEINFO.fields_by_name['type'].enum_type = _PLATETYPE
+_PLATEINFO.fields_by_name['pos_origin'].message_type = _POS2D
+_PLATEINFO.fields_by_name['well'].message_type = _WELLINFO
+_PLATEINFO.oneofs_by_name['_pos_origin'].fields.append(
+  _PLATEINFO.fields_by_name['pos_origin'])
+_PLATEINFO.fields_by_name['pos_origin'].containing_oneof = _PLATEINFO.oneofs_by_name['_pos_origin']
+_WELLINFO.fields_by_name['rel_pos'].message_type = _POS2D
+_WELLINFO.fields_by_name['site'].message_type = _SITEINFO
+_SITEINFO.fields_by_name['rel_pos'].message_type = _POS2D
+_LISTPLATERESPONSE.fields_by_name['plate'].message_type = _PLATEINFO
+_ADDPLATEREQUEST.fields_by_name['plate_type'].enum_type = _PLATETYPE
 _ACQUIREMULTICHANNELREQUEST.fields_by_name['channels'].message_type = _CHANNEL
-_ACQUIREMULTICHANNELREQUEST.fields_by_name['metadata'].message_type = _ACQUIREMULTICHANNELREQUEST_METADATAENTRY
-_LISTNDIMAGERESPONSE.fields_by_name['ndimages'].message_type = _NDIMAGE
-_GETIMAGERESPONSE.fields_by_name['data'].message_type = _IMAGEDATA
+_NDIMAGE.fields_by_name['dtype'].enum_type = _DATATYPE
+_NDIMAGE.fields_by_name['ctype'].enum_type = _COLORTYPE
+_LISTNDIMAGERESPONSE.fields_by_name['ndimage'].message_type = _NDIMAGE
+_GETNDIMAGERESPONSE.fields_by_name['ndimage'].message_type = _NDIMAGE
+_IMAGEDATA.fields_by_name['dtype'].enum_type = _DATATYPE
+_IMAGEDATA.fields_by_name['ctype'].enum_type = _COLORTYPE
+_GETIMAGEDATARESPONSE.fields_by_name['data'].message_type = _IMAGEDATA
 _GETSEGMENTATIONSCOREREQUEST.fields_by_name['data'].message_type = _IMAGEDATA
 _GETSEGMENTATIONSCORERESPONSE.fields_by_name['data'].message_type = _IMAGEDATA
 DESCRIPTOR.message_types_by_name['PropertyValue'] = _PROPERTYVALUE
 DESCRIPTOR.message_types_by_name['Channel'] = _CHANNEL
-DESCRIPTOR.message_types_by_name['NDImage'] = _NDIMAGE
-DESCRIPTOR.message_types_by_name['NDImageChannel'] = _NDIMAGECHANNEL
-DESCRIPTOR.message_types_by_name['ImageData'] = _IMAGEDATA
-DESCRIPTOR.message_types_by_name['Sample'] = _SAMPLE
-DESCRIPTOR.message_types_by_name['Site'] = _SITE
-DESCRIPTOR.message_types_by_name['SampleInfo'] = _SAMPLEINFO
-DESCRIPTOR.message_types_by_name['SiteInfo'] = _SITEINFO
 DESCRIPTOR.message_types_by_name['ListPropertyRequest'] = _LISTPROPERTYREQUEST
 DESCRIPTOR.message_types_by_name['ListPropertyResponse'] = _LISTPROPERTYRESPONSE
 DESCRIPTOR.message_types_by_name['GetPropertyRequest'] = _GETPROPERTYREQUEST
@@ -1414,18 +1739,31 @@ DESCRIPTOR.message_types_by_name['SetPropertyRequest'] = _SETPROPERTYREQUEST
 DESCRIPTOR.message_types_by_name['WaitPropertyRequest'] = _WAITPROPERTYREQUEST
 DESCRIPTOR.message_types_by_name['ListChannelResponse'] = _LISTCHANNELRESPONSE
 DESCRIPTOR.message_types_by_name['SwitchChannelRequest'] = _SWITCHCHANNELREQUEST
-DESCRIPTOR.message_types_by_name['SetExperimentPathRequest'] = _SETEXPERIMENTPATHREQUEST
-DESCRIPTOR.message_types_by_name['AddSamplesRequest'] = _ADDSAMPLESREQUEST
-DESCRIPTOR.message_types_by_name['AddSitesRequest'] = _ADDSITESREQUEST
-DESCRIPTOR.message_types_by_name['MoveToSiteRequest'] = _MOVETOSITEREQUEST
+DESCRIPTOR.message_types_by_name['OpenExperimentRequest'] = _OPENEXPERIMENTREQUEST
+DESCRIPTOR.message_types_by_name['Pos2D'] = _POS2D
+DESCRIPTOR.message_types_by_name['PlateInfo'] = _PLATEINFO
+DESCRIPTOR.message_types_by_name['WellInfo'] = _WELLINFO
+DESCRIPTOR.message_types_by_name['SiteInfo'] = _SITEINFO
+DESCRIPTOR.message_types_by_name['ListPlateResponse'] = _LISTPLATERESPONSE
+DESCRIPTOR.message_types_by_name['AddPlateRequest'] = _ADDPLATEREQUEST
+DESCRIPTOR.message_types_by_name['SetPlatePositionOriginRequest'] = _SETPLATEPOSITIONORIGINREQUEST
+DESCRIPTOR.message_types_by_name['SetPlateMetadataRequest'] = _SETPLATEMETADATAREQUEST
+DESCRIPTOR.message_types_by_name['SetWellsEnabledRequest'] = _SETWELLSENABLEDREQUEST
+DESCRIPTOR.message_types_by_name['SetWellsMetadataRequest'] = _SETWELLSMETADATAREQUEST
+DESCRIPTOR.message_types_by_name['CreateSitesRequest'] = _CREATESITESREQUEST
 DESCRIPTOR.message_types_by_name['AcquireMultiChannelRequest'] = _ACQUIREMULTICHANNELREQUEST
+DESCRIPTOR.message_types_by_name['NDImage'] = _NDIMAGE
 DESCRIPTOR.message_types_by_name['ListNDImageResponse'] = _LISTNDIMAGERESPONSE
-DESCRIPTOR.message_types_by_name['GetImageRequest'] = _GETIMAGEREQUEST
-DESCRIPTOR.message_types_by_name['GetImageResponse'] = _GETIMAGERESPONSE
+DESCRIPTOR.message_types_by_name['GetNDImageRequest'] = _GETNDIMAGEREQUEST
+DESCRIPTOR.message_types_by_name['GetNDImageResponse'] = _GETNDIMAGERESPONSE
+DESCRIPTOR.message_types_by_name['GetImageDataRequest'] = _GETIMAGEDATAREQUEST
+DESCRIPTOR.message_types_by_name['ImageData'] = _IMAGEDATA
+DESCRIPTOR.message_types_by_name['GetImageDataResponse'] = _GETIMAGEDATARESPONSE
 DESCRIPTOR.message_types_by_name['GetSegmentationScoreRequest'] = _GETSEGMENTATIONSCOREREQUEST
 DESCRIPTOR.message_types_by_name['GetSegmentationScoreResponse'] = _GETSEGMENTATIONSCORERESPONSE
 DESCRIPTOR.message_types_by_name['QuantifyRegionsRequest'] = _QUANTIFYREGIONSREQUEST
 DESCRIPTOR.message_types_by_name['QuantifyRegionsResponse'] = _QUANTIFYREGIONSRESPONSE
+DESCRIPTOR.enum_types_by_name['PlateType'] = _PLATETYPE
 DESCRIPTOR.enum_types_by_name['DataType'] = _DATATYPE
 DESCRIPTOR.enum_types_by_name['ColorType'] = _COLORTYPE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
@@ -1443,55 +1781,6 @@ Channel = _reflection.GeneratedProtocolMessageType('Channel', (_message.Message,
   # @@protoc_insertion_point(class_scope:api.Channel)
   })
 _sym_db.RegisterMessage(Channel)
-
-NDImage = _reflection.GeneratedProtocolMessageType('NDImage', (_message.Message,), {
-  'DESCRIPTOR' : _NDIMAGE,
-  '__module__' : 'api_pb2'
-  # @@protoc_insertion_point(class_scope:api.NDImage)
-  })
-_sym_db.RegisterMessage(NDImage)
-
-NDImageChannel = _reflection.GeneratedProtocolMessageType('NDImageChannel', (_message.Message,), {
-  'DESCRIPTOR' : _NDIMAGECHANNEL,
-  '__module__' : 'api_pb2'
-  # @@protoc_insertion_point(class_scope:api.NDImageChannel)
-  })
-_sym_db.RegisterMessage(NDImageChannel)
-
-ImageData = _reflection.GeneratedProtocolMessageType('ImageData', (_message.Message,), {
-  'DESCRIPTOR' : _IMAGEDATA,
-  '__module__' : 'api_pb2'
-  # @@protoc_insertion_point(class_scope:api.ImageData)
-  })
-_sym_db.RegisterMessage(ImageData)
-
-Sample = _reflection.GeneratedProtocolMessageType('Sample', (_message.Message,), {
-  'DESCRIPTOR' : _SAMPLE,
-  '__module__' : 'api_pb2'
-  # @@protoc_insertion_point(class_scope:api.Sample)
-  })
-_sym_db.RegisterMessage(Sample)
-
-Site = _reflection.GeneratedProtocolMessageType('Site', (_message.Message,), {
-  'DESCRIPTOR' : _SITE,
-  '__module__' : 'api_pb2'
-  # @@protoc_insertion_point(class_scope:api.Site)
-  })
-_sym_db.RegisterMessage(Site)
-
-SampleInfo = _reflection.GeneratedProtocolMessageType('SampleInfo', (_message.Message,), {
-  'DESCRIPTOR' : _SAMPLEINFO,
-  '__module__' : 'api_pb2'
-  # @@protoc_insertion_point(class_scope:api.SampleInfo)
-  })
-_sym_db.RegisterMessage(SampleInfo)
-
-SiteInfo = _reflection.GeneratedProtocolMessageType('SiteInfo', (_message.Message,), {
-  'DESCRIPTOR' : _SITEINFO,
-  '__module__' : 'api_pb2'
-  # @@protoc_insertion_point(class_scope:api.SiteInfo)
-  })
-_sym_db.RegisterMessage(SiteInfo)
 
 ListPropertyRequest = _reflection.GeneratedProtocolMessageType('ListPropertyRequest', (_message.Message,), {
   'DESCRIPTOR' : _LISTPROPERTYREQUEST,
@@ -1549,48 +1838,103 @@ SwitchChannelRequest = _reflection.GeneratedProtocolMessageType('SwitchChannelRe
   })
 _sym_db.RegisterMessage(SwitchChannelRequest)
 
-SetExperimentPathRequest = _reflection.GeneratedProtocolMessageType('SetExperimentPathRequest', (_message.Message,), {
-  'DESCRIPTOR' : _SETEXPERIMENTPATHREQUEST,
+OpenExperimentRequest = _reflection.GeneratedProtocolMessageType('OpenExperimentRequest', (_message.Message,), {
+  'DESCRIPTOR' : _OPENEXPERIMENTREQUEST,
   '__module__' : 'api_pb2'
-  # @@protoc_insertion_point(class_scope:api.SetExperimentPathRequest)
+  # @@protoc_insertion_point(class_scope:api.OpenExperimentRequest)
   })
-_sym_db.RegisterMessage(SetExperimentPathRequest)
+_sym_db.RegisterMessage(OpenExperimentRequest)
 
-AddSamplesRequest = _reflection.GeneratedProtocolMessageType('AddSamplesRequest', (_message.Message,), {
-  'DESCRIPTOR' : _ADDSAMPLESREQUEST,
+Pos2D = _reflection.GeneratedProtocolMessageType('Pos2D', (_message.Message,), {
+  'DESCRIPTOR' : _POS2D,
   '__module__' : 'api_pb2'
-  # @@protoc_insertion_point(class_scope:api.AddSamplesRequest)
+  # @@protoc_insertion_point(class_scope:api.Pos2D)
   })
-_sym_db.RegisterMessage(AddSamplesRequest)
+_sym_db.RegisterMessage(Pos2D)
 
-AddSitesRequest = _reflection.GeneratedProtocolMessageType('AddSitesRequest', (_message.Message,), {
-  'DESCRIPTOR' : _ADDSITESREQUEST,
+PlateInfo = _reflection.GeneratedProtocolMessageType('PlateInfo', (_message.Message,), {
+  'DESCRIPTOR' : _PLATEINFO,
   '__module__' : 'api_pb2'
-  # @@protoc_insertion_point(class_scope:api.AddSitesRequest)
+  # @@protoc_insertion_point(class_scope:api.PlateInfo)
   })
-_sym_db.RegisterMessage(AddSitesRequest)
+_sym_db.RegisterMessage(PlateInfo)
 
-MoveToSiteRequest = _reflection.GeneratedProtocolMessageType('MoveToSiteRequest', (_message.Message,), {
-  'DESCRIPTOR' : _MOVETOSITEREQUEST,
+WellInfo = _reflection.GeneratedProtocolMessageType('WellInfo', (_message.Message,), {
+  'DESCRIPTOR' : _WELLINFO,
   '__module__' : 'api_pb2'
-  # @@protoc_insertion_point(class_scope:api.MoveToSiteRequest)
+  # @@protoc_insertion_point(class_scope:api.WellInfo)
   })
-_sym_db.RegisterMessage(MoveToSiteRequest)
+_sym_db.RegisterMessage(WellInfo)
+
+SiteInfo = _reflection.GeneratedProtocolMessageType('SiteInfo', (_message.Message,), {
+  'DESCRIPTOR' : _SITEINFO,
+  '__module__' : 'api_pb2'
+  # @@protoc_insertion_point(class_scope:api.SiteInfo)
+  })
+_sym_db.RegisterMessage(SiteInfo)
+
+ListPlateResponse = _reflection.GeneratedProtocolMessageType('ListPlateResponse', (_message.Message,), {
+  'DESCRIPTOR' : _LISTPLATERESPONSE,
+  '__module__' : 'api_pb2'
+  # @@protoc_insertion_point(class_scope:api.ListPlateResponse)
+  })
+_sym_db.RegisterMessage(ListPlateResponse)
+
+AddPlateRequest = _reflection.GeneratedProtocolMessageType('AddPlateRequest', (_message.Message,), {
+  'DESCRIPTOR' : _ADDPLATEREQUEST,
+  '__module__' : 'api_pb2'
+  # @@protoc_insertion_point(class_scope:api.AddPlateRequest)
+  })
+_sym_db.RegisterMessage(AddPlateRequest)
+
+SetPlatePositionOriginRequest = _reflection.GeneratedProtocolMessageType('SetPlatePositionOriginRequest', (_message.Message,), {
+  'DESCRIPTOR' : _SETPLATEPOSITIONORIGINREQUEST,
+  '__module__' : 'api_pb2'
+  # @@protoc_insertion_point(class_scope:api.SetPlatePositionOriginRequest)
+  })
+_sym_db.RegisterMessage(SetPlatePositionOriginRequest)
+
+SetPlateMetadataRequest = _reflection.GeneratedProtocolMessageType('SetPlateMetadataRequest', (_message.Message,), {
+  'DESCRIPTOR' : _SETPLATEMETADATAREQUEST,
+  '__module__' : 'api_pb2'
+  # @@protoc_insertion_point(class_scope:api.SetPlateMetadataRequest)
+  })
+_sym_db.RegisterMessage(SetPlateMetadataRequest)
+
+SetWellsEnabledRequest = _reflection.GeneratedProtocolMessageType('SetWellsEnabledRequest', (_message.Message,), {
+  'DESCRIPTOR' : _SETWELLSENABLEDREQUEST,
+  '__module__' : 'api_pb2'
+  # @@protoc_insertion_point(class_scope:api.SetWellsEnabledRequest)
+  })
+_sym_db.RegisterMessage(SetWellsEnabledRequest)
+
+SetWellsMetadataRequest = _reflection.GeneratedProtocolMessageType('SetWellsMetadataRequest', (_message.Message,), {
+  'DESCRIPTOR' : _SETWELLSMETADATAREQUEST,
+  '__module__' : 'api_pb2'
+  # @@protoc_insertion_point(class_scope:api.SetWellsMetadataRequest)
+  })
+_sym_db.RegisterMessage(SetWellsMetadataRequest)
+
+CreateSitesRequest = _reflection.GeneratedProtocolMessageType('CreateSitesRequest', (_message.Message,), {
+  'DESCRIPTOR' : _CREATESITESREQUEST,
+  '__module__' : 'api_pb2'
+  # @@protoc_insertion_point(class_scope:api.CreateSitesRequest)
+  })
+_sym_db.RegisterMessage(CreateSitesRequest)
 
 AcquireMultiChannelRequest = _reflection.GeneratedProtocolMessageType('AcquireMultiChannelRequest', (_message.Message,), {
-
-  'MetadataEntry' : _reflection.GeneratedProtocolMessageType('MetadataEntry', (_message.Message,), {
-    'DESCRIPTOR' : _ACQUIREMULTICHANNELREQUEST_METADATAENTRY,
-    '__module__' : 'api_pb2'
-    # @@protoc_insertion_point(class_scope:api.AcquireMultiChannelRequest.MetadataEntry)
-    })
-  ,
   'DESCRIPTOR' : _ACQUIREMULTICHANNELREQUEST,
   '__module__' : 'api_pb2'
   # @@protoc_insertion_point(class_scope:api.AcquireMultiChannelRequest)
   })
 _sym_db.RegisterMessage(AcquireMultiChannelRequest)
-_sym_db.RegisterMessage(AcquireMultiChannelRequest.MetadataEntry)
+
+NDImage = _reflection.GeneratedProtocolMessageType('NDImage', (_message.Message,), {
+  'DESCRIPTOR' : _NDIMAGE,
+  '__module__' : 'api_pb2'
+  # @@protoc_insertion_point(class_scope:api.NDImage)
+  })
+_sym_db.RegisterMessage(NDImage)
 
 ListNDImageResponse = _reflection.GeneratedProtocolMessageType('ListNDImageResponse', (_message.Message,), {
   'DESCRIPTOR' : _LISTNDIMAGERESPONSE,
@@ -1599,19 +1943,40 @@ ListNDImageResponse = _reflection.GeneratedProtocolMessageType('ListNDImageRespo
   })
 _sym_db.RegisterMessage(ListNDImageResponse)
 
-GetImageRequest = _reflection.GeneratedProtocolMessageType('GetImageRequest', (_message.Message,), {
-  'DESCRIPTOR' : _GETIMAGEREQUEST,
+GetNDImageRequest = _reflection.GeneratedProtocolMessageType('GetNDImageRequest', (_message.Message,), {
+  'DESCRIPTOR' : _GETNDIMAGEREQUEST,
   '__module__' : 'api_pb2'
-  # @@protoc_insertion_point(class_scope:api.GetImageRequest)
+  # @@protoc_insertion_point(class_scope:api.GetNDImageRequest)
   })
-_sym_db.RegisterMessage(GetImageRequest)
+_sym_db.RegisterMessage(GetNDImageRequest)
 
-GetImageResponse = _reflection.GeneratedProtocolMessageType('GetImageResponse', (_message.Message,), {
-  'DESCRIPTOR' : _GETIMAGERESPONSE,
+GetNDImageResponse = _reflection.GeneratedProtocolMessageType('GetNDImageResponse', (_message.Message,), {
+  'DESCRIPTOR' : _GETNDIMAGERESPONSE,
   '__module__' : 'api_pb2'
-  # @@protoc_insertion_point(class_scope:api.GetImageResponse)
+  # @@protoc_insertion_point(class_scope:api.GetNDImageResponse)
   })
-_sym_db.RegisterMessage(GetImageResponse)
+_sym_db.RegisterMessage(GetNDImageResponse)
+
+GetImageDataRequest = _reflection.GeneratedProtocolMessageType('GetImageDataRequest', (_message.Message,), {
+  'DESCRIPTOR' : _GETIMAGEDATAREQUEST,
+  '__module__' : 'api_pb2'
+  # @@protoc_insertion_point(class_scope:api.GetImageDataRequest)
+  })
+_sym_db.RegisterMessage(GetImageDataRequest)
+
+ImageData = _reflection.GeneratedProtocolMessageType('ImageData', (_message.Message,), {
+  'DESCRIPTOR' : _IMAGEDATA,
+  '__module__' : 'api_pb2'
+  # @@protoc_insertion_point(class_scope:api.ImageData)
+  })
+_sym_db.RegisterMessage(ImageData)
+
+GetImageDataResponse = _reflection.GeneratedProtocolMessageType('GetImageDataResponse', (_message.Message,), {
+  'DESCRIPTOR' : _GETIMAGEDATARESPONSE,
+  '__module__' : 'api_pb2'
+  # @@protoc_insertion_point(class_scope:api.GetImageDataResponse)
+  })
+_sym_db.RegisterMessage(GetImageDataResponse)
 
 GetSegmentationScoreRequest = _reflection.GeneratedProtocolMessageType('GetSegmentationScoreRequest', (_message.Message,), {
   'DESCRIPTOR' : _GETSEGMENTATIONSCOREREQUEST,
@@ -1642,7 +2007,6 @@ QuantifyRegionsResponse = _reflection.GeneratedProtocolMessageType('QuantifyRegi
 _sym_db.RegisterMessage(QuantifyRegionsResponse)
 
 
-_ACQUIREMULTICHANNELREQUEST_METADATAENTRY._options = None
 
 _NIKONTICTRL = _descriptor.ServiceDescriptor(
   name='NikonTiCtrl',
@@ -1651,8 +2015,8 @@ _NIKONTICTRL = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=2412,
-  serialized_end=3296,
+  serialized_start=3034,
+  serialized_end=4492,
   methods=[
   _descriptor.MethodDescriptor(
     name='ListProperty',
@@ -1715,11 +2079,81 @@ _NIKONTICTRL = _descriptor.ServiceDescriptor(
     create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
-    name='SetExperimentPath',
-    full_name='api.NikonTiCtrl.SetExperimentPath',
+    name='OpenExperiment',
+    full_name='api.NikonTiCtrl.OpenExperiment',
     index=6,
     containing_service=None,
-    input_type=_SETEXPERIMENTPATHREQUEST,
+    input_type=_OPENEXPERIMENTREQUEST,
+    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='ListPlate',
+    full_name='api.NikonTiCtrl.ListPlate',
+    index=7,
+    containing_service=None,
+    input_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
+    output_type=_LISTPLATERESPONSE,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='AddPlate',
+    full_name='api.NikonTiCtrl.AddPlate',
+    index=8,
+    containing_service=None,
+    input_type=_ADDPLATEREQUEST,
+    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='SetPlatePositionOrigin',
+    full_name='api.NikonTiCtrl.SetPlatePositionOrigin',
+    index=9,
+    containing_service=None,
+    input_type=_SETPLATEPOSITIONORIGINREQUEST,
+    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='SetPlateMetadata',
+    full_name='api.NikonTiCtrl.SetPlateMetadata',
+    index=10,
+    containing_service=None,
+    input_type=_SETPLATEMETADATAREQUEST,
+    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='SetWellsEnabled',
+    full_name='api.NikonTiCtrl.SetWellsEnabled',
+    index=11,
+    containing_service=None,
+    input_type=_SETWELLSENABLEDREQUEST,
+    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='SetWellsMetadata',
+    full_name='api.NikonTiCtrl.SetWellsMetadata',
+    index=12,
+    containing_service=None,
+    input_type=_SETWELLSMETADATAREQUEST,
+    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='CreateSites',
+    full_name='api.NikonTiCtrl.CreateSites',
+    index=13,
+    containing_service=None,
+    input_type=_CREATESITESREQUEST,
     output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
@@ -1727,7 +2161,7 @@ _NIKONTICTRL = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='AcquireMultiChannel',
     full_name='api.NikonTiCtrl.AcquireMultiChannel',
-    index=7,
+    index=14,
     containing_service=None,
     input_type=_ACQUIREMULTICHANNELREQUEST,
     output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
@@ -1737,7 +2171,7 @@ _NIKONTICTRL = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='ListNDImage',
     full_name='api.NikonTiCtrl.ListNDImage',
-    index=8,
+    index=15,
     containing_service=None,
     input_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
     output_type=_LISTNDIMAGERESPONSE,
@@ -1745,19 +2179,29 @@ _NIKONTICTRL = _descriptor.ServiceDescriptor(
     create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
-    name='GetImage',
-    full_name='api.NikonTiCtrl.GetImage',
-    index=9,
+    name='GetNDImage',
+    full_name='api.NikonTiCtrl.GetNDImage',
+    index=16,
     containing_service=None,
-    input_type=_GETIMAGEREQUEST,
-    output_type=_GETIMAGERESPONSE,
+    input_type=_GETNDIMAGEREQUEST,
+    output_type=_GETNDIMAGERESPONSE,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='GetImageData',
+    full_name='api.NikonTiCtrl.GetImageData',
+    index=17,
+    containing_service=None,
+    input_type=_GETIMAGEDATAREQUEST,
+    output_type=_GETIMAGEDATARESPONSE,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
     name='GetSegmentationScore',
     full_name='api.NikonTiCtrl.GetSegmentationScore',
-    index=10,
+    index=18,
     containing_service=None,
     input_type=_GETSEGMENTATIONSCOREREQUEST,
     output_type=_GETSEGMENTATIONSCORERESPONSE,
@@ -1767,7 +2211,7 @@ _NIKONTICTRL = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='QuantifyRegions',
     full_name='api.NikonTiCtrl.QuantifyRegions',
-    index=11,
+    index=19,
     containing_service=None,
     input_type=_QUANTIFYREGIONSREQUEST,
     output_type=_QUANTIFYREGIONSRESPONSE,

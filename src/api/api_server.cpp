@@ -41,7 +41,7 @@ DataType DataTypeFromPB(api::DataType pb_dtype)
     case api::DataType::FLOAT64:
         return DataType::Float64;
     default:
-        return DataType::Unknown;
+        throw std::invalid_argument("unimplemented ctype");
     }
 }
 
@@ -63,7 +63,7 @@ api::ColorType ColorTypeToPB(ColorType ctype)
     case ColorType::BayerRG16:
         return api::ColorType::BAYERRG16;
     default:
-        return api::ColorType::UNKNOWN_CTYPE;
+        throw std::invalid_argument("unimplemented ctype");
     }
 }
 
@@ -85,7 +85,35 @@ ColorType ColorTypeFromPB(api::ColorType pb_ctype)
     case api::ColorType::BAYERRG16:
         return ColorType::BayerRG16;
     default:
-        return ColorType::Unknown;
+        throw std::invalid_argument("unimplemented ctype");
+    }
+}
+
+api::PlateType PlateTypeToPB(PlateType pb_platetype)
+{
+    switch (pb_platetype) {
+    case PlateType::Slide:
+        return api::PlateType::SLIDE;
+    case PlateType::Wellplate96:
+        return api::PlateType::WELLPLATE96;
+    case PlateType::Wellplate384:
+        return api::PlateType::WELLPLATE384;
+    default:
+        throw std::invalid_argument("unimplemented PlateType");
+    }
+}
+
+PlateType PlateTypeFromPB(api::PlateType pb_platetype)
+{
+    switch (pb_platetype) {
+    case api::PlateType::SLIDE:
+        return PlateType::Slide;
+    case api::PlateType::WELLPLATE96:
+        return PlateType::Wellplate96;
+    case api::PlateType::WELLPLATE384:
+        return PlateType::Wellplate384;
+    default:
+        throw std::invalid_argument("unimplemented PlateType");
     }
 }
 
@@ -250,12 +278,164 @@ grpc::Status APIServer::SwitchChannel(ServerContext *context,
 }
 
 grpc::Status
-APIServer::SetExperimentPath(ServerContext *context,
-                             const api::SetExperimentPathRequest *req,
-                             google::protobuf::Empty *resp)
+APIServer::OpenExperiment(ServerContext *context,
+                          const api::OpenExperimentRequest *req,
+                          google::protobuf::Empty *resp)
 {
     try {
-        exp->OpenExperiment(req->path());
+        if (req->has_base_dir()) {
+            exp->SetBaseDir(req->base_dir());
+        }
+        exp->OpenExperiment(req->name());
+    } catch (std::exception &e) {
+        return grpc::Status(grpc::StatusCode::INTERNAL,
+                            fmt::format("unexpected exception: {}", e.what()));
+    }
+    return grpc::Status::OK;
+}
+
+grpc::Status
+APIServer::ListPlate(ServerContext *context,
+                    const google::protobuf::Empty *req,
+                    api::ListPlateResponse *resp)
+{
+    try {
+        for (const auto &plate : exp->Samples()->Plates()) {
+            auto plate_pb = resp->add_plate();
+            plate_pb->set_uuid(plate->UUID());
+            plate_pb->set_type(PlateTypeToPB(plate->Type()));
+            plate_pb->set_id(plate->ID());
+            if (plate->PositionOrigin().has_value()) {
+                auto pos_origin = plate->PositionOrigin().value();
+                plate_pb->mutable_pos_origin()->set_x(pos_origin.x);
+                plate_pb->mutable_pos_origin()->set_y(pos_origin.y);
+            }
+            plate_pb->set_metadata(plate->Metadata().dump());
+
+            for (const auto &well : plate->Wells()) {
+                auto well_pb = plate_pb->add_well();
+                well_pb->set_uuid(well->UUID());
+                well_pb->set_id(well->ID());
+                well_pb->mutable_rel_pos()->set_x(well->RelativePosition().x);
+                well_pb->mutable_rel_pos()->set_y(well->RelativePosition().y);
+                well_pb->set_enabled(well->Enabled());
+                well_pb->set_metadata(well->Metadata().dump());
+
+                for (const auto &site : well->Sites()) {
+                    auto site_pb = well_pb->add_site();
+                    site_pb->set_uuid(site->UUID());
+                    site_pb->set_id(site->ID());
+                    site_pb->mutable_rel_pos()->set_x(site->RelativePosition().x);
+                    site_pb->mutable_rel_pos()->set_y(site->RelativePosition().y);
+                    site_pb->set_enabled(site->Enabled());
+                    site_pb->set_metadata(site->Metadata().dump());
+                }
+            }
+        }
+    } catch (std::exception &e) {
+        return grpc::Status(grpc::StatusCode::INTERNAL,
+                            fmt::format("unexpected exception: {}", e.what()));
+    }
+    return grpc::Status::OK;
+}
+
+grpc::Status
+APIServer::AddPlate(ServerContext *context,
+                    const api::AddPlateRequest *req,
+                    protobuf::Empty *resp)
+{
+    try {
+        exp->Samples()->AddPlate(PlateTypeFromPB(req->plate_type()), req->plate_id());
+    } catch (std::exception &e) {
+        return grpc::Status(grpc::StatusCode::INTERNAL,
+                            fmt::format("unexpected exception: {}", e.what()));
+    }
+    return grpc::Status::OK;
+}
+
+grpc::Status
+APIServer::SetPlatePositionOrigin(ServerContext *context,
+                            const api::SetPlatePositionOriginRequest *req,
+                            google::protobuf::Empty *resp)
+{
+    try {
+        Plate *plate = exp->Samples()->PlateByUUID(req->plate_uuid());
+        exp->Samples()->SetPlatePositionOrigin(plate->ID(), req->x(), req->y());
+    } catch (std::exception &e) {
+        return grpc::Status(grpc::StatusCode::INTERNAL,
+                            fmt::format("unexpected exception: {}", e.what()));
+    }
+    return grpc::Status::OK;
+}
+
+grpc::Status
+APIServer::SetPlateMetadata(ServerContext *context,
+                            const api::SetPlateMetadataRequest *req,
+                            google::protobuf::Empty *resp)
+{
+    try {
+        Plate *plate = exp->Samples()->PlateByUUID(req->plate_uuid());
+        auto value = nlohmann::ordered_json::parse(req->json_value());
+        exp->Samples()->SetPlateMetadata(plate->ID(), req->key(), value);
+    } catch (std::exception &e) {
+        return grpc::Status(grpc::StatusCode::INTERNAL,
+                            fmt::format("unexpected exception: {}", e.what()));
+    }
+    return grpc::Status::OK;
+}
+
+grpc::Status
+APIServer::SetWellsEnabled(ServerContext *context,
+                           const api::SetWellsEnabledRequest *req,
+                           google::protobuf::Empty *resp)
+{
+    try {
+        Plate *plate = exp->Samples()->PlateByUUID(req->plate_uuid());
+        std::vector<std::string> wells;
+        for (const auto & well : req->well_id()) {
+            wells.push_back(well);
+        }
+        exp->Samples()->SetWellsEnabled(plate->ID(), wells, req->enabled());
+    } catch (std::exception &e) {
+        return grpc::Status(grpc::StatusCode::INTERNAL,
+                            fmt::format("unexpected exception: {}", e.what()));
+    }
+    return grpc::Status::OK;
+}
+
+grpc::Status
+APIServer::SetWellsMetadata(ServerContext *context,
+                            const api::SetWellsMetadataRequest *req,
+                            google::protobuf::Empty *resp)
+{
+    try {
+        Plate *plate = exp->Samples()->PlateByUUID(req->plate_uuid());
+        std::vector<std::string> wells;
+        for (const auto & well : req->well_id()) {
+            wells.push_back(well);
+        }
+        auto value = nlohmann::ordered_json::parse(req->json_value());
+        exp->Samples()->SetWellsMetadata(plate->ID(), wells, req->key(), value);
+    } catch (std::exception &e) {
+        return grpc::Status(grpc::StatusCode::INTERNAL,
+                            fmt::format("unexpected exception: {}", e.what()));
+    }
+    return grpc::Status::OK;
+}
+
+grpc::Status
+APIServer::CreateSites(ServerContext *context,
+                       const api::CreateSitesRequest *req,
+                       google::protobuf::Empty *resp)
+{
+    try {
+        Plate *plate = exp->Samples()->PlateByUUID(req->plate_uuid());
+        std::vector<std::string> wells;
+        for (const auto & well : req->well_id()) {
+            wells.push_back(well);
+        }
+        exp->Samples()->CreateSitesOnCenteredGrid(plate->ID(), wells,
+            req->n_x(), req->n_y(), req->spacing_x(), req->spacing_y());
     } catch (std::exception &e) {
         return grpc::Status(grpc::StatusCode::INTERNAL,
                             fmt::format("unexpected exception: {}", e.what()));
@@ -278,8 +458,9 @@ APIServer::AcquireMultiChannel(ServerContext *context,
         });
     }
     try {
+        Site *site = exp->Samples()->SiteByUUID(req->site_uuid());
         exp->AcquireMultiChannel(req->ndimage_name(), channels,
-                                             req->i_z(), req->i_t(), metadata);
+                                 req->i_z(), req->i_t(), site, metadata);
         exp->WaitMultiChannelTask();
     } catch (std::exception &e) {
         return grpc::Status(grpc::StatusCode::INTERNAL,
@@ -294,10 +475,10 @@ grpc::Status APIServer::ListNDImage(ServerContext *context,
 {
     auto ndimage_list = exp->Images()->ListNDImage();
     for (const auto &im : ndimage_list) {
-        auto ndimage_pb = resp->add_ndimages();
+        auto ndimage_pb = resp->add_ndimage();
         ndimage_pb->set_name(im->Name());
         for (const auto &ch_name : im->ChannelNames()) {
-            ndimage_pb->add_channel_names(ch_name);
+            ndimage_pb->add_ch_name(ch_name);
         }
         ndimage_pb->set_width(im->Width());
         ndimage_pb->set_height(im->Height());
@@ -311,9 +492,35 @@ grpc::Status APIServer::ListNDImage(ServerContext *context,
     return grpc::Status::OK;
 }
 
-grpc::Status APIServer::GetImage(ServerContext *context,
-                                 const api::GetImageRequest *req,
-                                 api::GetImageResponse *resp)
+grpc::Status APIServer::GetNDImage(ServerContext *context,
+                                    const api::GetNDImageRequest *req,
+                                    api::GetNDImageResponse *resp)
+{
+    NDImage *im = exp->Images()->GetNDImage(req->ndimage_name());
+    if (im == nullptr) {
+        return grpc::Status(grpc::StatusCode::NOT_FOUND,
+            fmt::format("ndimage '{}' not found", req->ndimage_name()));
+    }
+
+    auto ndimage_pb = resp->mutable_ndimage();
+    ndimage_pb->set_name(im->Name());
+    for (const auto &ch_name : im->ChannelNames()) {
+        ndimage_pb->add_ch_name(ch_name);
+    }
+    ndimage_pb->set_width(im->Width());
+    ndimage_pb->set_height(im->Height());
+    ndimage_pb->set_n_ch(im->NChannels());
+    ndimage_pb->set_n_z(im->NDimZ());
+    ndimage_pb->set_n_t(im->NDimT());
+    ndimage_pb->set_dtype(DataTypeToPB(im->DataType()));
+    ndimage_pb->set_ctype(ColorTypeToPB(im->ColorType()));
+    
+    return grpc::Status::OK;
+}
+
+grpc::Status APIServer::GetImageData(ServerContext *context,
+                                 const api::GetImageDataRequest *req,
+                                 api::GetImageDataResponse *resp)
 {
     NDImage *ndimage =
         exp->Images()->GetNDImage(req->ndimage_name());

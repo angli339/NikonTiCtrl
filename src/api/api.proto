@@ -6,7 +6,10 @@ import "google/protobuf/duration.proto";
 package api;
 
 // To generate python client code
-// python -m grpc_tools.protoc -I. --python_out=../../python --grpc_python_out=../../python api.proto
+// python -m grpc_tools.protoc -I. --python_out=../../python/nikon_ti_ctrl --grpc_python_out=../../python/nikon_ti_ctrl api.proto
+// 
+// and then modify `api_pb2_grpc.py`:
+// change `import api_pb2 as api__pb2` to `from . import api_pb2 as api__pb2`
 
 message PropertyValue {
     string name = 1;
@@ -17,73 +20,6 @@ message Channel {
     string preset_name = 1;
     double exposure_ms = 2;
     double illumination_intensity = 3;
-}
-
-enum DataType {
-    UNKNOWN_DTYPE = 0;
-    BOOL8 = 1;
-    UINT8 = 2;
-    UINT16 = 3;
-    INT16 = 4;
-    INT32 = 5;
-    FLOAT32 = 6;
-    FLOAT64 = 7;
-}
-enum ColorType {
-    UNKNOWN_CTYPE = 0;
-    MONO8 = 1;
-    MONO10 =2;
-    MONO12 =3;
-    MONO14 = 4;
-    MONO16 = 5;
-    BAYERRG8 = 6;
-    BAYERRG16 = 7;
-}
-
-message NDImage {
-    string name = 1;
-    repeated string channel_names = 2;
-
-    uint32 width = 3;
-    uint32 height = 4;
-    int32 n_ch = 5;
-    int32 n_z = 6;
-    int32 n_t = 7;
-    
-    DataType dtype = 8;
-    ColorType ctype = 9;
-}
-
-message ImageData {
-    uint32 width = 1;
-    uint32 height = 2;
-    DataType dtype = 3;
-    ColorType ctype = 4;
-    bytes buf = 5;
-}
-
-message Sample {
-    string id = 1;
-}
-
-message Site {
-    Sample sample = 1;
-    string id = 2;
-}
-
-message SampleInfo {
-    string id = 1;
-    string name = 2;
-    string description = 3;
-    repeated SiteInfo sites = 4;
-}
-
-message SiteInfo {
-    string id = 1;
-    string name = 2;
-    string description = 3;
-    double relative_pos_x = 4;
-    double relative_pos_y = 5;
 }
 
 service NikonTiCtrl {
@@ -98,19 +34,24 @@ service NikonTiCtrl {
     rpc SwitchChannel(SwitchChannelRequest) returns (google.protobuf.Empty) {}
 
     // Experiment
-    rpc SetExperimentPath(SetExperimentPathRequest) returns (google.protobuf.Empty) {}
+    rpc OpenExperiment(OpenExperimentRequest) returns (google.protobuf.Empty) {}
     
     // Sample
-    // rpc AddSamples(AddSamplesRequest) returns (google.protobuf.Empty) {}
-    // rpc AddSites(AddSitesRequest) returns (google.protobuf.Empty) {}
-    // rpc MoveToSite(MoveToSiteRequest) returns (google.protobuf.Empty) {}
+    rpc ListPlate(google.protobuf.Empty) returns (ListPlateResponse) {}
+    rpc AddPlate(AddPlateRequest) returns (google.protobuf.Empty) {}
+    rpc SetPlatePositionOrigin(SetPlatePositionOriginRequest) returns (google.protobuf.Empty) {}
+    rpc SetPlateMetadata(SetPlateMetadataRequest) returns (google.protobuf.Empty) {}
+    rpc SetWellsEnabled(SetWellsEnabledRequest) returns (google.protobuf.Empty) {}
+    rpc SetWellsMetadata(SetWellsMetadataRequest) returns (google.protobuf.Empty) {}
+    rpc CreateSites(CreateSitesRequest) returns (google.protobuf.Empty) {}
 
     // Task
     rpc AcquireMultiChannel(AcquireMultiChannelRequest) returns (google.protobuf.Empty) {}
     
     // Data
     rpc ListNDImage(google.protobuf.Empty) returns (ListNDImageResponse) {}
-    rpc GetImage(GetImageRequest) returns (GetImageResponse) {}
+    rpc GetNDImage(GetNDImageRequest) returns (GetNDImageResponse) {}
+    rpc GetImageData(GetImageDataRequest) returns (GetImageDataResponse) {}
 
     // Analysis
     rpc GetSegmentationScore(GetSegmentationScoreRequest) returns (GetSegmentationScoreResponse) {}
@@ -162,29 +103,102 @@ message SwitchChannelRequest {
 // Experiment
 //
 
-message SetExperimentPathRequest {
-    string path = 1;
+message OpenExperimentRequest {
+    string name = 1;
+    optional string base_dir = 2;
 }
 
 //
-// Sample
+// List Plate/Well/Site
 //
 
-message AddSamplesRequest {
-    repeated SampleInfo samples = 1;
+enum PlateType {
+    UNKNOWN = 0;
+    SLIDE = 1;
+    WELLPLATE96 =2;
+    WELLPLATE384 = 3;
 }
 
-message AddSitesRequest {
-    Sample sample = 1;
-    repeated SiteInfo sites = 2;
+message Pos2D {
+    double x = 1;
+    double y = 2;
 }
 
-message MoveToSiteRequest {
-    Site site = 1;
+message PlateInfo {
+    string uuid = 1;
+    PlateType type = 2;
+    string id = 3;
+    optional Pos2D pos_origin = 4;
+    string metadata = 5;
+    repeated WellInfo well = 6;
+}
+
+message WellInfo {
+    string uuid = 1;
+    string id = 2;
+    Pos2D rel_pos = 3;
+    bool enabled = 4;
+    string metadata = 5;
+    repeated SiteInfo site = 6;
+}
+
+message SiteInfo {
+    string uuid = 1;
+    string id = 2;
+    Pos2D rel_pos = 3;
+    bool enabled = 4;
+    string metadata = 5;
+}
+
+message ListPlateResponse {
+    repeated PlateInfo plate = 1;
 }
 
 //
-// Task
+// Samples
+//
+
+message AddPlateRequest {
+    PlateType plate_type = 1;
+    string plate_id = 2;
+}
+
+message SetPlatePositionOriginRequest {
+    string plate_uuid = 1;
+    double x = 2;
+    double y = 3;
+}
+
+message SetPlateMetadataRequest {
+    string plate_uuid = 1;
+    string key = 2;
+    string json_value = 3;
+}
+
+message SetWellsEnabledRequest {
+    string plate_uuid = 1;
+    repeated string well_id = 2;
+    bool enabled = 3;
+}
+
+message SetWellsMetadataRequest {
+    string plate_uuid = 1;
+    repeated string well_id = 2;
+    string key = 3;
+    string json_value = 4;
+}
+
+message CreateSitesRequest {
+    string plate_uuid = 1;
+    repeated string well_id = 2;
+    int32 n_x = 3;
+    int32 n_y = 4;
+    double spacing_x = 5;
+    double spacing_y = 6;
+}
+
+//
+// Acquire
 //
 
 message AcquireMultiChannelRequest {
@@ -192,25 +206,81 @@ message AcquireMultiChannelRequest {
     repeated Channel channels = 2;
     int32 i_z = 3;
     int32 i_t = 4;
-    map<string, string> metadata = 5;
+    string metadata = 6;
+    string site_uuid = 7;
 }
 
 //
-// Data
+// NDImage
 //
+
+enum DataType {
+    UNKNOWN_DTYPE = 0;
+    BOOL8 = 1;
+    UINT8 = 2;
+    UINT16 = 3;
+    INT16 = 4;
+    INT32 = 5;
+    FLOAT32 = 6;
+    FLOAT64 = 7;
+}
+enum ColorType {
+    UNKNOWN_CTYPE = 0;
+    MONO8 = 1;
+    MONO10 =2;
+    MONO12 =3;
+    MONO14 = 4;
+    MONO16 = 5;
+    BAYERRG8 = 6;
+    BAYERRG16 = 7;
+}
+
+message NDImage {
+    string name = 1;
+    repeated string ch_name = 2;
+
+    uint32 width = 3;
+    uint32 height = 4;
+    int32 n_ch = 5;
+    int32 n_z = 6;
+    int32 n_t = 7;
+    
+    DataType dtype = 8;
+    ColorType ctype = 9;
+}
 
 message ListNDImageResponse {
-    repeated NDImage ndimages = 1;
+    repeated NDImage ndimage = 1;
 }
 
-message GetImageRequest {
+message GetNDImageRequest {
+    string ndimage_name = 1;
+}
+
+message GetNDImageResponse {
+    NDImage ndimage = 1;
+}
+
+message GetImageDataRequest {
     string ndimage_name = 1;
     string channel_name = 2;
     int32 i_z = 3;
     int32 i_t = 4;
 }
 
-message GetImageResponse {
+//
+// ImageData
+//
+
+message ImageData {
+    uint32 width = 1;
+    uint32 height = 2;
+    DataType dtype = 3;
+    ColorType ctype = 4;
+    bytes buf = 5;
+}
+
+message GetImageDataResponse {
     ImageData data = 1;
 }
 

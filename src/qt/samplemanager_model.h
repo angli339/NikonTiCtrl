@@ -29,6 +29,8 @@ public:
                         int role = Qt::DisplayRole) const override;
 
     void handleExperimentOpen();
+    void handlePlateCreated(QString plate_id);
+    void handlePlateChanged(QString plate_id);
 
 private:
     SampleManager *sampleManager;
@@ -53,7 +55,7 @@ class SampleManagerTreeItem {
 public:
     SampleManagerTreeItemType type;
     std::string id;
-    std::string name;
+    std::string summary;
 
     SampleManagerTreeItem *parent;
     std::vector<SampleManagerTreeItem *> child;
