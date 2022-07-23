@@ -11,6 +11,16 @@ NDImage::NDImage(std::string name, std::vector<std::string> channel_names)
     n_ch = channel_names.size();
 }
 
+::Site *NDImage::Site()
+{
+    return site;
+}
+
+int NDImage::Index()
+{
+    return index;
+}
+
 std::string NDImage::Name()
 {
     return name;
@@ -76,11 +86,6 @@ int NDImage::ChannelIndex(std::string channel_name)
     return -1;
 }
 
-void NDImage::SetFolder(std::filesystem::path folder)
-{
-    this->folder = folder;
-}
-
 void NDImage::AddImage(int i_ch, int i_z, int i_t, ImageData data,
                        nlohmann::ordered_json metadata)
 {
@@ -114,34 +119,34 @@ void NDImage::AddImage(int i_ch, int i_z, int i_t, ImageData data,
     }
     dataset[{i_ch, i_z, i_t}] = data;
     metadata_map[{i_ch, i_z, i_t}] = new_metadata;
-    filepath_map[{i_ch, i_z, i_t}] = folder / getImageName(i_ch, i_z, i_t);
+    // relpath_map[{i_ch, i_z, i_t}] = fmt::format("images/{}", getImageName(i_ch, i_z, i_t));
 }
 
-void NDImage::SaveImage(int i_ch, int i_z, int i_t)
-{
-    auto it_data = dataset.find({i_ch, i_z, i_t});
-    if (it_data == dataset.end()) {
-        throw std::out_of_range("index not found in dataset");
-    }
-    ImageData &data = it_data->second;
+// void NDImage::SaveImage(int i_ch, int i_z, int i_t)
+// {
+//     auto it_data = dataset.find({i_ch, i_z, i_t});
+//     if (it_data == dataset.end()) {
+//         throw std::out_of_range("index not found in dataset");
+//     }
+//     ImageData &data = it_data->second;
 
-    auto it_meta = metadata_map.find({i_ch, i_z, i_t});
-    if (it_meta == metadata_map.end()) {
-        throw std::out_of_range("index not found in metadata_map");
-    }
-    nlohmann::ordered_json &metadata = it_meta->second;
+//     auto it_meta = metadata_map.find({i_ch, i_z, i_t});
+//     if (it_meta == metadata_map.end()) {
+//         throw std::out_of_range("index not found in metadata_map");
+//     }
+//     nlohmann::ordered_json &metadata = it_meta->second;
 
-    TiffMetadata t_meta;
-    t_meta.metadata = metadata;
+//     TiffMetadata t_meta;
+//     t_meta.metadata = metadata;
 
-    std::filesystem::path filepath = filepath_map[{i_ch, i_z, i_t}];
-    ImageWrite(filepath, data, t_meta);
-}
+//     std::filesystem::path filepath = relpath_map[{i_ch, i_z, i_t}];
+//     ImageWrite(filepath, data, t_meta);
+// }
 
 bool NDImage::HasData(int i_ch, int i_z, int i_t)
 {
-    auto it = filepath_map.find({i_ch, i_z, i_t});
-    if (it == filepath_map.end()) {
+    auto it = relpath_map.find({i_ch, i_z, i_t});
+    if (it == relpath_map.end()) {
         return false;
     }
     return true;
@@ -149,23 +154,24 @@ bool NDImage::HasData(int i_ch, int i_z, int i_t)
 
 ImageData NDImage::GetData(int i_ch, int i_z, int i_t)
 {
-    auto it_file = filepath_map.find({i_ch, i_z, i_t});
-    if (it_file == filepath_map.end()) {
+    auto it_file = relpath_map.find({i_ch, i_z, i_t});
+    if (it_file == relpath_map.end()) {
         throw std::invalid_argument("index not found");
     }
-    std::filesystem::path filepath = it_file->second;
+    std::filesystem::path relpath = it_file->second;
+    std::filesystem::path fullpath = exp_dir / relpath;
 
     auto it_data = dataset.find({i_ch, i_z, i_t});
     if (it_data != dataset.end()) {
         return it_data->second;
     } else {
-        ImageData data = ImageRead(filepath);
+        ImageData data = ImageRead(fullpath);
         dataset[{i_ch, i_z, i_t}] = data;
         return data;
     }
 }
 
-std::string NDImage::getImageName(int i_ch, int i_z, int i_t)
-{
-    return fmt::format("{}-{}-{:03d}-{:04d}.tif", name, channel_names[i_ch], i_z, i_t);
-}
+// std::string NDImage::getImageName(int i_ch, int i_z, int i_t)
+// {
+//     return fmt::format("{}-{}-{:03d}-{:04d}.tif", name, channel_names[i_ch], i_z, i_t);
+// }

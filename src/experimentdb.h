@@ -5,6 +5,7 @@
 #include <optional>
 #include <vector>
 #include <filesystem>
+#include <mutex>
 #include <sqlite3.h>
 #include <nlohmann/json.hpp>
 
@@ -90,6 +91,8 @@ public:
 
 private:
     std::filesystem::path filename;
+    
+    std::mutex db_mutex;
     sqlite3 *db;
 
     void createTables();

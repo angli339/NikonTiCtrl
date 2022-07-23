@@ -298,7 +298,7 @@ void ExperimentDB::InsertOrReplaceRow(SiteRow row)
 void ExperimentDB::InsertOrReplaceRow(NDImageRow row)
 {
     sqlite3_stmt *stmt = prepare(R"(
-        INSERT OR REPLACE INTO "NDImageRow" ("index", name, ch_names, width, height, n_ch, n_z, n_t, plate_id, well_id, site_id)
+        INSERT OR REPLACE INTO "NDImage" ("index", name, ch_names, width, height, n_ch, n_z, n_t, plate_id, well_id, site_id)
         VALUES (?,?,?,?,?,?,?,?,?,?,?)
         )");
     bind(stmt, row.index, row.name, row.ch_names.dump(),
@@ -321,17 +321,35 @@ void ExperimentDB::InsertOrReplaceRow(ImageRow row)
 
 void ExperimentDB::BeginTransaction()
 {
-    exec("BEGIN");
+    db_mutex.lock();
+    try {
+        exec("BEGIN");
+    } catch (...) {
+        db_mutex.unlock();
+        throw;
+    }
 }
 
 void ExperimentDB::Commit()
 {
-    exec("COMMIT");
+    try {
+        exec("COMMIT");
+    } catch(...) {
+        db_mutex.unlock();
+        throw;
+    }
+    db_mutex.unlock();
 }
 
 void ExperimentDB::Rollback()
 {
-    exec("ROLLBACK");
+    try {
+        exec("ROLLBACK");
+    } catch(...) {
+        db_mutex.unlock();
+        throw;
+    }
+    db_mutex.unlock();
 }
 
 void ExperimentDB::exec(std::string sql)
@@ -339,8 +357,10 @@ void ExperimentDB::exec(std::string sql)
     char *errmsg;
     int rc = sqlite3_exec(db, sql.c_str(), NULL, NULL, &errmsg);
     if (rc != SQLITE_OK){
-        throw std::runtime_error(fmt::format("exec: {}\n", errmsg));
+        std::string err = fmt::format("exec: {}\n", errmsg);
         sqlite3_free(errmsg);
+        throw std::runtime_error(err);
+        
     }
 }
 

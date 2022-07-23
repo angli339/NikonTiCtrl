@@ -11,6 +11,7 @@
 #include <nlohmann/json.hpp>
 
 #include "image/imagedata.h"
+#include "sample/sample.h"
 
 class ImageManager;
 
@@ -19,6 +20,9 @@ class NDImage {
 public:
     NDImage(std::string name, std::vector<std::string> channel_names);
 
+    ::Site *Site();
+
+    int Index();
     std::string Name();
     int NumImages();
 
@@ -46,11 +50,15 @@ public:
 
 private:
     NDImage() {}
+    
+    ::Site *site = nullptr;
+
+    int index = -1;
     std::string name;
     std::vector<std::string> channel_names;
 
-    uint32_t width;
-    uint32_t height;
+    uint32_t width = 0;
+    uint32_t height = 0;
     int n_ch = 0;
     int n_z = 0;
     int n_t = 0;
@@ -61,10 +69,10 @@ private:
 
     std::map<std::tuple<int, int, int>, ImageData> dataset;
     std::map<std::tuple<int, int, int>, nlohmann::ordered_json> metadata_map;
-    std::map<std::tuple<int, int, int>, std::filesystem::path> filepath_map;
+    std::map<std::tuple<int, int, int>, std::filesystem::path> relpath_map;
 
-    std::filesystem::path folder;
-    std::string getImageName(int i_ch, int i_z, int i_t);
+    std::filesystem::path exp_dir;
+    // std::string getImageName(int i_ch, int i_z, int i_t);
 };
 
 #endif

@@ -29,7 +29,7 @@ public:
     NDImage *GetNDImage(std::string ndimage_name);
 
     void NewNDImage(std::string ndimage_name,
-                    std::vector<std::string> ch_names);
+                    std::vector<std::string> ch_names, Site *site=nullptr);
     void AddImage(std::string ndimage_name, int i_ch, int i_z, int i_t,
                   ImageData data, nlohmann::ordered_json metadata);
 
@@ -51,6 +51,9 @@ private:
     std::shared_mutex dataset_mutex;
     std::vector<NDImage *> dataset;
     std::map<std::string, NDImage *> dataset_map;
+    
+    void writeNDImageRow(NDImage *ndimage);
+    void writeImageRow(NDImage *ndimage, int i_ch, int i_z, int i_t);
 
     im::UNet unet;
     std::map<std::tuple<std::string, int, int>, QuantificationResults> quantifications;

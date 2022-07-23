@@ -41,6 +41,7 @@ void ImageManager::LoadFromDB()
 
     for (const auto& ndimage_row : exp->DB()->GetAllNDImages()) {
         NDImage *ndimage = new NDImage;
+        ndimage->index = ndimage_row.index;
         ndimage->name = ndimage_row.name;
         ndimage->channel_names = ndimage_row.ch_names.get<std::vector<std::string>>();
         ndimage->width = ndimage_row.width;
@@ -60,8 +61,41 @@ void ImageManager::LoadFromDB()
         int i_ch = ndimage->ChannelIndex(image_row.ch_name);
         int i_z = image_row.i_z;
         int i_t = image_row.i_t;
-        ndimage->filepath_map[{i_ch, i_z, i_t}] = exp->ExperimentDir() / image_row.path;
+        ndimage->relpath_map[{i_ch, i_z, i_t}] = image_row.path;
     }
+}
+
+void ImageManager::writeNDImageRow(NDImage *ndimage)
+{
+    NDImageRow row = NDImageRow{
+        .index = ndimage->Index(),
+        .name = ndimage->Name(),
+        .ch_names = ndimage->ChannelNames(),
+        .width = ndimage->Width(),
+        .height = ndimage->Height(),
+        .n_ch = ndimage->NChannels(),
+        .n_z = ndimage->NDimZ(),
+        .n_t = ndimage->NDimT(),
+    };
+    if (ndimage->Site()) {
+        row.plate_id = ndimage->Site()->Well()->Plate()->ID();
+        row.well_id = ndimage->Site()->Well()->ID();
+        row.site_id = ndimage->Site()->ID();
+    }
+    exp->DB()->InsertOrReplaceRow(row);
+}
+
+void ImageManager::writeImageRow(NDImage *ndimage, int i_ch, int i_z, int i_t)
+{
+    ImageRow row = ImageRow{
+        .ndimage_name = ndimage->Name(),
+        .ch_name = ndimage->ChannelName(i_ch),
+        .i_z = i_z,
+        .i_t = i_t,
+        .path = ndimage->relpath_map[{i_ch, i_z, i_t}].string(),
+        .exposure_ms = 0,
+    };
+    exp->DB()->InsertOrReplaceRow(row);
 }
 
 void ImageManager::SetLiveViewFrame(ImageData new_frame)
@@ -105,7 +139,7 @@ NDImage *ImageManager::GetNDImage(std::string ndimage_name)
 }
 
 void ImageManager::NewNDImage(std::string ndimage_name,
-                             std::vector<std::string> ch_names)
+                             std::vector<std::string> ch_names, Site *site)
 {
     std::filesystem::path im_path = GetImageDir();
 
@@ -118,10 +152,25 @@ void ImageManager::NewNDImage(std::string ndimage_name,
         dataset_map.erase(it);
     }
 
+    // Create NDImage
     NDImage *ndimage = new NDImage(ndimage_name, ch_names);
-    ndimage->SetFolder(im_path);
+    ndimage->index = dataset.size();
+    ndimage->site = site;
+    ndimage->exp_dir = exp->ExperimentDir();
     dataset.push_back(ndimage);
     dataset_map[ndimage_name] = ndimage;
+
+    // Write to DB
+    exp->DB()->BeginTransaction();
+    try {
+        writeNDImageRow(ndimage);
+        exp->DB()->Commit();
+    } catch (std::exception &e) {
+        dataset.pop_back();
+        dataset_map.erase(ndimage_name);
+        exp->DB()->Rollback();
+        throw std::runtime_error(fmt::format("cannot write NDImage to DB: {}, rolled back", e.what()));
+    }
 
     lk.unlock();
 
@@ -141,7 +190,30 @@ void ImageManager::AddImage(std::string ndimage_name, int i_ch, int i_z, int i_t
     }
 
     ndimage->AddImage(i_ch, i_z, i_t, data, metadata);
-    ndimage->SaveImage(i_ch, i_z, i_t);
+    ndimage->width = data.Width();
+    ndimage->height = data.Height();
+    
+    std::string filename = fmt::format("{}-{}-{:03d}-{:04d}.tif", ndimage->name, ndimage->channel_names[i_ch], i_z, i_t);
+    std::filesystem::path relpath = fmt::format("images/{}", filename);
+    std::filesystem::path fullpath = exp->ExperimentDir() / relpath;
+    TiffMetadata tiff_meta;
+    tiff_meta.metadata = ndimage->metadata_map[{i_ch, i_z, i_t}];
+    ImageWrite(fullpath, data, tiff_meta);
+    ndimage->exp_dir = exp->ExperimentDir();
+    ndimage->relpath_map[{i_ch, i_z, i_t}] = relpath;
+
+    // Write to DB
+    exp->DB()->BeginTransaction();
+    try {
+        writeNDImageRow(ndimage);
+        writeImageRow(ndimage, i_ch, i_z, i_t);
+        exp->DB()->Commit();
+    } catch (std::exception &e) {
+        dataset.pop_back();
+        dataset_map.erase(ndimage_name);
+        exp->DB()->Rollback();
+        throw std::runtime_error(fmt::format("cannot write NDImage to DB: {}, rolled back", e.what()));
+    }
 
     SendEvent({
         .type = EventType::NDImageChanged,
