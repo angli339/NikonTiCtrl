@@ -47,6 +47,7 @@ void ImageManager::LoadFromDB()
         ndimage->n_t = ndimage_row.n_t;
         ndimage->dtype = DataType::Uint16;
         ndimage->ctype = ColorType::Mono16;
+        ndimage->exp_dir = exp->ExperimentDir();
 
         dataset.push_back(ndimage);
         dataset_map[ndimage->name] = ndimage;
@@ -55,6 +56,10 @@ void ImageManager::LoadFromDB()
     for (const auto& image_row : exp->DB()->GetAllImages()) {
         NDImage *ndimage = dataset_map[image_row.ndimage_name];
         int i_ch = ndimage->ChannelIndex(image_row.ch_name);
+        if (i_ch == -1) {
+            // ignore error and continue
+            continue;
+        }
         int i_z = image_row.i_z;
         int i_t = image_row.i_t;
         ndimage->relpath_map[{i_ch, i_z, i_t}] = image_row.path;

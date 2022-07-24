@@ -39,11 +39,8 @@ public:
     std::string ChannelName(int i_ch);
     int ChannelIndex(std::string);
 
-    void SetFolder(std::filesystem::path folder);
-
     void AddImage(int i_ch, int i_z, int i_t, ImageData data,
                   nlohmann::ordered_json metadata);
-    void SaveImage(int i_ch, int i_z, int i_t);
 
     bool HasData(int i_ch, int i_z, int i_t);
     ImageData GetData(int i_ch, int i_z, int i_t);
@@ -72,7 +69,6 @@ private:
     std::map<std::tuple<int, int, int>, std::filesystem::path> relpath_map;
 
     std::filesystem::path exp_dir;
-    // std::string getImageName(int i_ch, int i_z, int i_t);
 };
 
 #endif
