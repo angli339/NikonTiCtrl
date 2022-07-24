@@ -9,6 +9,7 @@ ExperimentControl::ExperimentControl(DeviceHub *dev)
     this->dev = dev;
     this->sample_manager = new SampleManager(this);
     this->image_manager = new ImageManager(this);
+    this->analysis_manager = new AnalysisManager(this);
 
     this->channel_control = new ChannelControl(dev);
     this->live_view_task = new LiveViewTask(this);
@@ -54,8 +55,8 @@ std::filesystem::path ExperimentControl::BaseDir()
         return base_dir;
     }
 
-    if (!fs::exists(config.user.data_root)) {
-        if (!fs::create_directories(config.user.data_root)) {
+    if (!std::filesystem::exists(config.user.data_root)) {
+        if (!std::filesystem::create_directories(config.user.data_root)) {
             throw std::runtime_error(
                 fmt::format("failed to create base dir {}", config.user.data_root.string()));
         }
@@ -70,8 +71,8 @@ void ExperimentControl::SetBaseDir(std::filesystem::path base_dir)
         throw std::invalid_argument("empty base dir");
     }
 
-    if (!fs::exists(base_dir)) {
-        if (!fs::create_directories(base_dir)) {
+    if (!std::filesystem::exists(base_dir)) {
+        if (!std::filesystem::create_directories(base_dir)) {
             throw std::runtime_error(
                 fmt::format("failed to create base dir {}", base_dir.string()));
         }
@@ -87,8 +88,8 @@ void ExperimentControl::OpenExperiment(std::string name)
 
     // Create experiment dir
     std::filesystem::path exp_dir = BaseDir() / name;
-    if (!fs::exists(exp_dir)) {
-        if (!fs::create_directories(exp_dir)) {
+    if (!std::filesystem::exists(exp_dir)) {
+        if (!std::filesystem::create_directories(exp_dir)) {
             throw std::runtime_error(
                 fmt::format("failed to create exp dir {}", exp_dir.string()));
         }
@@ -154,6 +155,11 @@ ChannelControl *ExperimentControl::Channels()
 ImageManager *ExperimentControl::Images()
 {
     return image_manager;
+}
+
+AnalysisManager *ExperimentControl::Analysis()
+{
+    return analysis_manager;
 }
 
 void ExperimentControl::runLiveView()

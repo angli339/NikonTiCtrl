@@ -2,9 +2,11 @@
 #define EXPERIMENTCONTROL_H
 
 #include <future>
+#include <filesystem>
 
 #include "experimentdb.h"
 #include "image/imagemanager.h"
+#include "analysis/analysismanager.h"
 #include "device/devicehub.h"
 #include "eventstream.h"
 #include "sample/samplemanager.h"
@@ -31,6 +33,7 @@ public:
     SampleManager *Samples();
     ChannelControl *Channels();
     ImageManager *Images();
+    AnalysisManager *Analysis();
 
     void StartLiveView();
     void StopLiveView();
@@ -47,6 +50,7 @@ private:
     SampleManager *sample_manager;
     ChannelControl *channel_control;
     ImageManager *image_manager;
+    AnalysisManager *analysis_manager;
 
     std::filesystem::path base_dir;
     std::filesystem::path exp_dir;

@@ -290,7 +290,10 @@ message GetImageDataResponse {
 //
 
 message GetSegmentationScoreRequest {
-    ImageData data = 1;
+    string ndimage_name = 1;
+    string ch_name = 2;
+    int32 i_z = 3;
+    int32 i_t = 4;
 }
 
 message GetSegmentationScoreResponse {

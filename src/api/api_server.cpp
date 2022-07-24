@@ -553,19 +553,9 @@ APIServer::GetSegmentationScore(ServerContext *context,
                                 const api::GetSegmentationScoreRequest *req,
                                 api::GetSegmentationScoreResponse *resp)
 {
-    DataType dtype = DataTypeFromPB(req->data().dtype());
-    ColorType ctype = ColorTypeFromPB(req->data().ctype());
-    ImageData im =
-        ImageData(req->data().height(), req->data().width(), dtype, ctype);
-    im.CopyFrom(req->data().buf());
-
     ImageData score;
     try {
-        im::UNet unet(config.system.unet_model.server_addr,
-                      config.system.unet_model.model_name,
-                      config.system.unet_model.input_name,
-                      config.system.unet_model.output_name);
-        score = unet.GetScore(im);
+        score = exp->Analysis()->GetSegmentationScore(req->ndimage_name(), req->ch_name(), req->i_z(), req->i_t());
     } catch (std::exception &e) {
         return grpc::Status(grpc::StatusCode::INTERNAL,
                             fmt::format("unexpected exception: {}", e.what()));
@@ -586,7 +576,7 @@ APIServer::QuantifyRegions(ServerContext *context,
 {
     int n_regions;
     try {
-        n_regions = exp->Images()->QuantifyRegions(req->ndimage_name(), req->i_z(), req->i_t(), req->segmentation_ch());
+        n_regions = exp->Analysis()->QuantifyRegions(req->ndimage_name(), req->i_z(), req->i_t(), req->segmentation_ch());
     } catch (std::exception &e) {
         return grpc::Status(grpc::StatusCode::INTERNAL,
                             fmt::format("unexpected exception: {}", e.what()));
