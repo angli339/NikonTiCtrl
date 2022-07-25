@@ -26,6 +26,8 @@ public:
     void runLiveViewDisplay();
     void displayNDImage(QString name);
     void displayNDImage(QString name, int i_z, int i_t);
+
+    void handleExperimentClose();
     void handleNDImageSelection(QString name);
     void handleNDImageUpdate(QString name);
     void handleZSliderValueChange(int i_z);

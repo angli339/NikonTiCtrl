@@ -1,16 +1,20 @@
 #include "imagemanager_model.h"
 
+#include "logging.h"
+
 ImageManagerModel::ImageManagerModel(ImageManager *imageManager, QObject *parent)
     : QAbstractItemModel(parent)
 {
     this->imageManager = imageManager;
-
+    rootItem = new ImageManagerTreeItem;
+    validTreeItems.insert(rootItem);
     buildTree();
 }
 
 ImageManagerModel::~ImageManagerModel()
 {
     deleteTree(rootItem);
+    delete rootItem;
 }
 
 ImageData ImageManagerModel::GetNextLiveViewFrame()
@@ -26,31 +30,24 @@ NDImage *ImageManagerModel::GetNDImage(QString name)
 void ImageManagerModel::handleExperimentOpen()
 {
     beginResetModel();
-    if (rootItem) {
-        deleteTree(rootItem);
-    }
     buildTree();
+    endResetModel();
+}
+
+void ImageManagerModel::handleExperimentClose()
+{
+    beginResetModel();
+    validTreeItems.clear();
+    validTreeItems.insert(rootItem);
+    deleteTree(rootItem);
     endResetModel();
 }
 
 void ImageManagerModel::buildTree()
 {
-    rootItem = new ImageManagerTreeItem;
     for (const auto &ndimage : imageManager->ListNDImage()) {
-        addNDImage(ndimage);
+        addNDImageItem(ndimage);
     }
-}
-
-void ImageManagerModel::addNDImage(NDImage *ndimage)
-{
-    ImageManagerTreeItem *item = new ImageManagerTreeItem;
-    item->parent = rootItem;
-    item->ndimage_name = ndimage->Name();
-
-    beginInsertRows(QModelIndex(), rootItem->child.size(),
-                    rootItem->child.size() + 1);
-    rootItem->child.push_back(item);
-    endInsertRows();
 }
 
 void ImageManagerModel::deleteTree(ImageManagerTreeItem *item)
@@ -58,21 +55,71 @@ void ImageManagerModel::deleteTree(ImageManagerTreeItem *item)
     for (auto &childItem : item->child) {
         deleteTree(childItem);
     }
-    delete item;
+    if (item != rootItem) {
+        delete item;
+    } else {
+        item->child.clear();
+    }
+}
+
+void ImageManagerModel::addNDImageItem(NDImage *ndimage)
+{
+    ImageManagerTreeItem *item = new ImageManagerTreeItem;
+    item->parent = rootItem;
+    item->row = rootItem->child.size();
+    updateNDImageItem(item, ndimage);
+    rootItem->child.push_back(item);
+    validTreeItems.insert(item);
+}
+
+void ImageManagerModel::updateNDImageItem(ImageManagerTreeItem *item, NDImage *ndimage)
+{
+    item->ndimage = ndimage;
+    item->ndimage_name = ndimage->Name();
+    if ((ndimage->NDimZ() > 1) && (ndimage->NDimT() > 1)) {
+        item->type = "XYZT";
+    } else if (ndimage->NDimZ() > 1) {
+        item->type = "XYZ";
+    } else if (ndimage->NDimT() > 1) {
+        item->type = "XYT";
+    } else {
+        item->type = "XY";
+    }
+    item->channels = fmt::format("{}", fmt::join(ndimage->ChannelNames(), " ,"));
 }
 
 void ImageManagerModel::handleNDImageCreated(std::string name)
 {
-    NDImage *im = imageManager->GetNDImage(name);
-    addNDImage(im);
+    NDImage *ndimage = imageManager->GetNDImage(name);
+
+    beginInsertRows(QModelIndex(), rootItem->child.size(),
+                    rootItem->child.size() + 1);
+    addNDImageItem(ndimage);
+    endInsertRows();
+
+    // Emit signal for other downstream users
     emit ndImageCreated(name.c_str());
 }
 
 void ImageManagerModel::handleNDImageChanged(std::string name)
 {
+    NDImage *ndimage = imageManager->GetNDImage(name);
+    ImageManagerTreeItem *item = nullptr;
+    for (auto & it : rootItem->child) {
+        if (it->ndimage == ndimage) {
+            item = it;
+        }
+    }
+    if (item == nullptr) {
+        return;
+    }
+
+    updateNDImageItem(item, ndimage);
+    emit dataChanged(index(item->row, 0), index(item->row + 1, columnCount()));
+
+    // Emit signal for other downstream users
     emit ndImageChanged(name.c_str());
 };
-
 
 QModelIndex ImageManagerModel::index(int row, int column,
                                     const QModelIndex &parent) const
@@ -82,7 +129,6 @@ QModelIndex ImageManagerModel::index(int row, int column,
     }
 
     ImageManagerTreeItem *parentItem;
-
     if (!parent.isValid()) {
         parentItem = rootItem;
     } else {
@@ -105,18 +151,17 @@ QModelIndex ImageManagerModel::parent(const QModelIndex &index) const
 
     ImageManagerTreeItem *item =
         static_cast<ImageManagerTreeItem *>(index.internalPointer());
-    ImageManagerTreeItem *parentItem = item->parent;
-
-    if (parentItem == rootItem) {
+    if (!validTreeItems.contains(item)) {
+        // workaround to deal with index with invalid tree item pointer
+        LOG_TRACE("received invalid index");
         return QModelIndex();
     }
 
-    for (int i = 0; i < parentItem->child.size(); i++) {
-        if (parentItem->child[i] == item) {
-            return createIndex(i, 0, parentItem);
-        }
+    ImageManagerTreeItem *parentItem = item->parent;
+    if (parentItem == rootItem) {
+        return QModelIndex();
     }
-    return QModelIndex();
+    return createIndex(parentItem->row, 0, parentItem);
 }
 
 int ImageManagerModel::rowCount(const QModelIndex &parent) const
@@ -180,5 +225,5 @@ QString ImageManagerModel::NDImageName(const QModelIndex &index) const
 
     ImageManagerTreeItem *item =
         static_cast<ImageManagerTreeItem *>(index.internalPointer());
-    return item->columnData(0).toString();
+    return item->ndimage->Name().c_str();
 }

@@ -114,7 +114,7 @@ void ExperimentControl::OpenExperimentDir(std::filesystem::path exp_dir)
 
     // Done
     SendEvent({
-        .type = EventType::ExperimentPathChanged,
+        .type = EventType::ExperimentOpened,
         .value = exp_dir.string(),
     });
 }
@@ -126,7 +126,9 @@ void ExperimentControl::CloseExperiment()
         this->db = nullptr;
     }
     this->exp_dir = "";
-    // TODO: notify
+    SendEvent({
+        .type = EventType::ExperimentClosed,
+    });
 }
 
 std::filesystem::path ExperimentControl::ExperimentDir()

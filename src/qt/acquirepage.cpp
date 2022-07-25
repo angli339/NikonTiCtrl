@@ -30,16 +30,23 @@ AcquirePage::AcquirePage(QWidget *parent) : QWidget(parent)
     leftTopGroup->setLayout(new QVBoxLayout);
     leftTopGroup->layout()->setAlignment(Qt::AlignTop);
     leftTopGroup->layout()->setSpacing(5);
-    leftTopGroup->layout()->setContentsMargins(0, 0, 0, 0);
+    leftTopGroup->layout()->setContentsMargins(0, 0, 10, 10);
     leftTopGroup->layout()->addWidget(experimentTitle);
     leftTopGroup->layout()->addWidget(experimentDirButton);
     leftTopGroup->layout()->addWidget(sampleManagerView);
+
+    QWidget *leftBottomGroup = new QWidget;
+    leftBottomGroup->setLayout(new QVBoxLayout);
+    leftBottomGroup->layout()->setAlignment(Qt::AlignTop);
+    leftBottomGroup->layout()->setSpacing(5);
+    leftBottomGroup->layout()->setContentsMargins(0, 0, 10, 0);
+    leftBottomGroup->layout()->addWidget(dataManagerView);
 
     QSplitter *leftSidebar = new QSplitter(Qt::Vertical);
     leftSidebar->setChildrenCollapsible(false);
     leftSidebar->setHandleWidth(leftSidebar->handleWidth() / 4);
     leftSidebar->addWidget(leftTopGroup);
-    leftSidebar->addWidget(dataManagerView);
+    leftSidebar->addWidget(leftBottomGroup);
     leftSidebar->setMinimumWidth(300);
     leftSidebar->setStretchFactor(0, 1);
     leftSidebar->setStretchFactor(1, 2);
@@ -70,10 +77,9 @@ AcquirePage::AcquirePage(QWidget *parent) : QWidget(parent)
     QWidget *mainContainer = new QWidget;
     QHBoxLayout *mainGroupLayout = new QHBoxLayout(mainContainer);
     mainGroupLayout->setSpacing(5);
-    mainGroupLayout->setContentsMargins(5, 0, 0, 0);
+    mainGroupLayout->setContentsMargins(10, 0, 0, 0);
     mainGroupLayout->addLayout(middleLayout);
     mainGroupLayout->addWidget(deviceControlView);
-    // mainContainer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     //
     // Left Sidebar | Main Container
@@ -90,6 +96,8 @@ AcquirePage::AcquirePage(QWidget *parent) : QWidget(parent)
     // Add Left/Right Splitter
     //
     this->setLayout(new QHBoxLayout);
+    this->layout()->setSpacing(0);
+    this->layout()->setContentsMargins(5, 5, 5, 5);
     this->layout()->addWidget(mainSplitter);
     
     connect(imagingControlView, &AcquisitionControlView::liveViewStarted, this,
@@ -108,7 +116,7 @@ void AcquirePage::setExperimentControlModel(ExperimentControlModel *model)
     if (!model->ExperimentDir().isEmpty()) {
         this->experimentDirButton->setText(model->ExperimentDir());
     }
-    connect(model, &ExperimentControlModel::experimentPathChanged,
+    connect(model, &ExperimentControlModel::experimentOpened,
             this->experimentDirButton, &QPushButton::setText);
     connect(experimentDirButton, &QPushButton::clicked, this, &AcquirePage::selectExperimentDir);
 
@@ -116,6 +124,8 @@ void AcquirePage::setExperimentControlModel(ExperimentControlModel *model)
             &AcquirePage::handleNDImageUpdate);
     connect(model->ImageManagerModel(), &ImageManagerModel::ndImageChanged, this,
             &AcquirePage::handleNDImageUpdate);
+    connect(model, &ExperimentControlModel::experimentClosed, this,
+        &AcquirePage::handleExperimentClose);
     
     connect(ndImageView->tSlider, &QSlider::valueChanged, this, &AcquirePage::handleTSliderValueChange);
     connect(ndImageView->zSlider, &QSlider::valueChanged, this, &AcquirePage::handleZSliderValueChange);
@@ -172,6 +182,15 @@ void AcquirePage::startLiveViewDisplay()
 
     liveViewDisplayFuture =
         std::async(std::launch::async, &AcquirePage::runLiveViewDisplay, this);
+}
+
+void AcquirePage::handleExperimentClose()
+{
+    std::unique_lock<std::mutex> lk(im_mutex);
+    ndImageSelected = "";
+    ndImageLatest = "";
+    displayNDImage("");
+    experimentDirButton->setText("Select directory...");
 }
 
 void AcquirePage::handleNDImageSelection(QString name)
@@ -231,6 +250,11 @@ void AcquirePage::handleTSliderValueChange(int i_t)
 
 void AcquirePage::displayNDImage(QString name)
 {
+    if (name.isEmpty()) {
+        displayNDImage("", 0, 0);
+        return;
+    }
+
     NDImage *im = expControlModel->ImageManagerModel()->GetNDImage(name);
     ndImageView->setNChannels(im->NChannels());
 
@@ -252,6 +276,19 @@ void AcquirePage::displayNDImage(QString name)
 
 void AcquirePage::displayNDImage(QString name, int i_z, int i_t)
 {
+    if (name.isEmpty()) {
+        ndImageView->clear();
+        ndImageView->setNChannels(1);
+
+        // Reset slider
+        ndImageView->setNDimZ(0);
+        ndImageView->setNDimT(0);
+        ndImageView->setIndexZ(0);
+        ndImageView->setIndexT(0);
+
+        return;
+    }
+
     NDImage *im = expControlModel->ImageManagerModel()->GetNDImage(name);
     ndImageView->setNChannels(im->NChannels());
 
@@ -259,12 +296,13 @@ void AcquirePage::displayNDImage(QString name, int i_z, int i_t)
         return;
     }
 
+    // Update slider
     ndImageView->setNDimZ(im->NDimZ());
     ndImageView->setNDimT(im->NDimT());
-
     ndImageView->setIndexZ(i_z);
     ndImageView->setIndexT(i_t);
 
+    // Display image
     for (int i_ch = 0; i_ch < im->NChannels(); i_ch++) {
         if (im->HasData(i_ch, i_z, i_t)) {
             ImageData d = im->GetData(i_ch, i_z, i_t);

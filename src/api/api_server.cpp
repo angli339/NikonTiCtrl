@@ -360,6 +360,10 @@ APIServer::SetPlatePositionOrigin(ServerContext *context,
 {
     try {
         Plate *plate = exp->Samples()->PlateByUUID(req->plate_uuid());
+        if (plate == nullptr) {
+            return grpc::Status(grpc::StatusCode::NOT_FOUND,
+                fmt::format("plate '{}' not found", req->plate_uuid()));
+        }
         exp->Samples()->SetPlatePositionOrigin(plate->ID(), req->x(), req->y());
     } catch (std::exception &e) {
         return grpc::Status(grpc::StatusCode::INTERNAL,
@@ -375,6 +379,10 @@ APIServer::SetPlateMetadata(ServerContext *context,
 {
     try {
         Plate *plate = exp->Samples()->PlateByUUID(req->plate_uuid());
+        if (plate == nullptr) {
+            return grpc::Status(grpc::StatusCode::NOT_FOUND,
+                fmt::format("plate '{}' not found", req->plate_uuid()));
+        }
         auto value = nlohmann::ordered_json::parse(req->json_value());
         exp->Samples()->SetPlateMetadata(plate->ID(), req->key(), value);
     } catch (std::exception &e) {
@@ -391,6 +399,10 @@ APIServer::SetWellsEnabled(ServerContext *context,
 {
     try {
         Plate *plate = exp->Samples()->PlateByUUID(req->plate_uuid());
+        if (plate == nullptr) {
+            return grpc::Status(grpc::StatusCode::NOT_FOUND,
+                fmt::format("plate '{}' not found", req->plate_uuid()));
+        }
         std::vector<std::string> wells;
         for (const auto & well : req->well_id()) {
             wells.push_back(well);
@@ -410,6 +422,10 @@ APIServer::SetWellsMetadata(ServerContext *context,
 {
     try {
         Plate *plate = exp->Samples()->PlateByUUID(req->plate_uuid());
+        if (plate == nullptr) {
+            return grpc::Status(grpc::StatusCode::NOT_FOUND,
+                fmt::format("plate '{}' not found", req->plate_uuid()));
+        }
         std::vector<std::string> wells;
         for (const auto & well : req->well_id()) {
             wells.push_back(well);
@@ -430,6 +446,10 @@ APIServer::CreateSites(ServerContext *context,
 {
     try {
         Plate *plate = exp->Samples()->PlateByUUID(req->plate_uuid());
+        if (plate == nullptr) {
+            return grpc::Status(grpc::StatusCode::NOT_FOUND,
+                fmt::format("plate '{}' not found", req->plate_uuid()));
+        }
         std::vector<std::string> wells;
         for (const auto & well : req->well_id()) {
             wells.push_back(well);
@@ -459,6 +479,10 @@ APIServer::AcquireMultiChannel(ServerContext *context,
     }
     try {
         Site *site = exp->Samples()->SiteByUUID(req->site_uuid());
+        if (site == nullptr) {
+            return grpc::Status(grpc::StatusCode::NOT_FOUND,
+                fmt::format("site '{}' not found", req->site_uuid()));
+        }
         exp->AcquireMultiChannel(req->ndimage_name(), channels,
                                  req->i_z(), req->i_t(), site, metadata);
         exp->WaitMultiChannelTask();

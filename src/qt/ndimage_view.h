@@ -17,6 +17,8 @@ class NDImageView : public QWidget {
 public:
     explicit NDImageView(QWidget *parent = nullptr);
 
+    void clear();
+
     void setNChannels(int n_channel);
     void setNDimZ(int n_z);
     void setNDimT(int n_t);

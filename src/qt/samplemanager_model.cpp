@@ -7,42 +7,53 @@ SampleManagerModel::SampleManagerModel(SampleManager *sampleManager,
     : QAbstractItemModel(parent)
 {
     this->sampleManager = sampleManager;
-
+    rootItem = new SampleManagerTreeItem;
+    validTreeItems.insert(rootItem);
     buildTree();
 }
 
 SampleManagerModel::~SampleManagerModel()
 {
-    if (rootItem) {
-        deleteTree(rootItem);
-    }
+    deleteTree(rootItem);
+    delete rootItem;
+}
+
+void SampleManagerModel::handleExperimentClose()
+{
+    beginResetModel();
+    validTreeItems.clear();
+    validTreeItems.insert(rootItem);
+    deleteTree(rootItem);
+    endResetModel();
 }
 
 void SampleManagerModel::handleExperimentOpen()
 {
     beginResetModel();
-    if (rootItem) {
-        deleteTree(rootItem);
-    }
     buildTree();
     endResetModel();
 }
 
 void SampleManagerModel::handlePlateCreated(QString plate_id)
 {
-    handleExperimentOpen();
+    Plate *plate = sampleManager->Plate(plate_id.toStdString());
+    beginInsertRows(QModelIndex(), rootItem->child.size(),
+                    rootItem->child.size() + 1);
+    addPlateItem(plate);
+    endInsertRows();
 }
 
 void SampleManagerModel::handlePlateChanged(QString plate_id)
 {
+    // rebuild the tree fow now
+    handleExperimentClose();
     handleExperimentOpen();
 }
 
 void SampleManagerModel::buildTree()
 {
-    rootItem = new SampleManagerTreeItem;
     for (Plate *plate : sampleManager->Plates()) {
-        addPlate(rootItem, plate);
+        addPlateItem(plate);
     }
 }
 
@@ -51,16 +62,23 @@ void SampleManagerModel::deleteTree(SampleManagerTreeItem *item)
     for (auto &childItem : item->child) {
         deleteTree(childItem);
     }
-    delete item;
+    if (item != rootItem) {
+        delete item;
+    } else {
+        item->child.clear();
+    }
 }
 
-void SampleManagerModel::addPlate(SampleManagerTreeItem *parent,
-                                        Plate *plate)
+void SampleManagerModel::addPlateItem(Plate *plate)
 {
     SampleManagerTreeItem *item = new SampleManagerTreeItem;
-    parent->child.push_back(item);
-
+    item->parent = rootItem;
+    item->row = rootItem->child.size();
     item->type = SampleManagerTreeItemType::Plate;
+    item->plate = plate;
+    rootItem->child.push_back(item);
+    validTreeItems.insert(item);
+
     item->id = plate->ID();
     item->summary = fmt::format("{}, {} wells", PlateTypeToString(plate->Type()), plate->NumEnabledWells());
     if (plate->PositionOrigin().has_value()) {
@@ -72,52 +90,51 @@ void SampleManagerModel::addPlate(SampleManagerTreeItem *parent,
         item->summary = fmt::format("{}, name='{}'", item->summary, metadata["name"]);
     }
     
-    item->parent = parent;
-    item->plate = plate;
-
     for (const auto &well : plate->Wells()) {
         if (well->Enabled()) {
-            addWell(item, well);
+            addWellItem(item, well);
         }
     }
 }
 
-void SampleManagerModel::addWell(SampleManagerTreeItem *parent,
+void SampleManagerModel::addWellItem(SampleManagerTreeItem *plateItem,
                                    Well *well)
 {
     SampleManagerTreeItem *item = new SampleManagerTreeItem;
-    parent->child.push_back(item);
-
+    item->parent = plateItem;
+    item->row = plateItem->child.size();
     item->type = SampleManagerTreeItemType::Well;
-    item->id = well->ID();
-    item->parent = parent;
     item->well = well;
+    plateItem->child.push_back(item);
+    validTreeItems.insert(item);
+
+    item->id = well->ID();
     item->summary = fmt::format("{} sites", well->NumEnabledSites());
     auto metadata = well->Metadata();
     if (metadata.contains("preset_name")) {
-        item->summary = fmt::format("{}, preset='{}'", item->summary, metadata["preset_name"]);
+        item->summary = fmt::format("{}, {}", item->summary, metadata["preset_name"]);
     }
 
     for (const auto &site : well->Sites()) {
-        addSite(item, site);
+        addSiteItem(item, site);
     }
 }
 
-void SampleManagerModel::addSite(SampleManagerTreeItem *parent, Site *site)
+void SampleManagerModel::addSiteItem(SampleManagerTreeItem *wellItem, Site *site)
 {
     SampleManagerTreeItem *item = new SampleManagerTreeItem;
-    parent->child.push_back(item);
-
+    item->parent = wellItem;
+    item->row = wellItem->child.size();
     item->type = SampleManagerTreeItemType::Site;
-    item->id = site->ID();
+    item->site = site;
+    wellItem->child.push_back(item);
+    validTreeItems.insert(item);
 
+    item->id = site->ID();
     auto metadata = site->Metadata();
     if (metadata.contains("name")) {
-        item->summary = fmt::format("Name({})", metadata["name"]);
+        item->summary = fmt::format("{}", metadata["name"]);
     }
-
-    item->parent = parent;
-    item->site = site;
 }
 
 QModelIndex SampleManagerModel::index(int row, int column,
@@ -127,37 +144,39 @@ QModelIndex SampleManagerModel::index(int row, int column,
         return QModelIndex();
 
     SampleManagerTreeItem *parentItem;
-
-    if (!parent.isValid())
+    if (!parent.isValid()) {
         parentItem = rootItem;
-    else
+    } else {
         parentItem =
             static_cast<SampleManagerTreeItem *>(parent.internalPointer());
+    }
 
     SampleManagerTreeItem *childItem = parentItem->child[row];
-    if (childItem)
+    if (childItem) {
         return createIndex(row, column, childItem);
+    }
     return QModelIndex();
 }
 
 QModelIndex SampleManagerModel::parent(const QModelIndex &index) const
 {
-    if (!index.isValid())
+    if (!index.isValid()) {
         return QModelIndex();
+    }
 
     SampleManagerTreeItem *item =
         static_cast<SampleManagerTreeItem *>(index.internalPointer());
-    SampleManagerTreeItem *parentItem = item->parent;
-
-    if (parentItem == rootItem)
+    if (!validTreeItems.contains(item)) {
+        // workaround to deal with index with invalid tree item pointer
+        LOG_TRACE("received invalid index");
         return QModelIndex();
-
-    for (int i = 0; i < parentItem->child.size(); i++) {
-        if (parentItem->child[i] == item) {
-            return createIndex(i, 0, parentItem);
-        }
     }
-    return QModelIndex();
+
+    SampleManagerTreeItem *parentItem = item->parent;
+    if (parentItem == rootItem) {
+        return QModelIndex();
+    }
+    return createIndex(parentItem->row, 0, parentItem);
 }
 
 int SampleManagerModel::rowCount(const QModelIndex &parent) const
@@ -166,11 +185,12 @@ int SampleManagerModel::rowCount(const QModelIndex &parent) const
     if (parent.column() > 0)
         return 0;
 
-    if (!parent.isValid())
+    if (!parent.isValid()) {
         parentItem = rootItem;
-    else
+    } else {
         parentItem =
             static_cast<SampleManagerTreeItem *>(parent.internalPointer());
+    }
 
     return parentItem->child.size();
 }

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <set>
 
 #include <QAbstractItemModel>
 
@@ -21,6 +22,7 @@ public:
     ~ImageManagerModel();
 
     void handleExperimentOpen();
+    void handleExperimentClose();
 
     ImageData GetNextLiveViewFrame();
     NDImage *GetNDImage(QString name);
@@ -46,9 +48,11 @@ private:
     ImageManager *imageManager;
 
     ImageManagerTreeItem *rootItem = nullptr;
+    std::set<ImageManagerTreeItem *> validTreeItems;
     void buildTree();
     void deleteTree(ImageManagerTreeItem *item);
-    void addNDImage(NDImage *ndimage);
+    void addNDImageItem(NDImage *ndimage);
+    void updateNDImageItem(ImageManagerTreeItem *item, NDImage *ndimage);
 
     void handleExperimentPathChanged(std::string path);
     void handleNDImageCreated(std::string name);
@@ -58,16 +62,19 @@ private:
 class ImageManagerTreeItem {
 public:
     std::string ndimage_name;
+    std::string type;
+    std::string channels;
 
-    ImageManagerTreeItem *parent;
+    ImageManagerTreeItem *parent = nullptr;
+    int row = 0;
     std::vector<ImageManagerTreeItem *> child;
 
     // backend type
-    NDImage *ndimage;
+    NDImage *ndimage = nullptr;
 
     int columnCount()
     {
-        return 2;
+        return 3;
     }
     QVariant columnName(int col)
     {
@@ -75,6 +82,8 @@ public:
         case 0:
             return QVariant("Name");
         case 1:
+            return QVariant("Type");
+        case 2:
             return QVariant("Channels");
         default:
             return QVariant();
@@ -86,7 +95,9 @@ public:
         case 0:
             return QVariant(ndimage_name.c_str());
         case 1:
-            return QVariant();
+            return QVariant(type.c_str());
+        case 2:
+            return QVariant(channels.c_str());
         default:
             return QVariant();
         }

@@ -51,6 +51,15 @@ NDImageView::NDImageView(QWidget *parent) : QWidget(parent)
     setNChannels(1);
 }
 
+void NDImageView::clear()
+{
+    for (auto &widget : channelViewList) {
+        imGridLayout->removeWidget(widget);
+        delete widget;
+    }
+    channelViewList.clear();
+}
+
 void NDImageView::setNChannels(int n_channel)
 {
     if (n_channel < 1) {

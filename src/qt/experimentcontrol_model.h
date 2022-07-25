@@ -38,7 +38,8 @@ public:
 signals:
     void stateChanged(QString state);
     void channelChanged(QString channel_name);
-    void experimentPathChanged(QString path);
+    void experimentOpened(QString path);
+    void experimentClosed();
     void messageReceived(QString message);
     void liveViewStarted();
 

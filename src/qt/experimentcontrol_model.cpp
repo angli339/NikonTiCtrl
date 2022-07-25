@@ -105,10 +105,15 @@ void ExperimentControlModel::handleEvents()
         case EventType::TaskMessage:
             emit messageReceived(e.value.c_str());
             break;
-        case EventType::ExperimentPathChanged:
-            emit experimentPathChanged(e.value.c_str());
+        case EventType::ExperimentOpened:
+            emit experimentOpened(e.value.c_str());
             sampleManagerModel->handleExperimentOpen();
             imageManagerModel->handleExperimentOpen();
+            break;
+        case EventType::ExperimentClosed:
+            emit experimentClosed();
+            sampleManagerModel->handleExperimentClose();
+            imageManagerModel->handleExperimentClose();
             break;
         case EventType::PlateCreated:
             sampleManagerModel->handlePlateCreated(e.value.c_str());

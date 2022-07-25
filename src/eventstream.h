@@ -23,7 +23,9 @@ enum class EventType
     TaskChannelChanged,
     TaskMessage,
 
-    ExperimentPathChanged,
+    ExperimentOpened,
+    ExperimentClosed,
+    
     PlateCreated,
     PlateChanged,
     NDImageCreated,

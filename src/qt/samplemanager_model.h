@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <set>
 
 #include <QAbstractItemModel>
 
@@ -29,6 +30,7 @@ public:
                         int role = Qt::DisplayRole) const override;
 
     void handleExperimentOpen();
+    void handleExperimentClose();
     void handlePlateCreated(QString plate_id);
     void handlePlateChanged(QString plate_id);
 
@@ -36,11 +38,12 @@ private:
     SampleManager *sampleManager;
 
     SampleManagerTreeItem *rootItem = nullptr;
+    std::set<SampleManagerTreeItem *> validTreeItems;
     void buildTree();
     void deleteTree(SampleManagerTreeItem *item);
-    void addPlate(SampleManagerTreeItem *parent, Plate *array);
-    void addWell(SampleManagerTreeItem *parent, Well *sample);
-    void addSite(SampleManagerTreeItem *parent, Site *site);
+    void addPlateItem(Plate *array);
+    void addWellItem(SampleManagerTreeItem *plateItem, Well *sample);
+    void addSiteItem(SampleManagerTreeItem *wellItem, Site *site);
 };
 
 enum class SampleManagerTreeItemType
@@ -57,13 +60,14 @@ public:
     std::string id;
     std::string summary;
 
-    SampleManagerTreeItem *parent;
+    SampleManagerTreeItem *parent = nullptr;
+    int row;
     std::vector<SampleManagerTreeItem *> child;
 
     // backend type
-    Plate *plate;
-    Well *well;
-    Site *site;
+    Plate *plate = nullptr;
+    Well *well = nullptr;
+    Site *site = nullptr;
 
     int columnCount();
     QVariant columnName(int col);
