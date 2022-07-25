@@ -114,6 +114,7 @@ class API():
             
             for site_pb in well_pb.site:
                 site = Site(well, site_pb.id, (site_pb.rel_pos.x, site_pb.rel_pos.y))
+                site._uuid = site_pb.uuid
                 site._enabled = site_pb.enabled
                 site._metadata = json.loads(site_pb.metadata)
                 well._sites.append(site)
@@ -136,7 +137,7 @@ class API():
         self.stub.AddPlate(req)
         return
     
-    def acquire_multi_channel(self, ndimage_name: str, channels: List[Channel], i_z: int, i_t: int, metadata: Dict[str, str] = None):
+    def acquire_multi_channel(self, ndimage_name: str, channels: List[Channel], i_z: int, i_t: int, site_uuid=None, metadata: Dict[str, str] = None):
         req = api_pb2.AcquireMultiChannelRequest()
         req.ndimage_name = ndimage_name
         for ch in channels:
@@ -150,9 +151,10 @@ class API():
                 raise ValueError("invalid channels")
         req.i_z = i_z
         req.i_t = i_t
+        if site_uuid:
+            req.site_uuid = site_uuid
         if metadata:
-            for key, value in metadata.items():
-                req.metadata[key] = value
+            req.metadata = json.dumps(metadata)
 
         self.stub.AcquireMultiChannel(req)
 

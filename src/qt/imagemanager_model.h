@@ -82,7 +82,7 @@ public:
         case 0:
             return QVariant("Name");
         case 1:
-            return QVariant("Type");
+            return QVariant("");
         case 2:
             return QVariant("Channels");
         default:

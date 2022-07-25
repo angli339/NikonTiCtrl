@@ -478,10 +478,13 @@ APIServer::AcquireMultiChannel(ServerContext *context,
         });
     }
     try {
-        Site *site = exp->Samples()->SiteByUUID(req->site_uuid());
-        if (site == nullptr) {
-            return grpc::Status(grpc::StatusCode::NOT_FOUND,
-                fmt::format("site '{}' not found", req->site_uuid()));
+        Site *site = nullptr;
+        if (!req->site_uuid().empty()) {
+            site = exp->Samples()->SiteByUUID(req->site_uuid());
+            if (site == nullptr) {
+                return grpc::Status(grpc::StatusCode::NOT_FOUND,
+                    fmt::format("site '{}' not found", req->site_uuid()));
+            }
         }
         exp->AcquireMultiChannel(req->ndimage_name(), channels,
                                  req->i_z(), req->i_t(), site, metadata);
@@ -497,9 +500,41 @@ grpc::Status APIServer::ListNDImage(ServerContext *context,
                                     const google::protobuf::Empty *req,
                                     api::ListNDImageResponse *resp)
 {
-    auto ndimage_list = exp->Images()->ListNDImage();
-    for (const auto &im : ndimage_list) {
-        auto ndimage_pb = resp->add_ndimage();
+    try {
+        auto ndimage_list = exp->Images()->ListNDImage();
+        for (const auto &im : ndimage_list) {
+            auto ndimage_pb = resp->add_ndimage();
+            ndimage_pb->set_name(im->Name());
+            for (const auto &ch_name : im->ChannelNames()) {
+                ndimage_pb->add_ch_name(ch_name);
+            }
+            ndimage_pb->set_width(im->Width());
+            ndimage_pb->set_height(im->Height());
+            ndimage_pb->set_n_ch(im->NChannels());
+            ndimage_pb->set_n_z(im->NDimZ());
+            ndimage_pb->set_n_t(im->NDimT());
+            ndimage_pb->set_dtype(DataTypeToPB(im->DataType()));
+            ndimage_pb->set_ctype(ColorTypeToPB(im->ColorType()));
+        }
+    } catch (std::exception &e) {
+        return grpc::Status(grpc::StatusCode::INTERNAL,
+                            fmt::format("unexpected exception: {}", e.what()));
+    }
+    return grpc::Status::OK;
+}
+
+grpc::Status APIServer::GetNDImage(ServerContext *context,
+                                    const api::GetNDImageRequest *req,
+                                    api::GetNDImageResponse *resp)
+{
+    try {
+        NDImage *im = exp->Images()->GetNDImage(req->ndimage_name());
+        if (im == nullptr) {
+            return grpc::Status(grpc::StatusCode::NOT_FOUND,
+                fmt::format("ndimage '{}' not found", req->ndimage_name()));
+        }
+
+        auto ndimage_pb = resp->mutable_ndimage();
         ndimage_pb->set_name(im->Name());
         for (const auto &ch_name : im->ChannelNames()) {
             ndimage_pb->add_ch_name(ch_name);
@@ -511,34 +546,10 @@ grpc::Status APIServer::ListNDImage(ServerContext *context,
         ndimage_pb->set_n_t(im->NDimT());
         ndimage_pb->set_dtype(DataTypeToPB(im->DataType()));
         ndimage_pb->set_ctype(ColorTypeToPB(im->ColorType()));
-        
+    } catch (std::exception &e) {
+        return grpc::Status(grpc::StatusCode::INTERNAL,
+                            fmt::format("unexpected exception: {}", e.what()));
     }
-    return grpc::Status::OK;
-}
-
-grpc::Status APIServer::GetNDImage(ServerContext *context,
-                                    const api::GetNDImageRequest *req,
-                                    api::GetNDImageResponse *resp)
-{
-    NDImage *im = exp->Images()->GetNDImage(req->ndimage_name());
-    if (im == nullptr) {
-        return grpc::Status(grpc::StatusCode::NOT_FOUND,
-            fmt::format("ndimage '{}' not found", req->ndimage_name()));
-    }
-
-    auto ndimage_pb = resp->mutable_ndimage();
-    ndimage_pb->set_name(im->Name());
-    for (const auto &ch_name : im->ChannelNames()) {
-        ndimage_pb->add_ch_name(ch_name);
-    }
-    ndimage_pb->set_width(im->Width());
-    ndimage_pb->set_height(im->Height());
-    ndimage_pb->set_n_ch(im->NChannels());
-    ndimage_pb->set_n_z(im->NDimZ());
-    ndimage_pb->set_n_t(im->NDimT());
-    ndimage_pb->set_dtype(DataTypeToPB(im->DataType()));
-    ndimage_pb->set_ctype(ColorTypeToPB(im->ColorType()));
-    
     return grpc::Status::OK;
 }
 
@@ -546,29 +557,34 @@ grpc::Status APIServer::GetImageData(ServerContext *context,
                                  const api::GetImageDataRequest *req,
                                  api::GetImageDataResponse *resp)
 {
-    NDImage *ndimage =
-        exp->Images()->GetNDImage(req->ndimage_name());
-    if (ndimage == nullptr) {
-        return grpc::Status(grpc::StatusCode::NOT_FOUND, "ndimage not found");
-    }
-    int i_ch = ndimage->ChannelIndex(req->channel_name());
-    if (i_ch < 0) {
-        return grpc::Status(grpc::StatusCode::NOT_FOUND, "channel not found");
-    }
-    if (req->i_z() < 0 || req->i_z() >= ndimage->NDimZ()) {
-        return grpc::Status(grpc::StatusCode::NOT_FOUND, "i_z not found");
-    }
-    if (req->i_t() < 0 || req->i_t() >= ndimage->NDimT()) {
-        return grpc::Status(grpc::StatusCode::NOT_FOUND, "i_t not found");
-    }
+    try {
+        NDImage *ndimage =
+            exp->Images()->GetNDImage(req->ndimage_name());
+        if (ndimage == nullptr) {
+            return grpc::Status(grpc::StatusCode::NOT_FOUND, "ndimage not found");
+        }
+        int i_ch = ndimage->ChannelIndex(req->channel_name());
+        if (i_ch < 0) {
+            return grpc::Status(grpc::StatusCode::NOT_FOUND, "channel not found");
+        }
+        if (req->i_z() < 0 || req->i_z() >= ndimage->NDimZ()) {
+            return grpc::Status(grpc::StatusCode::NOT_FOUND, "i_z not found");
+        }
+        if (req->i_t() < 0 || req->i_t() >= ndimage->NDimT()) {
+            return grpc::Status(grpc::StatusCode::NOT_FOUND, "i_t not found");
+        }
 
-    ImageData data = ndimage->GetData(i_ch, req->i_z(), req->i_t());
+        ImageData data = ndimage->GetData(i_ch, req->i_z(), req->i_t());
 
-    resp->mutable_data()->set_width(data.Width());
-    resp->mutable_data()->set_height(data.Height());
-    resp->mutable_data()->set_dtype(DataTypeToPB(data.DataType()));
-    resp->mutable_data()->set_ctype(ColorTypeToPB(data.ColorType()));
-    resp->mutable_data()->set_buf(data.Buf().get(), data.BufSize());
+        resp->mutable_data()->set_width(data.Width());
+        resp->mutable_data()->set_height(data.Height());
+        resp->mutable_data()->set_dtype(DataTypeToPB(data.DataType()));
+        resp->mutable_data()->set_ctype(ColorTypeToPB(data.ColorType()));
+        resp->mutable_data()->set_buf(data.Buf().get(), data.BufSize());
+    } catch (std::exception &e) {
+        return grpc::Status(grpc::StatusCode::INTERNAL,
+                            fmt::format("unexpected exception: {}", e.what()));
+    }
     return grpc::Status::OK;
 }
 

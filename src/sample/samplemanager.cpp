@@ -58,6 +58,7 @@ void SampleManager::LoadFromDB()
         ::Well *well = plate->well_map[site_row.well_id];
         ::Site *site = new ::Site;
         site->well = well;
+        site->uuid = site_row.uuid;
         site->id = site_row.site_id;
         site->rel_pos = {site_row.rel_pos_x, site_row.rel_pos_y};
         site->enabled = site_row.enabled;

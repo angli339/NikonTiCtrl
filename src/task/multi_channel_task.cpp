@@ -238,7 +238,7 @@ Status MultiChannelTask::Acquire(std::string ndimage_name,
     for (const auto &channel : channels) {
         ch_names.push_back(channel.preset_name);
     }
-    exp->Images()->NewNDImage(ndimage_name, ch_names);
+    exp->Images()->NewNDImage(ndimage_name, ch_names, site);
 
     //
     // Start acquisition

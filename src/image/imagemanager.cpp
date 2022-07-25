@@ -148,9 +148,13 @@ void ImageManager::NewNDImage(std::string ndimage_name,
 
     auto it = dataset_map.find(ndimage_name);
     if (it != dataset_map.end()) {
-        // Overwrite
-        delete it->second;
-        dataset_map.erase(it);
+        if (it->second->ChannelNames() != ch_names) {
+            throw std::invalid_argument("duplicated ndimage_name with different channels");
+        }
+        if (it->second->Site() != site) {
+            throw std::invalid_argument("duplicated ndimage_name with different site");
+        }
+        return;
     }
 
     // Create NDImage
@@ -193,6 +197,8 @@ void ImageManager::AddImage(std::string ndimage_name, int i_ch, int i_z, int i_t
     ndimage->AddImage(i_ch, i_z, i_t, data, metadata);
     ndimage->width = data.Width();
     ndimage->height = data.Height();
+    ndimage->dtype = data.DataType();
+    ndimage->ctype = data.ColorType();
     
     std::string filename = fmt::format("{}-{}-{:03d}-{:04d}.tif", ndimage->name, ndimage->channel_names[i_ch], i_z, i_t);
     std::filesystem::path relpath = fmt::format("images/{}", filename);

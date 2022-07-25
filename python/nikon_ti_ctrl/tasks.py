@@ -182,7 +182,7 @@ class MultiSiteTask():
             time.sleep(1)
             
             ### Acquire
-            self._api.acquire_multi_channel(im_name, self._presets[preset_name], 0, self._seq_no)
+            self._api.acquire_multi_channel(im_name, self._presets[preset_name], 0, self._seq_no, site_uuid=row.site_uuid)
             
             if self.fn_after_acq:
                 self.fn_after_acq(self)

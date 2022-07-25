@@ -420,7 +420,7 @@ class Plate():
         
         # ------ generate the dataframe 
         df = []
-        df_columns = ["well", "row", "col", "site", "pos_x", "pos_y", "preset_name"]
+        df_columns = ["site_uuid", "well", "row", "col", "site", "pos_x", "pos_y", "preset_name"]
 
         well_missing_preset = set()
         for well_id in well_ids_routed:
@@ -431,9 +431,9 @@ class Plate():
                 if not well.preset_name:
                     well_missing_preset.add(well_id)
                 if self._pos_origin is None:
-                    df_row = [well_id, row, col, site.id, float('nan'), float('nan'), well.preset_name or '']
+                    df_row = [site.uuid, well_id, row, col, site.id, float('nan'), float('nan'), well.preset_name or '']
                 else:
-                    df_row = [well_id, row, col, site.id, site.pos[0], site.pos[1], well.preset_name or '']
+                    df_row = [site.uuid, well_id, row, col, site.id, site.pos[0], site.pos[1], well.preset_name or '']
                 
                 for k in metadata_columns:
                     if k in well.metadata:

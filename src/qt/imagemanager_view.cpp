@@ -26,6 +26,11 @@ void ImageManagerView::setModel(ImageManagerModel *model)
     this->model = model;
 
     this->imageList->setModel(model);
+    
+    imageList->setColumnWidth(0, 100);
+    imageList->setColumnWidth(1, 40);
+    imageList->setColumnWidth(2, 60);
+
     connect(imageList->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &ImageManagerView::handleSelectionChanged);
 }
