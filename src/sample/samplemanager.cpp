@@ -387,6 +387,25 @@ void SampleManager::CreateSitesOnCenteredGrid(std::string plate_id, std::vector<
     });
 }
 
+void SampleManager::SetCurrentPlate(std::string plate_id)
+{
+    if (plate_id.empty()) {
+        this->current_plate = nullptr;
+        return;
+    }
+    
+    ::Plate *plate = Plate(plate_id);
+    if (plate == nullptr) {
+        throw std::invalid_argument(fmt::format("plate {} not found", plate_id));
+    }
+    this->current_plate = plate;
+}
+
+::Plate *SampleManager::CurrentPlate()
+{
+    return this->current_plate;
+}
+
 ::Plate *SampleManager::Plate(std::string plate_id)
 {
     std::shared_lock<std::shared_mutex> lk(plate_mutex);

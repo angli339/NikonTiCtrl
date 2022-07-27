@@ -8,6 +8,7 @@
 #include <filesystem>
 
 #include "analysis/segmentation.h"
+#include "utils/hdf5file.h"
 
 struct QuantificationResults;
 
@@ -16,24 +17,26 @@ class ExperimentControl;
 class AnalysisManager {
 public:
     AnalysisManager(ExperimentControl *exp);
+    ~AnalysisManager();
+    void LoadFile();
 
-    ImageData GetSegmentationScore(std::string ndimage_name, std::string ch_name, int i_z, int i_t);
-    int QuantifyRegions(std::string ndimage_name, int i_z, int i_t, std::string segmentation_ch);
+    xt::xarray<double> GetSegmentationScore(std::string ndimage_name, std::string ch_name, int i_t);
+    int QuantifyRegions(std::string ndimage_name, int i_t, std::string segmentation_ch);
+
 private:
     ExperimentControl *exp;
-    std::filesystem::path GetSegmentationLabelDir();
-    std::filesystem::path GetQuantificationDir();
+    HDF5File *h5file = nullptr;
 
     UNet unet;
 
-    std::map<std::tuple<std::string, int, int>, QuantificationResults> quantifications;
+    std::map<std::tuple<std::string, int>, QuantificationResults> quantifications;
 };
 
 struct QuantificationResults {
-    int n_regions;
     std::vector<ImageRegionProp> region_props;
+
     std::vector<std::string> ch_names;
-    std::vector<std::vector<double>> ch_means;
+    std::vector<xt::xarray<float>> raw_intensity_mean;
 };
 
 #endif

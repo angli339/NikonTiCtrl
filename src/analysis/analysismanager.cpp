@@ -1,6 +1,8 @@
 #include "analysismanager.h"
 
 #include <fmt/os.h>
+#include <xtensor/xadapt.hpp>
+#include <xtensor/xview.hpp>
 
 #include "config.h"
 #include "logging.h"
@@ -14,29 +16,58 @@ AnalysisManager::AnalysisManager(ExperimentControl *exp)
            config.system.unet_model.output_name)
 {
     this->exp = exp;
+    if (!exp->ExperimentDir().empty()) {
+        h5file = new HDF5File(exp->ExperimentDir() / "analysis.h5");
+    }
 }
 
-ImageData AnalysisManager::GetSegmentationScore(std::string ndimage_name, std::string ch_name, int i_z, int i_t)
+AnalysisManager::~AnalysisManager()
+{
+    if (h5file) {
+        delete h5file;
+    }
+}
+
+void AnalysisManager::LoadFile()
+{
+    if (h5file) {
+        delete h5file;
+        h5file = nullptr;
+    }
+    if (!exp->ExperimentDir().empty()) {
+        h5file = new HDF5File(exp->ExperimentDir() / "analysis.h5");
+    }
+}
+
+xt::xarray<double> AnalysisManager::GetSegmentationScore(std::string ndimage_name, std::string ch_name, int i_t)
 {
     // Find image
     NDImage *ndimage = exp->Images()->GetNDImage(ndimage_name);
     int i_ch = ndimage->ChannelIndex(ch_name);
-    ImageData im_raw = ndimage->GetData(i_ch, i_z, i_t);
+    ImageData im_raw = ndimage->GetData(i_ch, 0, i_t);
+
+    std::vector<size_t> shape = {im_raw.Height(), im_raw.Width()};
+    auto im_raw_arr = xt::adapt((uint16_t *)im_raw.Buf().get(), im_raw.size(),
+        xt::no_ownership(), shape);
 
     // Preprocess
-    ImageData im_eq = EqualizeCLAHE(im_raw);
+    xt::xarray<uint16_t> im_eq = EqualizeCLAHE(im_raw_arr);
 
     // U-Net
     return unet.GetScore(im_eq);
 }
 
-int AnalysisManager::QuantifyRegions(std::string ndimage_name, int i_z, int i_t,
+int AnalysisManager::QuantifyRegions(std::string ndimage_name, int i_t,
                                 std::string segmentation_ch)
 {
     // Find image
     NDImage *ndimage = exp->Images()->GetNDImage(ndimage_name);
     int i_ch = ndimage->ChannelIndex(segmentation_ch);
-    ImageData im_raw = ndimage->GetData(i_ch, i_z, i_t);
+    ImageData im_raw = ndimage->GetData(i_ch, 0, i_t);
+
+    std::vector<size_t> shape = {im_raw.Height(), im_raw.Width()};
+    auto im_raw_arr = xt::adapt((uint16_t *)im_raw.Buf().get(), im_raw.size(),
+        xt::no_ownership(), shape);
 
     //
     // Segmentation
@@ -44,132 +75,125 @@ int AnalysisManager::QuantifyRegions(std::string ndimage_name, int i_z, int i_t,
 
     LOG_DEBUG("Segment {}", ndimage_name);
     // Preprocess
-    ImageData im_eq = EqualizeCLAHE(im_raw);
+    xt::xarray<uint16_t> im_eq = EqualizeCLAHE(im_raw_arr);
+    xt::xarray<float> im_eq_f32 = xt::xarray<float>(im_eq) / 65535;
 
     // U-Net
-    ImageData im_score = unet.GetScore(im_eq);
+    xt::xarray<float> im_score = unet.GetScore(im_eq_f32);
 
     // Segment score image and calculate mean score of regions
     std::vector<ImageRegionProp> region_prop;
-    ImageData im_labels = RegionLabel(im_score, region_prop);
-    std::vector<double> score_mean =
-        RegionMean(im_score, im_labels, region_prop);
+    xt::xarray<uint16_t> im_labels = RegionLabel(im_score, region_prop);
+    xt::xarray<double> score_sum = RegionSum(im_score, im_labels, region_prop.size()-1);
 
-    // Remove low-score regions and renumber the labels
+    xt::xarray<double> area = xt::xarray<double>::from_shape({region_prop.size()});
+    for (int i = 0; i < region_prop.size(); i++) {
+        area[i] = region_prop[i].area;
+    }
+    xt::xarray<double> score_mean = score_sum / area;
+
+    // Remove low-score regions
     std::vector<ImageRegionProp> region_prop_filtered;
-    ImageRegionProp rp0; // placeholder
-    rp0.label = 0;
-    rp0.area = 1;
-    region_prop_filtered.push_back(rp0);
-
-    int n_regions = 0;
-    for (int old_label = 0; old_label < score_mean.size(); old_label++) {
-        region_prop[old_label].mean_score = score_mean[old_label];
-        if (score_mean[old_label] > 0.9) {
-            n_regions++;
-            region_prop[old_label].label = n_regions;
-            region_prop_filtered.push_back(region_prop[old_label]);
-        } else {
-            region_prop[old_label].label = 0;
+    std::vector<double> score_mean_filtered;
+    for (int i = 0; i < region_prop.size(); i++) {
+        if (score_mean[i] > 0.9) {
+            region_prop_filtered.push_back(region_prop[i]);
+            score_mean_filtered.push_back(score_mean[i]);
         }
     }
 
-    // Renumber labels in label image
-    uint16_t *im_labels_buf = reinterpret_cast<uint16_t *>(im_labels.Buf().get());
-    for (int i = 0; i < im_labels.size(); i++) {
-        uint16_t old_label = im_labels_buf[i];
-        im_labels_buf[i] = region_prop[old_label].label;
+    // Renumber the labels
+    std::vector<uint16_t> newLabelFromOld;
+    newLabelFromOld.resize(region_prop.size(), 0);
+    newLabelFromOld[0] = 0; // label 0 is still label 0
+    for (int i = 0; i < region_prop_filtered.size(); i++) {
+        uint16_t old_label = region_prop_filtered[i].label;
+        uint16_t new_label = i + 1;
+        newLabelFromOld[old_label] = new_label;
+        region_prop_filtered[i].label = new_label;
     }
 
-    LOG_DEBUG("Segmentation completed: {}/{} passed filter", region_prop_filtered.size()-1, region_prop.size());
+    // Renumber labels in label image
+    auto im_labels_fl = xt::flatten(im_labels);
+    for (int i = 0; i < im_labels_fl.size(); i++) {
+        uint16_t old_label = im_labels_fl[i];
+        im_labels_fl[i] = newLabelFromOld[old_label];
+    }
+
+    LOG_DEBUG("Segmentation completed: {}/{} passed filter", region_prop_filtered.size(), region_prop.size());
     
+    //
     // Save label image
-    TiffMetadata tiff_meta;
-    tiff_meta.metadata["model_name"] = config.system.unet_model.model_name;
-    tiff_meta.metadata["segmentation_channel"] = segmentation_ch;
-
-    std::filesystem::path im_label_dir = GetSegmentationLabelDir();
-    std::string im_label_filename = fmt::format("{}-{:03d}-{:04d}.tif", ndimage_name, i_z, i_t);
-    std::filesystem::path im_label_path = im_label_dir / im_label_filename;
-
-    ImageWrite(im_label_path, im_labels, tiff_meta);
+    //
+    std::string group_name = fmt::format("/segmentation/{}/{}", ndimage_name, i_t);
+    h5file->write(fmt::format("{}/label_image", group_name), im_labels, true);
+    h5file->flush();
 
     LOG_DEBUG("Label image saved");
 
     //
     // Quantification
     //
+    xt::xarray<double> area_filtered = xt::xarray<double>::from_shape({region_prop_filtered.size()});
+    for (int i = 0; i < region_prop_filtered.size(); i++) {
+        area_filtered[i] = region_prop_filtered[i].area;
+    }
+
     QuantificationResults results;
-    results.n_regions = n_regions;
     results.region_props = region_prop_filtered;
 
     for (int i_ch = 0; i_ch < ndimage->NChannels(); i_ch++) {
-        ImageData im_ch = ndimage->GetData(i_ch, i_z, i_t);
-        std::vector<double> ch_mean = RegionMean(im_ch, im_labels, region_prop_filtered);
+        ImageData im_ch = ndimage->GetData(i_ch, 0, i_t);
+
+        std::vector<size_t> shape = {im_ch.Height(), im_ch.Width()};
+        xt::xarray<uint16_t> im_ch_arr = xt::adapt((uint16_t *)im_ch.Buf().get(), im_ch.size(),  xt::no_ownership(), shape);
+
+        xt::xarray<double> ch_sum = RegionSum(im_ch_arr, im_labels, region_prop_filtered.back().label);
+        xt::xarray<float> ch_mean = xt::view(ch_sum, xt::range(1, ch_sum.size())) / area_filtered;
 
         results.ch_names.push_back(ndimage->ChannelName(i_ch));
-        results.ch_means.push_back(ch_mean);
+        results.raw_intensity_mean.push_back(ch_mean);
     }
-    quantifications[{ndimage_name, i_z, i_t}] = results;
+    quantifications[{ndimage_name, i_t}] = results;
     
-    std::filesystem::path im_quant_dir = GetQuantificationDir();
-    std::string im_quant_filename = fmt::format("{}-{:03d}-{:04d}.csv", ndimage_name, i_z, i_t);
-    std::filesystem::path im_quant_path = im_quant_dir / im_quant_filename;
-    
-    auto out = fmt::output_file(im_quant_path.string().c_str(), O_CREAT|O_WRONLY|O_TRUNC);
-    out.print("label,bbox_x0,bbox_y0,bbox_width,bbox_height,area,centroid_x,centroid_y,mean_score");
-    for (int i_ch = 0; i_ch < ndimage->NChannels(); i_ch++) {
-        out.print(",mean_{}", results.ch_names[i_ch]);
-    }
-    out.print("\n");
+    //
+    // Save quantification
+    //
+    StructArray rp_sarr({
+        {"label", Dtype::uint16},
+        {"bbox_x0", Dtype::uint32},
+        {"bbox_y0", Dtype::uint32},
+        {"bbox_width", Dtype::uint32},
+        {"bbox_height", Dtype::uint32},
+        {"area", Dtype::float64},
+        {"centroid_x", Dtype::float64},
+        {"centroid_y", Dtype::float64},
+        {"score_mean", Dtype::float64},
+    }, results.region_props.size());
 
-    for (int i = 1; i < region_prop_filtered.size(); i++) {
-        ImageRegionProp rp = region_prop_filtered[i];
-        out.print("{},{},{},{},{},", rp.label, rp.bbox_x0, rp.bbox_y0, rp.bbox_width, rp.bbox_height);
-        out.print("{},{},{},{}", rp.area, rp.centroid_x, rp.centroid_y, rp.mean_score);
-        for (int i_ch = 0; i_ch < ndimage->NChannels(); i_ch++) {
-            out.print(",{}", results.ch_means[i_ch][i]);
-        }
-        out.print("\n");
+    for (int i = 0 ; i < results.region_props.size(); i++) {
+        rp_sarr.Field<uint16_t>("label")[i] = results.region_props[i].label;
+        rp_sarr.Field<uint32_t>("bbox_x0")[i] = results.region_props[i].bbox_x0;
+        rp_sarr.Field<uint32_t>("bbox_y0")[i] = results.region_props[i].bbox_y0;
+        rp_sarr.Field<uint32_t>("bbox_width")[i] = results.region_props[i].bbox_width;
+        rp_sarr.Field<uint32_t>("bbox_height")[i] = results.region_props[i].bbox_height;
+        rp_sarr.Field<double>("area")[i] = results.region_props[i].area;
+        rp_sarr.Field<double>("centroid_x")[i] = results.region_props[i].centroid_x;
+        rp_sarr.Field<double>("centroid_y")[i] = results.region_props[i].centroid_y;
     }
+    rp_sarr.Field<double>("score_mean") = xt::adapt(score_mean_filtered);
+
+    h5file->write(fmt::format("{}/region_props", group_name), rp_sarr);
+
+    StructArray raw_intensity_mean_sarr(results.ch_names, Dtype::float32, results.region_props.size());
+    for (int i = 0; i < results.ch_names.size(); i++) {
+        std::string ch_name = results.ch_names[i];
+        raw_intensity_mean_sarr.Field<float>(ch_name) = results.raw_intensity_mean[i];
+    }
+    h5file->write(fmt::format("{}/raw_intensity_mean", group_name), raw_intensity_mean_sarr);
+    h5file->flush();
 
     LOG_DEBUG("Quantification completed");
 
-    return n_regions;
+    return region_prop_filtered.size();
 }
-
- std::filesystem::path AnalysisManager::GetSegmentationLabelDir() {
-    std::filesystem::path exp_dir = exp->ExperimentDir();
-    if (exp_dir.empty()) {
-        throw std::runtime_error("experiment dir not set");
-    }
-
-    // Create if not exists
-    std::filesystem::path path = exp_dir / "analysis" / "segmentation";
-    if (!std::filesystem::exists(path)) {
-        if (!std::filesystem::create_directories(path)) {
-            throw std::runtime_error(
-                fmt::format("failed to create dir {}", path.string()));
-        }
-    }
-
-    return path;
- }
-
- std::filesystem::path AnalysisManager::GetQuantificationDir() {
-    std::filesystem::path exp_dir = exp->ExperimentDir();
-    if (exp_dir.empty()) {
-        throw std::runtime_error("experiment dir not set");
-    }
-
-    // Create if not exists
-    std::filesystem::path path = exp_dir / "analysis" / "quantification";
-    if (!std::filesystem::exists(path)) {
-        if (!std::filesystem::create_directories(path)) {
-            throw std::runtime_error(
-                fmt::format("failed to create dir {}", path.string()));
-        }
-    }
-
-    return path;
- }

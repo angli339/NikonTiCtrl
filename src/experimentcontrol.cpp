@@ -111,6 +111,7 @@ void ExperimentControl::OpenExperimentDir(std::filesystem::path exp_dir)
     this->exp_dir = exp_dir;
     sample_manager->LoadFromDB();
     image_manager->LoadFromDB();
+    analysis_manager->LoadFile();
 
     // Done
     SendEvent({

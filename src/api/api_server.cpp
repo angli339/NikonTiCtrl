@@ -593,19 +593,19 @@ APIServer::GetSegmentationScore(ServerContext *context,
                                 const api::GetSegmentationScoreRequest *req,
                                 api::GetSegmentationScoreResponse *resp)
 {
-    ImageData score;
+    xt::xarray<float> score;
     try {
-        score = exp->Analysis()->GetSegmentationScore(req->ndimage_name(), req->ch_name(), req->i_z(), req->i_t());
+        score = exp->Analysis()->GetSegmentationScore(req->ndimage_name(), req->ch_name(), req->i_t());
     } catch (std::exception &e) {
         return grpc::Status(grpc::StatusCode::INTERNAL,
                             fmt::format("unexpected exception: {}", e.what()));
     }
 
-    resp->mutable_data()->set_width(score.Width());
-    resp->mutable_data()->set_height(score.Height());
-    resp->mutable_data()->set_dtype(DataTypeToPB(score.DataType()));
-    resp->mutable_data()->set_ctype(ColorTypeToPB(score.ColorType()));
-    resp->mutable_data()->set_buf(score.Buf().get(), score.BufSize());
+    resp->mutable_data()->set_height(score.shape(0));
+    resp->mutable_data()->set_width(score.shape(1));
+    resp->mutable_data()->set_dtype(api::DataType::FLOAT32);
+    resp->mutable_data()->set_ctype(api::ColorType::UNKNOWN_CTYPE);
+    resp->mutable_data()->set_buf(score.data(), score.size() * sizeof(float));
     return grpc::Status::OK;
 }
 
@@ -616,7 +616,7 @@ APIServer::QuantifyRegions(ServerContext *context,
 {
     int n_regions;
     try {
-        n_regions = exp->Analysis()->QuantifyRegions(req->ndimage_name(), req->i_z(), req->i_t(), req->segmentation_ch());
+        n_regions = exp->Analysis()->QuantifyRegions(req->ndimage_name(), req->i_t(), req->segmentation_ch());
     } catch (std::exception &e) {
         return grpc::Status(grpc::StatusCode::INTERNAL,
                             fmt::format("unexpected exception: {}", e.what()));

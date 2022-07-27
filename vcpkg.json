@@ -6,6 +6,14 @@
         "fmt",
         "nlohmann-json",
         "sqlite3",
+        "xtensor",
+        {
+            "name": "hdf5",
+            "features": [
+                "zlib"
+            ],
+            "default-features": false
+        },
         {
             "name": "grpc",
             "features": [

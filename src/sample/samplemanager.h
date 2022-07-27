@@ -35,6 +35,12 @@ public:
         int n_x, int n_y, double spacing_x, double spacing_y);
 
     //
+    // Switch sample
+    //
+    void SetCurrentPlate(std::string plate_id);
+    ::Plate *CurrentPlate();
+
+    //
     // Get samples
     //
     std::vector<::Plate *> Plates();
@@ -55,6 +61,8 @@ private:
     std::shared_mutex plate_mutex;
     std::vector<::Plate *> plates;
     std::map<std::string, ::Plate *> plate_map;
+
+    ::Plate *current_plate = nullptr;
 
     void writePlateRow(const ::Plate *plate);
     void writeWellRow(const ::Well *well);

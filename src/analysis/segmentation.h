@@ -5,10 +5,12 @@
 
 #include <grpcpp/channel.h>
 #include <tensorflow_serving/apis/prediction_service.grpc.pb.h>
+#include <xtensor/xarray.hpp>
+#include <xtensor/xadapt.hpp>
 
 #include "image/imagedata.h"
 
-ImageData EqualizeCLAHE(ImageData im, double clip_limit = 2);
+xt::xarray<uint16_t> EqualizeCLAHE(xt::xarray<uint16_t> im, double clip_limit = 2);
 
 struct ImageRegionProp {
     uint16_t label;
@@ -19,20 +21,19 @@ struct ImageRegionProp {
     double area;
     double centroid_x;
     double centroid_y;
-    double mean_score;
 };
 
-ImageData RegionLabel(ImageData im_score,
+xt::xarray<uint16_t> RegionLabel(xt::xarray<float> im_score,
                       std::vector<ImageRegionProp> &region_props,
                       double threshold = 0.5);
 
-std::vector<double> RegionMean(ImageData im, ImageData label,
-                               std::vector<ImageRegionProp> &region_props);
+template <typename T>
+xt::xarray<double> RegionSum(xt::xarray<T> im, xt::xarray<uint16_t> label, int max_label);
 
 class UNet {
 public:
     UNet(const std::string server_addr, const std::string model_name, const std::string input_name, const std::string output_name);
-    ImageData GetScore(ImageData im);
+    xt::xarray<float> GetScore(xt::xarray<float> im);
 
 private:
     std::string server_addr;
@@ -43,5 +44,25 @@ private:
     std::shared_ptr<::grpc::Channel> grpc_channel;
     std::shared_ptr<::tensorflow::serving::PredictionService::Stub> stub;
 };
+
+template <typename T>
+xt::xarray<double> RegionSum(xt::xarray<T> im, xt::xarray<uint16_t> label, int max_label)
+{
+    if (im.shape() != label.shape()) {
+        throw std::invalid_argument("im and label have different shapes");
+    }
+
+    std::vector<double> sum;
+    sum.resize(max_label+1, 0);
+
+    auto im_fl = xt::flatten(im);
+    auto label_fl = xt::flatten(label);
+    for (int i = 0; i < im_fl.size(); i++) {
+        uint16_t pixel_label = label_fl[i];
+        sum[pixel_label] += im_fl[i];
+    }
+
+    return xt::adapt(sum);
+}
 
 #endif

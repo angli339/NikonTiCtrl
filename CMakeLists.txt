@@ -34,6 +34,8 @@ find_package(Protobuf CONFIG REQUIRED)
 get_target_property(Protobuf_PROTOC_EXECUTABLE protobuf::protoc IMPORTED_LOCATION_RELEASE)
 find_package(TIFF REQUIRED)
 find_package(OpenCV REQUIRED COMPONENTS core imgproc)
+find_package(xtensor CONFIG REQUIRED)
+find_package(hdf5 CONFIG REQUIRED)
 
 find_package(gRPC CONFIG REQUIRED)
 get_target_property(gRPC_CPP_PLUGIN_EXECUTABLE gRPC::grpc_cpp_plugin IMPORTED_LOCATION_RELEASE)
@@ -281,6 +283,8 @@ add_executable(NikonTiControl
     src/utils/time_utils.cpp
     src/utils/wmi.cpp
     src/utils/uuid.cpp
+    src/utils/structarray.cpp
+    src/utils/hdf5file.cpp
 
     src/api/api_server.cpp
     ${hw_proto_srcs}
@@ -312,6 +316,9 @@ target_link_libraries(NikonTiControl PRIVATE
     TIFF::TIFF
     opencv_core
     opencv_imgproc
+    hdf5::hdf5-static
+    xtensor
+    xtensor::optimize
 
     # Device Interface
     DCAMAPI

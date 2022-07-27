@@ -8,27 +8,29 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 
-ImageData EqualizeCLAHE(ImageData im, double clip_limit)
+
+xt::xarray<uint16_t> EqualizeCLAHE(xt::xarray<uint16_t> im, double clip_limit)
 {
-    cv::Mat in_mat = im.AsMat();
+
+    cv::Mat in_mat(im.shape(0), im.shape(1), CV_16U, im.data());
     cv::Mat out_mat;
     cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(clip_limit, cv::Size(8, 8));
     clahe->apply(in_mat, out_mat);
 
-    ImageData im_eq =
-        ImageData(im.Height(), im.Width(), im.DataType(), im.ColorType());
-    if (im_eq.BufSize() != out_mat.total() * out_mat.elemSize()) {
+    xt::xarray<uint16_t> im_eq = xt::xarray<uint16_t>::from_shape(im.shape());
+    size_t bufsize = im_eq.size() * sizeof(uint16_t);
+    if (bufsize != out_mat.total() * out_mat.elemSize()) {
         throw std::runtime_error("unexpected out_mat size");
     }
-    memcpy(im_eq.Buf().get(), out_mat.data, im_eq.BufSize());
+    memcpy(im_eq.data(), out_mat.data, bufsize);
     return im_eq;
 }
 
-ImageData RegionLabel(ImageData im_score,
+xt::xarray<uint16_t> RegionLabel(xt::xarray<float> im_score,
                       std::vector<ImageRegionProp> &region_props,
                       double threshold)
 {
-    cv::Mat score_mat = im_score.AsMat();
+    cv::Mat score_mat(im_score.shape(0), im_score.shape(1), CV_32F, im_score.data());
     cv::Mat mask_mat;
     cv::threshold(score_mat, mask_mat, threshold, 1, cv::THRESH_BINARY);
     mask_mat.convertTo(mask_mat, CV_8U, 255, 0);
@@ -41,9 +43,12 @@ ImageData RegionLabel(ImageData im_score,
         mask_mat, label_mat, stats_mat, centroids_mat, 8, CV_16U);
 
     // Label Image
-    ImageData im_label = ImageData(label_mat.rows, label_mat.cols,
-                                   DataType::Uint16, ColorType::Mono16);
-    im_label.CopyFrom(label_mat);
+    xt::xarray<uint16_t> im_label = xt::xarray<uint16_t>::from_shape({(size_t)(label_mat.rows), (size_t)(label_mat.cols)});
+    size_t bufsize = im_label.size() * sizeof(uint16_t);
+    if (bufsize != label_mat.total() * label_mat.elemSize()) {
+        throw std::runtime_error("unexpected label_mat size");
+    }
+    memcpy(im_label.data(), label_mat.data, bufsize);
 
     // Region props
     for (int label = 0; label < n_labels; label++) {
@@ -69,53 +74,7 @@ ImageData RegionLabel(ImageData im_score,
     return im_label;
 }
 
-std::vector<double> RegionMean(ImageData im, ImageData label,
-                               std::vector<ImageRegionProp> &region_props)
-{
-    if ((im.Width() != label.Width()) || (im.Height() != label.Height())) {
-        throw std::invalid_argument("im and label have different shapes");
-    }
 
-    int n_labels = region_props.size();
-    std::vector<double> sum;
-    sum.resize(n_labels, 0);
-
-    uint16_t *im_label_buf = reinterpret_cast<uint16_t *>(label.Buf().get());
-
-    uint8_t *im_buf_u8;
-    uint16_t *im_buf_u16;
-    float *im_buf_f32;
-
-    switch (im.DataType()) {
-    case DataType::Uint8:
-        im_buf_u8 = reinterpret_cast<uint8_t *>(im.Buf().get());
-        for (int i = 0; i < im.size(); i++) {
-            sum[im_label_buf[i]] += im_buf_u8[i];
-        }
-        break;
-    case DataType::Uint16:
-        im_buf_u16 = reinterpret_cast<uint16_t *>(im.Buf().get());
-        for (int i = 0; i < im.size(); i++) {
-            sum[im_label_buf[i]] += im_buf_u16[i];
-        }
-        break;
-    case DataType::Float32:
-        im_buf_f32 = reinterpret_cast<float *>(im.Buf().get());
-        for (int i = 0; i < im.size(); i++) {
-            sum[im_label_buf[i]] += im_buf_f32[i];
-        }
-        break;
-    default:
-        throw std::invalid_argument("unsupported datatype");
-    }
-
-    std::vector<double> mean;
-    mean.resize(n_labels, 0);
-    for (int label = 0; label < n_labels; label++) {
-        mean[label] = sum[label] / region_props[label].area;
-    }
-    return mean;
-}
 
 UNet::UNet(const std::string server_addr, const std::string model_name, const std::string input_name, const std::string output_name)
 {
@@ -132,10 +91,8 @@ UNet::UNet(const std::string server_addr, const std::string model_name, const st
     this->output_name = output_name;
 }
 
-ImageData UNet::GetScore(ImageData im)
+xt::xarray<float> UNet::GetScore(xt::xarray<float> im)
 {
-    ImageData im_f32 = im.AsFloat32();
-
     grpc::ClientContext ctx;
     tensorflow::serving::PredictRequest req;
     tensorflow::serving::PredictResponse resp;
@@ -148,13 +105,13 @@ ImageData UNet::GetScore(ImageData im)
     input_tensor.set_dtype(tensorflow::DataType::DT_FLOAT);
 
     input_tensor.mutable_tensor_shape()->add_dim()->set_size(1);
-    input_tensor.mutable_tensor_shape()->add_dim()->set_size(im_f32.Height());
-    input_tensor.mutable_tensor_shape()->add_dim()->set_size(im_f32.Width());
+    input_tensor.mutable_tensor_shape()->add_dim()->set_size(im.shape(0));
+    input_tensor.mutable_tensor_shape()->add_dim()->set_size(im.shape(1));
     input_tensor.mutable_tensor_shape()->add_dim()->set_size(1);
 
-    input_tensor.mutable_float_val()->Resize(im_f32.size(), 0);
-    memcpy(input_tensor.mutable_float_val()->mutable_data(), im_f32.Buf().get(),
-           im_f32.BufSize());
+    input_tensor.mutable_float_val()->Resize(im.size(), 0);
+    memcpy(input_tensor.mutable_float_val()->mutable_data(), im.data(),
+           im.size() * sizeof(float));
 
     grpc::Status status = stub->Predict(&ctx, req, &resp);
     if (!status.ok()) {
@@ -174,10 +131,10 @@ ImageData UNet::GetScore(ImageData im)
     }
     uint32_t out_height = output_tensor.tensor_shape().dim(1).size();
     uint32_t out_width = output_tensor.tensor_shape().dim(2).size();
-    ImageData score =
-        ImageData(out_height, out_width, DataType::Float32, ColorType::Unknown);
-    score.CopyFrom(output_tensor.float_val().data(),
-                   output_tensor.float_val().size());
+
+    xt::xarray<float> score = xt::xarray<float>::from_shape({out_height, out_width});
+    memcpy(score.data(), output_tensor.float_val().data(),
+        output_tensor.float_val().size() * sizeof(float));
 
     return score;
 }
