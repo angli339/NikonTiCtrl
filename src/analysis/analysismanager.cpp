@@ -6,7 +6,6 @@
 
 #include "config.h"
 #include "logging.h"
-#include "image/imageio.h"
 #include "experimentcontrol.h"
 
 AnalysisManager::AnalysisManager(ExperimentControl *exp)

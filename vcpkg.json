@@ -6,6 +6,7 @@
         "fmt",
         "nlohmann-json",
         "sqlite3",
+        "zlib",
         "xtensor",
         {
             "name": "hdf5",
@@ -23,7 +24,6 @@
         {
             "name": "tiff",
             "features": [
-                "jpeg",
                 "zip",
                 "zstd"
             ],

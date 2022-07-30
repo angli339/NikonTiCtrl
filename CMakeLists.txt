@@ -36,6 +36,7 @@ find_package(TIFF REQUIRED)
 find_package(OpenCV REQUIRED COMPONENTS core imgproc)
 find_package(xtensor CONFIG REQUIRED)
 find_package(hdf5 CONFIG REQUIRED)
+find_package(ZLIB REQUIRED)
 
 find_package(gRPC CONFIG REQUIRED)
 get_target_property(gRPC_CPP_PLUGIN_EXECUTABLE gRPC::grpc_cpp_plugin IMPORTED_LOCATION_RELEASE)
@@ -261,7 +262,6 @@ add_executable(NikonTiControl
     src/sample/sample.cpp
     src/sample/samplemanager.cpp
     src/image/imagemanager.cpp
-    src/image/imageio.cpp
     src/image/imagedata.cpp
     src/image/imageutils.cpp
     src/image/ndimage.cpp
@@ -285,6 +285,9 @@ add_executable(NikonTiControl
     src/utils/uuid.cpp
     src/utils/structarray.cpp
     src/utils/hdf5file.cpp
+    src/utils/tifffile.cpp
+    src/utils/tiff_stream.cpp
+    src/utils/zipfile.cpp
 
     src/api/api_server.cpp
     ${hw_proto_srcs}
@@ -319,6 +322,7 @@ target_link_libraries(NikonTiControl PRIVATE
     hdf5::hdf5-static
     xtensor
     xtensor::optimize
+    ZLIB::ZLIB
 
     # Device Interface
     DCAMAPI

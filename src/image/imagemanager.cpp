@@ -8,8 +8,9 @@
 
 #include "config.h"
 #include "logging.h"
-#include "image/imageio.h"
 #include "experimentcontrol.h"
+#include "utils/tifffile.h"
+#include "version.h"
 
 ImageManager::ImageManager(ExperimentControl *exp)
 {
@@ -47,7 +48,7 @@ void ImageManager::LoadFromDB()
         ndimage->n_t = ndimage_row.n_t;
         ndimage->dtype = DataType::Uint16;
         ndimage->ctype = ColorType::Mono16;
-        ndimage->exp_dir = exp->ExperimentDir();
+        ndimage->image_manager = this;
 
         dataset.push_back(ndimage);
         dataset_map[ndimage->name] = ndimage;
@@ -64,6 +65,11 @@ void ImageManager::LoadFromDB()
         int i_t = image_row.i_t;
         ndimage->relpath_map[{i_ch, i_z, i_t}] = image_row.path;
     }
+
+    LOG_DEBUG("DB loaded");
+    
+    zipfile.open(exp->ExperimentDir() / "images.zip");
+    LOG_DEBUG("zip opened");
 }
 
 void ImageManager::writeNDImageRow(NDImage *ndimage)
@@ -142,8 +148,6 @@ NDImage *ImageManager::GetNDImage(std::string ndimage_name)
 void ImageManager::NewNDImage(std::string ndimage_name,
                              std::vector<std::string> ch_names, Site *site)
 {
-    std::filesystem::path im_path = GetImageDir();
-
     std::unique_lock<std::shared_mutex> lk(dataset_mutex);
 
     auto it = dataset_map.find(ndimage_name);
@@ -161,7 +165,7 @@ void ImageManager::NewNDImage(std::string ndimage_name,
     NDImage *ndimage = new NDImage(ndimage_name, ch_names);
     ndimage->index = dataset.size();
     ndimage->site = site;
-    ndimage->exp_dir = exp->ExperimentDir();
+    ndimage->image_manager = this;
     dataset.push_back(ndimage);
     dataset_map[ndimage_name] = ndimage;
 
@@ -202,11 +206,21 @@ void ImageManager::AddImage(std::string ndimage_name, int i_ch, int i_z, int i_t
     
     std::string filename = fmt::format("{}-{}-{:03d}-{:04d}.tif", ndimage->name, ndimage->channel_names[i_ch], i_z, i_t);
     std::filesystem::path relpath = fmt::format("images/{}", filename);
-    std::filesystem::path fullpath = exp->ExperimentDir() / relpath;
-    TiffMetadata tiff_meta;
-    tiff_meta.metadata = ndimage->metadata_map[{i_ch, i_z, i_t}];
-    ImageWrite(fullpath, data, tiff_meta);
-    ndimage->exp_dir = exp->ExperimentDir();
+    
+    std::vector<size_t> im_shape = {data.Height(), data.Width()};
+    xt::xarray<uint16_t> im_arr = xt::adapt((uint16_t *)data.Buf().get(), data.size(),
+        xt::no_ownership(), im_shape);
+    
+    TiffEncoder tif;
+    tif.SetDescription(metadata.dump());
+    tif.SetCompression(COMPRESSION_ZSTD);
+    tif.SetArtist(fmt::format("{} <{}>", config.user.name, config.user.email));
+    tif.SetSoftware(fmt::format("NikonTiControl {}", gitTagVersion));
+    std::string buf = tif.EncodeMono16(im_arr);
+
+    zipfile.AddFile(relpath.string(), buf);
+    zipfile.flush();
+
     ndimage->relpath_map[{i_ch, i_z, i_t}] = relpath;
 
     // Write to DB
@@ -228,20 +242,7 @@ void ImageManager::AddImage(std::string ndimage_name, int i_ch, int i_z, int i_t
     });
 }
 
-std::filesystem::path ImageManager::GetImageDir() {
-    std::filesystem::path exp_dir = exp->ExperimentDir();
-    if (exp_dir.empty()) {
-        throw std::runtime_error("experiment dir not set");
-    }
-
-    // Create if not exists
-    std::filesystem::path path = exp_dir / "images";
-    if (!std::filesystem::exists(path)) {
-        if (!std::filesystem::create_directories(path)) {
-            throw std::runtime_error(
-                fmt::format("failed to create dir {}", path.string()));
-        }
-    }
-
-    return path;
- }
+std::string ImageManager::GetImageFileBuf(std::string name)
+{
+    return zipfile.GetData(name);
+}

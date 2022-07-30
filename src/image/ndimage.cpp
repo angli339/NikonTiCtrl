@@ -1,8 +1,11 @@
 #include "image/ndimage.h"
 
-#include "image/imageio.h"
 #include "utils/uuid.h"
 #include "version.h"
+#include "utils/tifffile.h"
+#include <fstream>
+#include "logging.h"
+#include "image/imagemanager.h"
 
 NDImage::NDImage(std::string name, std::vector<std::string> channel_names)
 {
@@ -137,13 +140,19 @@ ImageData NDImage::GetData(int i_ch, int i_z, int i_t)
         throw std::invalid_argument("index not found");
     }
     std::filesystem::path relpath = it_file->second;
-    std::filesystem::path fullpath = exp_dir / relpath;
 
     auto it_data = dataset.find({i_ch, i_z, i_t});
     if (it_data != dataset.end()) {
         return it_data->second;
     } else {
-        ImageData data = ImageRead(fullpath);
+        std::string tif_buf = image_manager->GetImageFileBuf(relpath.string());
+
+        TiffDecoder tif(tif_buf);
+        xt::xarray<uint16_t> arr = tif.ReadMono16();
+
+        ImageData data(arr.shape(0), arr.shape(1), DataType::Uint16, ColorType::Mono16);
+        memcpy(data.Buf().get(), arr.data(), data.BufSize());
+
         dataset[{i_ch, i_z, i_t}] = data;
         return data;
     }

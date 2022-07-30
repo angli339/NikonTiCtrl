@@ -68,7 +68,7 @@ private:
     std::map<std::tuple<int, int, int>, nlohmann::ordered_json> metadata_map;
     std::map<std::tuple<int, int, int>, std::filesystem::path> relpath_map;
 
-    std::filesystem::path exp_dir;
+    ImageManager *image_manager = nullptr;
 };
 
 #endif

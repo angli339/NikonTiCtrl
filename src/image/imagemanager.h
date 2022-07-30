@@ -9,6 +9,7 @@
 #include "image/imagedata.h"
 #include "image/ndimage.h"
 #include "eventstream.h"
+#include "utils/zipfile.h"
 
 class ExperimentControl;
 
@@ -30,9 +31,11 @@ public:
     void AddImage(std::string ndimage_name, int i_ch, int i_z, int i_t,
                   ImageData data, nlohmann::ordered_json metadata);
 
+    std::string GetImageFileBuf(std::string name);
+
 private:
     ExperimentControl *exp;
-    std::filesystem::path GetImageDir();
+    ZipFile zipfile;
 
     std::mutex mutex_live_frame;
     std::condition_variable cv_live_frame;
