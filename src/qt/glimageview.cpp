@@ -6,7 +6,7 @@
 
 #include "logging.h"
 
-extern const uint8_t cmap_data_viridis[];
+extern const uint8_t cmap_data[];
 
 GLImageView::~GLImageView()
 {
@@ -66,13 +66,13 @@ void GLImageView::initializeGL()
                                    QOpenGLTexture::Nearest);
     texture_cmap->setWrapMode(QOpenGLTexture::ClampToEdge);
     texture_cmap->setFormat(QOpenGLTexture::RGB8_UNorm);
-    texture_cmap->setSize(256, 1);
+    texture_cmap->setSize(256, 4);
     texture_cmap->allocateStorage();
     texture_cmap->setData(QOpenGLTexture::RGB, QOpenGLTexture::UInt8,
-                          cmap_data_viridis);
+                          cmap_data);
 
     // Set default cmap & range
-    uint8_t n_cmap = 1;
+    uint8_t n_cmap = 4;
     float u_cmap_select = 1.0 / n_cmap * (0.5 + icmap);
 
     m_program->setUniformValue("u_blacklevel", vmin);
@@ -166,6 +166,20 @@ void GLImageView::setVmax(uint16_t vmax)
 
     m_program->bind();
     m_program->setUniformValue("u_whitelevel", vmax);
+    m_program->release();
+
+    update();
+}
+
+void GLImageView::setCmap(uint8_t icmap)
+{
+    this->icmap = icmap;
+
+    uint8_t n_cmap = 4;
+    float u_cmap_select = 1.0 / n_cmap * (0.5 + icmap);
+
+    m_program->bind();
+    m_program->setUniformValue("u_cmap_select", u_cmap_select);
     m_program->release();
 
     update();

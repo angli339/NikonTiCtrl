@@ -6,7 +6,7 @@
 #include <QPainter>
 #include <QPainterPath>
 
-extern const uint8_t cmap_data_viridis[];
+extern const uint8_t cmap_data[];
 
 ImageHistView::ImageHistView(int n_bins, std::pair<int, int> range,
                              QWidget *parent)
@@ -35,6 +35,12 @@ void ImageHistView::setVmax(int vmax)
 {
     this->vmax = vmax;
     emit vmaxChanged(vmax);
+    update();
+}
+
+void ImageHistView::setCmap(int icmap)
+{
+    this->icmap = icmap;
     update();
 }
 
@@ -113,11 +119,12 @@ QBrush ImageHistView::cbarBrush()
     cmap.setCoordinateMode(QGradient::ObjectMode);
     cmap.setStart(0, 0.5);
     cmap.setFinalStop(1, 0.5);
+
     for (int i = 0; i < 256; i++) {
         cmap.setColorAt((double)(i + 0.5) / 256,
-                        QColor(cmap_data_viridis[3 * i],
-                               cmap_data_viridis[3 * i + 1],
-                               cmap_data_viridis[3 * i + 2]));
+                        QColor(cmap_data[icmap*256*3 + 3 * i],
+                               cmap_data[icmap*256*3 + 3 * i + 1],
+                               cmap_data[icmap*256*3 + 3 * i + 2]));
     }
     return QBrush(cmap);
 }
