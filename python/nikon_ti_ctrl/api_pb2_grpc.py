@@ -115,6 +115,11 @@ class NikonTiCtrlStub(object):
                 request_serializer=api__pb2.QuantifyRegionsRequest.SerializeToString,
                 response_deserializer=api__pb2.QuantifyRegionsResponse.FromString,
                 )
+        self.GetQuantification = channel.unary_unary(
+                '/api.NikonTiCtrl/GetQuantification',
+                request_serializer=api__pb2.GetQuantificationRequest.SerializeToString,
+                response_deserializer=api__pb2.GetQuantificationResponse.FromString,
+                )
 
 
 class NikonTiCtrlServicer(object):
@@ -247,6 +252,12 @@ class NikonTiCtrlServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetQuantification(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_NikonTiCtrlServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -349,6 +360,11 @@ def add_NikonTiCtrlServicer_to_server(servicer, server):
                     servicer.QuantifyRegions,
                     request_deserializer=api__pb2.QuantifyRegionsRequest.FromString,
                     response_serializer=api__pb2.QuantifyRegionsResponse.SerializeToString,
+            ),
+            'GetQuantification': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetQuantification,
+                    request_deserializer=api__pb2.GetQuantificationRequest.FromString,
+                    response_serializer=api__pb2.GetQuantificationResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -697,5 +713,22 @@ class NikonTiCtrl(object):
         return grpc.experimental.unary_unary(request, target, '/api.NikonTiCtrl/QuantifyRegions',
             api__pb2.QuantifyRegionsRequest.SerializeToString,
             api__pb2.QuantifyRegionsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetQuantification(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/api.NikonTiCtrl/GetQuantification',
+            api__pb2.GetQuantificationRequest.SerializeToString,
+            api__pb2.GetQuantificationResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

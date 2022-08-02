@@ -36,6 +36,63 @@ void AnalysisManager::LoadFile()
     if (!exp->ExperimentDir().empty()) {
         h5file = new HDF5File(exp->ExperimentDir() / "analysis.h5");
     }
+
+    if (!h5file->exists("/segmentation")) {
+        return;
+    }
+
+    std::vector<std::string> ndimage_names = h5file->list("/segmentation");
+    for (const auto &ndimage_name : ndimage_names) {
+        std::string ndimage_path = "/segmentation/" + ndimage_name;
+        std::vector<std::string> t_names = h5file->list(ndimage_path);
+        for (const auto &t_name : t_names) {
+            int i_t = std::stoi(t_name);
+            std::string path = ndimage_path + "/" + t_name;
+
+            std::string region_props_path = path + "/region_props";
+            std::string raw_intensity_mean_path = path + "/raw_intensity_mean";
+
+            if ((h5file->exists(region_props_path)) &&
+                (h5file->exists(raw_intensity_mean_path)))
+            {
+                StructArray rparr = h5file->read(region_props_path);
+                StructArray raw_intensity =
+                    h5file->read(raw_intensity_mean_path);
+
+                QuantificationResults results;
+                results.region_props.reserve(rparr.Size());
+                results.unet_score.reserve(rparr.Size());
+
+                for (int i = 0; i < rparr.Size(); i++) {
+                    ImageRegionProp rp;
+                    rp.label = rparr.Field<uint16_t>("label")[i];
+                    rp.bbox_x0 = rparr.Field<uint32_t>("bbox_x0")[i];
+                    rp.bbox_y0 = rparr.Field<uint32_t>("bbox_y0")[i];
+                    rp.bbox_width = rparr.Field<uint32_t>("bbox_width")[i];
+                    rp.bbox_height = rparr.Field<uint32_t>("bbox_height")[i];
+                    rp.area = rparr.Field<double>("area")[i];
+                    rp.centroid_x = rparr.Field<double>("centroid_x")[i];
+                    rp.centroid_y = rparr.Field<double>("centroid_y")[i];
+
+                    results.region_props.push_back(rp);
+                    results.unet_score.push_back(
+                        rparr.Field<double>("score_mean")[i]);
+                }
+
+                results.raw_intensity_mean.reserve(raw_intensity.Size());
+                for (const auto &ch_name : raw_intensity.Names()) {
+                    results.ch_names.push_back(ch_name);
+                    results.raw_intensity_mean.push_back(
+                        raw_intensity.Field<float>(ch_name));
+                }
+
+                quantifications[{ndimage_name, i_t}] = results;
+            }
+        }
+    }
+
+    LOG_INFO("{} quantification results loaded from file",
+             quantifications.size());
 }
 
 xt::xarray<double>
@@ -147,6 +204,7 @@ int AnalysisManager::QuantifyRegions(std::string ndimage_name, int i_t,
 
     QuantificationResults results;
     results.region_props = region_prop_filtered;
+    results.unet_score = score_mean_filtered;
 
     for (int i_ch = 0; i_ch < ndimage->NChannels(); i_ch++) {
         ImageData im_ch = ndimage->GetData(i_ch, 0, i_t);
@@ -165,6 +223,12 @@ int AnalysisManager::QuantifyRegions(std::string ndimage_name, int i_t,
         results.raw_intensity_mean.push_back(ch_mean);
     }
     quantifications[{ndimage_name, i_t}] = results;
+
+    if (std::find(ndimage_names.begin(), ndimage_names.end(), ndimage_name) ==
+        ndimage_names.end())
+    {
+        ndimage_names.push_back(ndimage_name);
+    }
 
     //
     // Save quantification
@@ -215,4 +279,20 @@ int AnalysisManager::QuantifyRegions(std::string ndimage_name, int i_t,
     LOG_DEBUG("Quantification completed");
 
     return region_prop_filtered.size();
+}
+
+std::vector<std::string> AnalysisManager::GetNDImageNames()
+{
+    return ndimage_names;
+}
+
+QuantificationResults
+AnalysisManager::GetQuantification(std::string ndimage_name, int i_t)
+{
+    auto it = quantifications.find({ndimage_name, i_t});
+    if (it == quantifications.end()) {
+        throw std::invalid_argument("quantification not found");
+    }
+
+    return it->second;
 }

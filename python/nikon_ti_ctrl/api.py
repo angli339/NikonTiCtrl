@@ -1,5 +1,6 @@
 import numpy as np
 import numpy.typing as npt
+import pandas as pd
 import json
 
 import grpc
@@ -199,7 +200,27 @@ class API():
         req = api_pb2.QuantifyRegionsRequest(
             ndimage_name=ndimage_name, i_z=i_z, i_t=i_t, segmentation_ch=segmentation_ch)
         resp = self.stub.QuantifyRegions(req)
-        return resp.n_regions
+        df = []
+        for rp in resp.region_prop:
+            df.append([rp.label, rp.bbox_x0, rp.bbox_y0, rp.bbox_width, rp.bbox_height, rp.area, rp.centroid_x, rp.centroid_y])
+        df = pd.DataFrame(df, columns=["label", "bbox_x0", "bbox_y0", "bbox_width", "bbox_height", "area", "centroid_x", "centroid_y"])
+
+        for ch in resp.raw_intensity:
+            df["raw_intensity_%s" % ch.ch_name] = ch.values
+        return df
+
+    def get_quantification(self, ndimage_name, i_t):
+        req = api_pb2.GetQuantificationRequest(
+            ndimage_name=ndimage_name, i_t=i_t)
+        resp = self.stub.GetQuantification(req)
+        df = []
+        for rp in resp.region_prop:
+            df.append([rp.label, rp.bbox_x0, rp.bbox_y0, rp.bbox_width, rp.bbox_height, rp.area, rp.centroid_x, rp.centroid_y])
+        df = pd.DataFrame(df, columns=["label", "bbox_x0", "bbox_y0", "bbox_width", "bbox_height", "area", "centroid_x", "centroid_y"])
+
+        for ch in resp.raw_intensity:
+            df["raw_intensity_%s" % ch.ch_name] = ch.values
+        return df
 
     def get_xy_stage_position(self) -> Tuple[float, float]:
         x, y = self.get_property("/PriorProScan/XYPosition").split(',')

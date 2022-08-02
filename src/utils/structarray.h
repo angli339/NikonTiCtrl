@@ -46,6 +46,9 @@ public:
 
     template <typename T> xt::xarray<T> &Field(std::string name);
 
+    std::string ToBuf();
+    void FromBuf(std::string buf);
+
 private:
     void init(std::vector<StructArrayFieldDef> dtype, size_t size);
 

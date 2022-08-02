@@ -56,6 +56,7 @@ service NikonTiCtrl {
     // Analysis
     rpc GetSegmentationScore(GetSegmentationScoreRequest) returns (GetSegmentationScoreResponse) {}
     rpc QuantifyRegions(QuantifyRegionsRequest) returns (QuantifyRegionsResponse) {}
+    rpc GetQuantification(GetQuantificationRequest) returns (GetQuantificationResponse) {}
 }
 
 //
@@ -309,4 +310,33 @@ message QuantifyRegionsRequest {
 
 message QuantifyRegionsResponse {
     int32 n_regions = 1;
+    repeated RegionProp region_prop = 2;
+    repeated ChannelIntensity raw_intensity = 3;
+}
+
+message RegionProp {
+    uint32 label = 1;
+    uint32 bbox_x0 = 2;
+    uint32 bbox_y0 = 3;
+    uint32 bbox_width = 4;
+    uint32 bbox_height = 5;
+    double area = 6;
+    double centroid_x = 7;
+    double centroid_y = 8;
+    double score_mean = 9;
+}
+
+message ChannelIntensity {
+    string ch_name = 1;
+    repeated double values = 2;
+}
+
+message GetQuantificationRequest {
+    string ndimage_name = 1;
+    int32 i_t = 2;
+}
+
+message GetQuantificationResponse {
+    repeated RegionProp region_prop = 1;
+    repeated ChannelIntensity raw_intensity = 2;
 }

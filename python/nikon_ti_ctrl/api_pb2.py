@@ -22,7 +22,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\tapi.proto\x12\x03\x61pi\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1egoogle/protobuf/duration.proto\",\n\rPropertyValue\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"S\n\x07\x43hannel\x12\x13\n\x0bpreset_name\x18\x01 \x01(\t\x12\x13\n\x0b\x65xposure_ms\x18\x02 \x01(\x01\x12\x1e\n\x16illumination_intensity\x18\x03 \x01(\x01\"#\n\x13ListPropertyRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"$\n\x14ListPropertyResponse\x12\x0c\n\x04name\x18\x01 \x03(\t\"\"\n\x12GetPropertyRequest\x12\x0c\n\x04name\x18\x01 \x03(\t\";\n\x13GetPropertyResponse\x12$\n\x08property\x18\x01 \x03(\x0b\x32\x12.api.PropertyValue\":\n\x12SetPropertyRequest\x12$\n\x08property\x18\x01 \x03(\x0b\x32\x12.api.PropertyValue\"O\n\x13WaitPropertyRequest\x12\x0c\n\x04name\x18\x01 \x03(\t\x12*\n\x07timeout\x18\x02 \x01(\x0b\x32\x19.google.protobuf.Duration\"5\n\x13ListChannelResponse\x12\x1e\n\x08\x63hannels\x18\x01 \x03(\x0b\x32\x0c.api.Channel\"5\n\x14SwitchChannelRequest\x12\x1d\n\x07\x63hannel\x18\x01 \x01(\x0b\x32\x0c.api.Channel\"I\n\x15OpenExperimentRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x15\n\x08\x62\x61se_dir\x18\x02 \x01(\tH\x00\x88\x01\x01\x42\x0b\n\t_base_dir\"\x1d\n\x05Pos2D\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\"\xa6\x01\n\tPlateInfo\x12\x0c\n\x04uuid\x18\x01 \x01(\t\x12\x1c\n\x04type\x18\x02 \x01(\x0e\x32\x0e.api.PlateType\x12\n\n\x02id\x18\x03 \x01(\t\x12#\n\npos_origin\x18\x04 \x01(\x0b\x32\n.api.Pos2DH\x00\x88\x01\x01\x12\x10\n\x08metadata\x18\x05 \x01(\t\x12\x1b\n\x04well\x18\x06 \x03(\x0b\x32\r.api.WellInfoB\r\n\x0b_pos_origin\"\x81\x01\n\x08WellInfo\x12\x0c\n\x04uuid\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\t\x12\x1b\n\x07rel_pos\x18\x03 \x01(\x0b\x32\n.api.Pos2D\x12\x0f\n\x07\x65nabled\x18\x04 \x01(\x08\x12\x10\n\x08metadata\x18\x05 \x01(\t\x12\x1b\n\x04site\x18\x06 \x03(\x0b\x32\r.api.SiteInfo\"d\n\x08SiteInfo\x12\x0c\n\x04uuid\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\t\x12\x1b\n\x07rel_pos\x18\x03 \x01(\x0b\x32\n.api.Pos2D\x12\x0f\n\x07\x65nabled\x18\x04 \x01(\x08\x12\x10\n\x08metadata\x18\x05 \x01(\t\"2\n\x11ListPlateResponse\x12\x1d\n\x05plate\x18\x01 \x03(\x0b\x32\x0e.api.PlateInfo\"G\n\x0f\x41\x64\x64PlateRequest\x12\"\n\nplate_type\x18\x01 \x01(\x0e\x32\x0e.api.PlateType\x12\x10\n\x08plate_id\x18\x02 \x01(\t\"I\n\x1dSetPlatePositionOriginRequest\x12\x12\n\nplate_uuid\x18\x01 \x01(\t\x12\t\n\x01x\x18\x02 \x01(\x01\x12\t\n\x01y\x18\x03 \x01(\x01\"N\n\x17SetPlateMetadataRequest\x12\x12\n\nplate_uuid\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\x12\n\njson_value\x18\x03 \x01(\t\"N\n\x16SetWellsEnabledRequest\x12\x12\n\nplate_uuid\x18\x01 \x01(\t\x12\x0f\n\x07well_id\x18\x02 \x03(\t\x12\x0f\n\x07\x65nabled\x18\x03 \x01(\x08\"_\n\x17SetWellsMetadataRequest\x12\x12\n\nplate_uuid\x18\x01 \x01(\t\x12\x0f\n\x07well_id\x18\x02 \x03(\t\x12\x0b\n\x03key\x18\x03 \x01(\t\x12\x12\n\njson_value\x18\x04 \x01(\t\"y\n\x12\x43reateSitesRequest\x12\x12\n\nplate_uuid\x18\x01 \x01(\t\x12\x0f\n\x07well_id\x18\x02 \x03(\t\x12\x0b\n\x03n_x\x18\x03 \x01(\x05\x12\x0b\n\x03n_y\x18\x04 \x01(\x05\x12\x11\n\tspacing_x\x18\x05 \x01(\x01\x12\x11\n\tspacing_y\x18\x06 \x01(\x01\"\x91\x01\n\x1a\x41\x63quireMultiChannelRequest\x12\x14\n\x0cndimage_name\x18\x01 \x01(\t\x12\x1e\n\x08\x63hannels\x18\x02 \x03(\x0b\x32\x0c.api.Channel\x12\x0b\n\x03i_z\x18\x03 \x01(\x05\x12\x0b\n\x03i_t\x18\x04 \x01(\x05\x12\x10\n\x08metadata\x18\x06 \x01(\t\x12\x11\n\tsite_uuid\x18\x07 \x01(\t\"\xac\x01\n\x07NDImage\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07\x63h_name\x18\x02 \x03(\t\x12\r\n\x05width\x18\x03 \x01(\r\x12\x0e\n\x06height\x18\x04 \x01(\r\x12\x0c\n\x04n_ch\x18\x05 \x01(\x05\x12\x0b\n\x03n_z\x18\x06 \x01(\x05\x12\x0b\n\x03n_t\x18\x07 \x01(\x05\x12\x1c\n\x05\x64type\x18\x08 \x01(\x0e\x32\r.api.DataType\x12\x1d\n\x05\x63type\x18\t \x01(\x0e\x32\x0e.api.ColorType\"4\n\x13ListNDImageResponse\x12\x1d\n\x07ndimage\x18\x01 \x03(\x0b\x32\x0c.api.NDImage\")\n\x11GetNDImageRequest\x12\x14\n\x0cndimage_name\x18\x01 \x01(\t\"3\n\x12GetNDImageResponse\x12\x1d\n\x07ndimage\x18\x01 \x01(\x0b\x32\x0c.api.NDImage\"[\n\x13GetImageDataRequest\x12\x14\n\x0cndimage_name\x18\x01 \x01(\t\x12\x14\n\x0c\x63hannel_name\x18\x02 \x01(\t\x12\x0b\n\x03i_z\x18\x03 \x01(\x05\x12\x0b\n\x03i_t\x18\x04 \x01(\x05\"t\n\tImageData\x12\r\n\x05width\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\r\x12\x1c\n\x05\x64type\x18\x03 \x01(\x0e\x32\r.api.DataType\x12\x1d\n\x05\x63type\x18\x04 \x01(\x0e\x32\x0e.api.ColorType\x12\x0b\n\x03\x62uf\x18\x05 \x01(\x0c\"4\n\x14GetImageDataResponse\x12\x1c\n\x04\x64\x61ta\x18\x01 \x01(\x0b\x32\x0e.api.ImageData\";\n\x1bGetSegmentationScoreRequest\x12\x1c\n\x04\x64\x61ta\x18\x01 \x01(\x0b\x32\x0e.api.ImageData\"<\n\x1cGetSegmentationScoreResponse\x12\x1c\n\x04\x64\x61ta\x18\x01 \x01(\x0b\x32\x0e.api.ImageData\"a\n\x16QuantifyRegionsRequest\x12\x14\n\x0cndimage_name\x18\x01 \x01(\t\x12\x0b\n\x03i_z\x18\x02 \x01(\x05\x12\x0b\n\x03i_t\x18\x03 \x01(\x05\x12\x17\n\x0fsegmentation_ch\x18\x04 \x01(\t\",\n\x17QuantifyRegionsResponse\x12\x11\n\tn_regions\x18\x01 \x01(\x05*F\n\tPlateType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\t\n\x05SLIDE\x10\x01\x12\x0f\n\x0bWELLPLATE96\x10\x02\x12\x10\n\x0cWELLPLATE384\x10\x03*o\n\x08\x44\x61taType\x12\x11\n\rUNKNOWN_DTYPE\x10\x00\x12\t\n\x05\x42OOL8\x10\x01\x12\t\n\x05UINT8\x10\x02\x12\n\n\x06UINT16\x10\x03\x12\t\n\x05INT16\x10\x04\x12\t\n\x05INT32\x10\x05\x12\x0b\n\x07\x46LOAT32\x10\x06\x12\x0b\n\x07\x46LOAT64\x10\x07*v\n\tColorType\x12\x11\n\rUNKNOWN_CTYPE\x10\x00\x12\t\n\x05MONO8\x10\x01\x12\n\n\x06MONO10\x10\x02\x12\n\n\x06MONO12\x10\x03\x12\n\n\x06MONO14\x10\x04\x12\n\n\x06MONO16\x10\x05\x12\x0c\n\x08\x42\x41YERRG8\x10\x06\x12\r\n\tBAYERRG16\x10\x07\x32\xb2\x0b\n\x0bNikonTiCtrl\x12\x45\n\x0cListProperty\x12\x18.api.ListPropertyRequest\x1a\x19.api.ListPropertyResponse\"\x00\x12\x42\n\x0bGetProperty\x12\x17.api.GetPropertyRequest\x1a\x18.api.GetPropertyResponse\"\x00\x12@\n\x0bSetProperty\x12\x17.api.SetPropertyRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x42\n\x0cWaitProperty\x12\x18.api.WaitPropertyRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x41\n\x0bListChannel\x12\x16.google.protobuf.Empty\x1a\x18.api.ListChannelResponse\"\x00\x12\x44\n\rSwitchChannel\x12\x19.api.SwitchChannelRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x46\n\x0eOpenExperiment\x12\x1a.api.OpenExperimentRequest\x1a\x16.google.protobuf.Empty\"\x00\x12=\n\tListPlate\x12\x16.google.protobuf.Empty\x1a\x16.api.ListPlateResponse\"\x00\x12:\n\x08\x41\x64\x64Plate\x12\x14.api.AddPlateRequest\x1a\x16.google.protobuf.Empty\"\x00\x12V\n\x16SetPlatePositionOrigin\x12\".api.SetPlatePositionOriginRequest\x1a\x16.google.protobuf.Empty\"\x00\x12J\n\x10SetPlateMetadata\x12\x1c.api.SetPlateMetadataRequest\x1a\x16.google.protobuf.Empty\"\x00\x12H\n\x0fSetWellsEnabled\x12\x1b.api.SetWellsEnabledRequest\x1a\x16.google.protobuf.Empty\"\x00\x12J\n\x10SetWellsMetadata\x12\x1c.api.SetWellsMetadataRequest\x1a\x16.google.protobuf.Empty\"\x00\x12@\n\x0b\x43reateSites\x12\x17.api.CreateSitesRequest\x1a\x16.google.protobuf.Empty\"\x00\x12P\n\x13\x41\x63quireMultiChannel\x12\x1f.api.AcquireMultiChannelRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x41\n\x0bListNDImage\x12\x16.google.protobuf.Empty\x1a\x18.api.ListNDImageResponse\"\x00\x12?\n\nGetNDImage\x12\x16.api.GetNDImageRequest\x1a\x17.api.GetNDImageResponse\"\x00\x12\x45\n\x0cGetImageData\x12\x18.api.GetImageDataRequest\x1a\x19.api.GetImageDataResponse\"\x00\x12]\n\x14GetSegmentationScore\x12 .api.GetSegmentationScoreRequest\x1a!.api.GetSegmentationScoreResponse\"\x00\x12N\n\x0fQuantifyRegions\x12\x1b.api.QuantifyRegionsRequest\x1a\x1c.api.QuantifyRegionsResponse\"\x00\x62\x06proto3'
+  serialized_pb=b'\n\tapi.proto\x12\x03\x61pi\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1egoogle/protobuf/duration.proto\",\n\rPropertyValue\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"S\n\x07\x43hannel\x12\x13\n\x0bpreset_name\x18\x01 \x01(\t\x12\x13\n\x0b\x65xposure_ms\x18\x02 \x01(\x01\x12\x1e\n\x16illumination_intensity\x18\x03 \x01(\x01\"#\n\x13ListPropertyRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"$\n\x14ListPropertyResponse\x12\x0c\n\x04name\x18\x01 \x03(\t\"\"\n\x12GetPropertyRequest\x12\x0c\n\x04name\x18\x01 \x03(\t\";\n\x13GetPropertyResponse\x12$\n\x08property\x18\x01 \x03(\x0b\x32\x12.api.PropertyValue\":\n\x12SetPropertyRequest\x12$\n\x08property\x18\x01 \x03(\x0b\x32\x12.api.PropertyValue\"O\n\x13WaitPropertyRequest\x12\x0c\n\x04name\x18\x01 \x03(\t\x12*\n\x07timeout\x18\x02 \x01(\x0b\x32\x19.google.protobuf.Duration\"5\n\x13ListChannelResponse\x12\x1e\n\x08\x63hannels\x18\x01 \x03(\x0b\x32\x0c.api.Channel\"5\n\x14SwitchChannelRequest\x12\x1d\n\x07\x63hannel\x18\x01 \x01(\x0b\x32\x0c.api.Channel\"I\n\x15OpenExperimentRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x15\n\x08\x62\x61se_dir\x18\x02 \x01(\tH\x00\x88\x01\x01\x42\x0b\n\t_base_dir\"\x1d\n\x05Pos2D\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\"\xa6\x01\n\tPlateInfo\x12\x0c\n\x04uuid\x18\x01 \x01(\t\x12\x1c\n\x04type\x18\x02 \x01(\x0e\x32\x0e.api.PlateType\x12\n\n\x02id\x18\x03 \x01(\t\x12#\n\npos_origin\x18\x04 \x01(\x0b\x32\n.api.Pos2DH\x00\x88\x01\x01\x12\x10\n\x08metadata\x18\x05 \x01(\t\x12\x1b\n\x04well\x18\x06 \x03(\x0b\x32\r.api.WellInfoB\r\n\x0b_pos_origin\"\x81\x01\n\x08WellInfo\x12\x0c\n\x04uuid\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\t\x12\x1b\n\x07rel_pos\x18\x03 \x01(\x0b\x32\n.api.Pos2D\x12\x0f\n\x07\x65nabled\x18\x04 \x01(\x08\x12\x10\n\x08metadata\x18\x05 \x01(\t\x12\x1b\n\x04site\x18\x06 \x03(\x0b\x32\r.api.SiteInfo\"d\n\x08SiteInfo\x12\x0c\n\x04uuid\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\t\x12\x1b\n\x07rel_pos\x18\x03 \x01(\x0b\x32\n.api.Pos2D\x12\x0f\n\x07\x65nabled\x18\x04 \x01(\x08\x12\x10\n\x08metadata\x18\x05 \x01(\t\"2\n\x11ListPlateResponse\x12\x1d\n\x05plate\x18\x01 \x03(\x0b\x32\x0e.api.PlateInfo\"G\n\x0f\x41\x64\x64PlateRequest\x12\"\n\nplate_type\x18\x01 \x01(\x0e\x32\x0e.api.PlateType\x12\x10\n\x08plate_id\x18\x02 \x01(\t\"I\n\x1dSetPlatePositionOriginRequest\x12\x12\n\nplate_uuid\x18\x01 \x01(\t\x12\t\n\x01x\x18\x02 \x01(\x01\x12\t\n\x01y\x18\x03 \x01(\x01\"N\n\x17SetPlateMetadataRequest\x12\x12\n\nplate_uuid\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\x12\n\njson_value\x18\x03 \x01(\t\"N\n\x16SetWellsEnabledRequest\x12\x12\n\nplate_uuid\x18\x01 \x01(\t\x12\x0f\n\x07well_id\x18\x02 \x03(\t\x12\x0f\n\x07\x65nabled\x18\x03 \x01(\x08\"_\n\x17SetWellsMetadataRequest\x12\x12\n\nplate_uuid\x18\x01 \x01(\t\x12\x0f\n\x07well_id\x18\x02 \x03(\t\x12\x0b\n\x03key\x18\x03 \x01(\t\x12\x12\n\njson_value\x18\x04 \x01(\t\"y\n\x12\x43reateSitesRequest\x12\x12\n\nplate_uuid\x18\x01 \x01(\t\x12\x0f\n\x07well_id\x18\x02 \x03(\t\x12\x0b\n\x03n_x\x18\x03 \x01(\x05\x12\x0b\n\x03n_y\x18\x04 \x01(\x05\x12\x11\n\tspacing_x\x18\x05 \x01(\x01\x12\x11\n\tspacing_y\x18\x06 \x01(\x01\"\x91\x01\n\x1a\x41\x63quireMultiChannelRequest\x12\x14\n\x0cndimage_name\x18\x01 \x01(\t\x12\x1e\n\x08\x63hannels\x18\x02 \x03(\x0b\x32\x0c.api.Channel\x12\x0b\n\x03i_z\x18\x03 \x01(\x05\x12\x0b\n\x03i_t\x18\x04 \x01(\x05\x12\x10\n\x08metadata\x18\x06 \x01(\t\x12\x11\n\tsite_uuid\x18\x07 \x01(\t\"\xac\x01\n\x07NDImage\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07\x63h_name\x18\x02 \x03(\t\x12\r\n\x05width\x18\x03 \x01(\r\x12\x0e\n\x06height\x18\x04 \x01(\r\x12\x0c\n\x04n_ch\x18\x05 \x01(\x05\x12\x0b\n\x03n_z\x18\x06 \x01(\x05\x12\x0b\n\x03n_t\x18\x07 \x01(\x05\x12\x1c\n\x05\x64type\x18\x08 \x01(\x0e\x32\r.api.DataType\x12\x1d\n\x05\x63type\x18\t \x01(\x0e\x32\x0e.api.ColorType\"4\n\x13ListNDImageResponse\x12\x1d\n\x07ndimage\x18\x01 \x03(\x0b\x32\x0c.api.NDImage\")\n\x11GetNDImageRequest\x12\x14\n\x0cndimage_name\x18\x01 \x01(\t\"3\n\x12GetNDImageResponse\x12\x1d\n\x07ndimage\x18\x01 \x01(\x0b\x32\x0c.api.NDImage\"[\n\x13GetImageDataRequest\x12\x14\n\x0cndimage_name\x18\x01 \x01(\t\x12\x14\n\x0c\x63hannel_name\x18\x02 \x01(\t\x12\x0b\n\x03i_z\x18\x03 \x01(\x05\x12\x0b\n\x03i_t\x18\x04 \x01(\x05\"t\n\tImageData\x12\r\n\x05width\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\r\x12\x1c\n\x05\x64type\x18\x03 \x01(\x0e\x32\r.api.DataType\x12\x1d\n\x05\x63type\x18\x04 \x01(\x0e\x32\x0e.api.ColorType\x12\x0b\n\x03\x62uf\x18\x05 \x01(\x0c\"4\n\x14GetImageDataResponse\x12\x1c\n\x04\x64\x61ta\x18\x01 \x01(\x0b\x32\x0e.api.ImageData\"^\n\x1bGetSegmentationScoreRequest\x12\x14\n\x0cndimage_name\x18\x01 \x01(\t\x12\x0f\n\x07\x63h_name\x18\x02 \x01(\t\x12\x0b\n\x03i_z\x18\x03 \x01(\x05\x12\x0b\n\x03i_t\x18\x04 \x01(\x05\"<\n\x1cGetSegmentationScoreResponse\x12\x1c\n\x04\x64\x61ta\x18\x01 \x01(\x0b\x32\x0e.api.ImageData\"a\n\x16QuantifyRegionsRequest\x12\x14\n\x0cndimage_name\x18\x01 \x01(\t\x12\x0b\n\x03i_z\x18\x02 \x01(\x05\x12\x0b\n\x03i_t\x18\x03 \x01(\x05\x12\x17\n\x0fsegmentation_ch\x18\x04 \x01(\t\"\x80\x01\n\x17QuantifyRegionsResponse\x12\x11\n\tn_regions\x18\x01 \x01(\x05\x12$\n\x0bregion_prop\x18\x02 \x03(\x0b\x32\x0f.api.RegionProp\x12,\n\rraw_intensity\x18\x03 \x03(\x0b\x32\x15.api.ChannelIntensity\"\xb0\x01\n\nRegionProp\x12\r\n\x05label\x18\x01 \x01(\r\x12\x0f\n\x07\x62\x62ox_x0\x18\x02 \x01(\r\x12\x0f\n\x07\x62\x62ox_y0\x18\x03 \x01(\r\x12\x12\n\nbbox_width\x18\x04 \x01(\r\x12\x13\n\x0b\x62\x62ox_height\x18\x05 \x01(\r\x12\x0c\n\x04\x61rea\x18\x06 \x01(\x01\x12\x12\n\ncentroid_x\x18\x07 \x01(\x01\x12\x12\n\ncentroid_y\x18\x08 \x01(\x01\x12\x12\n\nscore_mean\x18\t \x01(\x01\"3\n\x10\x43hannelIntensity\x12\x0f\n\x07\x63h_name\x18\x01 \x01(\t\x12\x0e\n\x06values\x18\x02 \x03(\x01\"=\n\x18GetQuantificationRequest\x12\x14\n\x0cndimage_name\x18\x01 \x01(\t\x12\x0b\n\x03i_t\x18\x02 \x01(\x05\"o\n\x19GetQuantificationResponse\x12$\n\x0bregion_prop\x18\x01 \x03(\x0b\x32\x0f.api.RegionProp\x12,\n\rraw_intensity\x18\x02 \x03(\x0b\x32\x15.api.ChannelIntensity*F\n\tPlateType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\t\n\x05SLIDE\x10\x01\x12\x0f\n\x0bWELLPLATE96\x10\x02\x12\x10\n\x0cWELLPLATE384\x10\x03*o\n\x08\x44\x61taType\x12\x11\n\rUNKNOWN_DTYPE\x10\x00\x12\t\n\x05\x42OOL8\x10\x01\x12\t\n\x05UINT8\x10\x02\x12\n\n\x06UINT16\x10\x03\x12\t\n\x05INT16\x10\x04\x12\t\n\x05INT32\x10\x05\x12\x0b\n\x07\x46LOAT32\x10\x06\x12\x0b\n\x07\x46LOAT64\x10\x07*v\n\tColorType\x12\x11\n\rUNKNOWN_CTYPE\x10\x00\x12\t\n\x05MONO8\x10\x01\x12\n\n\x06MONO10\x10\x02\x12\n\n\x06MONO12\x10\x03\x12\n\n\x06MONO14\x10\x04\x12\n\n\x06MONO16\x10\x05\x12\x0c\n\x08\x42\x41YERRG8\x10\x06\x12\r\n\tBAYERRG16\x10\x07\x32\x88\x0c\n\x0bNikonTiCtrl\x12\x45\n\x0cListProperty\x12\x18.api.ListPropertyRequest\x1a\x19.api.ListPropertyResponse\"\x00\x12\x42\n\x0bGetProperty\x12\x17.api.GetPropertyRequest\x1a\x18.api.GetPropertyResponse\"\x00\x12@\n\x0bSetProperty\x12\x17.api.SetPropertyRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x42\n\x0cWaitProperty\x12\x18.api.WaitPropertyRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x41\n\x0bListChannel\x12\x16.google.protobuf.Empty\x1a\x18.api.ListChannelResponse\"\x00\x12\x44\n\rSwitchChannel\x12\x19.api.SwitchChannelRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x46\n\x0eOpenExperiment\x12\x1a.api.OpenExperimentRequest\x1a\x16.google.protobuf.Empty\"\x00\x12=\n\tListPlate\x12\x16.google.protobuf.Empty\x1a\x16.api.ListPlateResponse\"\x00\x12:\n\x08\x41\x64\x64Plate\x12\x14.api.AddPlateRequest\x1a\x16.google.protobuf.Empty\"\x00\x12V\n\x16SetPlatePositionOrigin\x12\".api.SetPlatePositionOriginRequest\x1a\x16.google.protobuf.Empty\"\x00\x12J\n\x10SetPlateMetadata\x12\x1c.api.SetPlateMetadataRequest\x1a\x16.google.protobuf.Empty\"\x00\x12H\n\x0fSetWellsEnabled\x12\x1b.api.SetWellsEnabledRequest\x1a\x16.google.protobuf.Empty\"\x00\x12J\n\x10SetWellsMetadata\x12\x1c.api.SetWellsMetadataRequest\x1a\x16.google.protobuf.Empty\"\x00\x12@\n\x0b\x43reateSites\x12\x17.api.CreateSitesRequest\x1a\x16.google.protobuf.Empty\"\x00\x12P\n\x13\x41\x63quireMultiChannel\x12\x1f.api.AcquireMultiChannelRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x41\n\x0bListNDImage\x12\x16.google.protobuf.Empty\x1a\x18.api.ListNDImageResponse\"\x00\x12?\n\nGetNDImage\x12\x16.api.GetNDImageRequest\x1a\x17.api.GetNDImageResponse\"\x00\x12\x45\n\x0cGetImageData\x12\x18.api.GetImageDataRequest\x1a\x19.api.GetImageDataResponse\"\x00\x12]\n\x14GetSegmentationScore\x12 .api.GetSegmentationScoreRequest\x1a!.api.GetSegmentationScoreResponse\"\x00\x12N\n\x0fQuantifyRegions\x12\x1b.api.QuantifyRegionsRequest\x1a\x1c.api.QuantifyRegionsResponse\"\x00\x12T\n\x11GetQuantification\x12\x1d.api.GetQuantificationRequest\x1a\x1e.api.GetQuantificationResponse\"\x00\x62\x06proto3'
   ,
   dependencies=[google_dot_protobuf_dot_empty__pb2.DESCRIPTOR,google_dot_protobuf_dot_duration__pb2.DESCRIPTOR,])
 
@@ -56,8 +56,8 @@ _PLATETYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2728,
-  serialized_end=2798,
+  serialized_start=3256,
+  serialized_end=3326,
 )
 _sym_db.RegisterEnumDescriptor(_PLATETYPE)
 
@@ -112,8 +112,8 @@ _DATATYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2800,
-  serialized_end=2911,
+  serialized_start=3328,
+  serialized_end=3439,
 )
 _sym_db.RegisterEnumDescriptor(_DATATYPE)
 
@@ -168,8 +168,8 @@ _COLORTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2913,
-  serialized_end=3031,
+  serialized_start=3441,
+  serialized_end=3559,
 )
 _sym_db.RegisterEnumDescriptor(_COLORTYPE)
 
@@ -1561,9 +1561,30 @@ _GETSEGMENTATIONSCOREREQUEST = _descriptor.Descriptor(
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='data', full_name='api.GetSegmentationScoreRequest.data', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      name='ndimage_name', full_name='api.GetSegmentationScoreRequest.ndimage_name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='ch_name', full_name='api.GetSegmentationScoreRequest.ch_name', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='i_z', full_name='api.GetSegmentationScoreRequest.i_z', index=2,
+      number=3, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='i_t', full_name='api.GetSegmentationScoreRequest.i_t', index=3,
+      number=4, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
@@ -1580,7 +1601,7 @@ _GETSEGMENTATIONSCOREREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=2460,
-  serialized_end=2519,
+  serialized_end=2554,
 )
 
 
@@ -1611,8 +1632,8 @@ _GETSEGMENTATIONSCORERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2521,
-  serialized_end=2581,
+  serialized_start=2556,
+  serialized_end=2616,
 )
 
 
@@ -1664,8 +1685,8 @@ _QUANTIFYREGIONSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2583,
-  serialized_end=2680,
+  serialized_start=2618,
+  serialized_end=2715,
 )
 
 
@@ -1684,6 +1705,20 @@ _QUANTIFYREGIONSRESPONSE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='region_prop', full_name='api.QuantifyRegionsResponse.region_prop', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='raw_intensity', full_name='api.QuantifyRegionsResponse.raw_intensity', index=2,
+      number=3, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -1696,8 +1731,213 @@ _QUANTIFYREGIONSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2682,
-  serialized_end=2726,
+  serialized_start=2718,
+  serialized_end=2846,
+)
+
+
+_REGIONPROP = _descriptor.Descriptor(
+  name='RegionProp',
+  full_name='api.RegionProp',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='label', full_name='api.RegionProp.label', index=0,
+      number=1, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='bbox_x0', full_name='api.RegionProp.bbox_x0', index=1,
+      number=2, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='bbox_y0', full_name='api.RegionProp.bbox_y0', index=2,
+      number=3, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='bbox_width', full_name='api.RegionProp.bbox_width', index=3,
+      number=4, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='bbox_height', full_name='api.RegionProp.bbox_height', index=4,
+      number=5, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='area', full_name='api.RegionProp.area', index=5,
+      number=6, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='centroid_x', full_name='api.RegionProp.centroid_x', index=6,
+      number=7, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='centroid_y', full_name='api.RegionProp.centroid_y', index=7,
+      number=8, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='score_mean', full_name='api.RegionProp.score_mean', index=8,
+      number=9, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2849,
+  serialized_end=3025,
+)
+
+
+_CHANNELINTENSITY = _descriptor.Descriptor(
+  name='ChannelIntensity',
+  full_name='api.ChannelIntensity',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='ch_name', full_name='api.ChannelIntensity.ch_name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='values', full_name='api.ChannelIntensity.values', index=1,
+      number=2, type=1, cpp_type=5, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=3027,
+  serialized_end=3078,
+)
+
+
+_GETQUANTIFICATIONREQUEST = _descriptor.Descriptor(
+  name='GetQuantificationRequest',
+  full_name='api.GetQuantificationRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='ndimage_name', full_name='api.GetQuantificationRequest.ndimage_name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='i_t', full_name='api.GetQuantificationRequest.i_t', index=1,
+      number=2, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=3080,
+  serialized_end=3141,
+)
+
+
+_GETQUANTIFICATIONRESPONSE = _descriptor.Descriptor(
+  name='GetQuantificationResponse',
+  full_name='api.GetQuantificationResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='region_prop', full_name='api.GetQuantificationResponse.region_prop', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='raw_intensity', full_name='api.GetQuantificationResponse.raw_intensity', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=3143,
+  serialized_end=3254,
 )
 
 _GETPROPERTYRESPONSE.fields_by_name['property'].message_type = _PROPERTYVALUE
@@ -1727,8 +1967,11 @@ _GETNDIMAGERESPONSE.fields_by_name['ndimage'].message_type = _NDIMAGE
 _IMAGEDATA.fields_by_name['dtype'].enum_type = _DATATYPE
 _IMAGEDATA.fields_by_name['ctype'].enum_type = _COLORTYPE
 _GETIMAGEDATARESPONSE.fields_by_name['data'].message_type = _IMAGEDATA
-_GETSEGMENTATIONSCOREREQUEST.fields_by_name['data'].message_type = _IMAGEDATA
 _GETSEGMENTATIONSCORERESPONSE.fields_by_name['data'].message_type = _IMAGEDATA
+_QUANTIFYREGIONSRESPONSE.fields_by_name['region_prop'].message_type = _REGIONPROP
+_QUANTIFYREGIONSRESPONSE.fields_by_name['raw_intensity'].message_type = _CHANNELINTENSITY
+_GETQUANTIFICATIONRESPONSE.fields_by_name['region_prop'].message_type = _REGIONPROP
+_GETQUANTIFICATIONRESPONSE.fields_by_name['raw_intensity'].message_type = _CHANNELINTENSITY
 DESCRIPTOR.message_types_by_name['PropertyValue'] = _PROPERTYVALUE
 DESCRIPTOR.message_types_by_name['Channel'] = _CHANNEL
 DESCRIPTOR.message_types_by_name['ListPropertyRequest'] = _LISTPROPERTYREQUEST
@@ -1763,6 +2006,10 @@ DESCRIPTOR.message_types_by_name['GetSegmentationScoreRequest'] = _GETSEGMENTATI
 DESCRIPTOR.message_types_by_name['GetSegmentationScoreResponse'] = _GETSEGMENTATIONSCORERESPONSE
 DESCRIPTOR.message_types_by_name['QuantifyRegionsRequest'] = _QUANTIFYREGIONSREQUEST
 DESCRIPTOR.message_types_by_name['QuantifyRegionsResponse'] = _QUANTIFYREGIONSRESPONSE
+DESCRIPTOR.message_types_by_name['RegionProp'] = _REGIONPROP
+DESCRIPTOR.message_types_by_name['ChannelIntensity'] = _CHANNELINTENSITY
+DESCRIPTOR.message_types_by_name['GetQuantificationRequest'] = _GETQUANTIFICATIONREQUEST
+DESCRIPTOR.message_types_by_name['GetQuantificationResponse'] = _GETQUANTIFICATIONRESPONSE
 DESCRIPTOR.enum_types_by_name['PlateType'] = _PLATETYPE
 DESCRIPTOR.enum_types_by_name['DataType'] = _DATATYPE
 DESCRIPTOR.enum_types_by_name['ColorType'] = _COLORTYPE
@@ -2006,6 +2253,34 @@ QuantifyRegionsResponse = _reflection.GeneratedProtocolMessageType('QuantifyRegi
   })
 _sym_db.RegisterMessage(QuantifyRegionsResponse)
 
+RegionProp = _reflection.GeneratedProtocolMessageType('RegionProp', (_message.Message,), {
+  'DESCRIPTOR' : _REGIONPROP,
+  '__module__' : 'api_pb2'
+  # @@protoc_insertion_point(class_scope:api.RegionProp)
+  })
+_sym_db.RegisterMessage(RegionProp)
+
+ChannelIntensity = _reflection.GeneratedProtocolMessageType('ChannelIntensity', (_message.Message,), {
+  'DESCRIPTOR' : _CHANNELINTENSITY,
+  '__module__' : 'api_pb2'
+  # @@protoc_insertion_point(class_scope:api.ChannelIntensity)
+  })
+_sym_db.RegisterMessage(ChannelIntensity)
+
+GetQuantificationRequest = _reflection.GeneratedProtocolMessageType('GetQuantificationRequest', (_message.Message,), {
+  'DESCRIPTOR' : _GETQUANTIFICATIONREQUEST,
+  '__module__' : 'api_pb2'
+  # @@protoc_insertion_point(class_scope:api.GetQuantificationRequest)
+  })
+_sym_db.RegisterMessage(GetQuantificationRequest)
+
+GetQuantificationResponse = _reflection.GeneratedProtocolMessageType('GetQuantificationResponse', (_message.Message,), {
+  'DESCRIPTOR' : _GETQUANTIFICATIONRESPONSE,
+  '__module__' : 'api_pb2'
+  # @@protoc_insertion_point(class_scope:api.GetQuantificationResponse)
+  })
+_sym_db.RegisterMessage(GetQuantificationResponse)
+
 
 
 _NIKONTICTRL = _descriptor.ServiceDescriptor(
@@ -2015,8 +2290,8 @@ _NIKONTICTRL = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=3034,
-  serialized_end=4492,
+  serialized_start=3562,
+  serialized_end=5106,
   methods=[
   _descriptor.MethodDescriptor(
     name='ListProperty',
@@ -2215,6 +2490,16 @@ _NIKONTICTRL = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_QUANTIFYREGIONSREQUEST,
     output_type=_QUANTIFYREGIONSRESPONSE,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='GetQuantification',
+    full_name='api.NikonTiCtrl.GetQuantification',
+    index=20,
+    containing_service=None,
+    input_type=_GETQUANTIFICATIONREQUEST,
+    output_type=_GETQUANTIFICATIONRESPONSE,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
   ),

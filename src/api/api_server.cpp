@@ -614,14 +614,80 @@ grpc::Status APIServer::QuantifyRegions(ServerContext *context,
                                         api::QuantifyRegionsResponse *resp)
 {
     int n_regions;
+    QuantificationResults results;
     try {
         n_regions = exp->Analysis()->QuantifyRegions(
             req->ndimage_name(), req->i_t(), req->segmentation_ch());
+
+        results =
+            exp->Analysis()->GetQuantification(req->ndimage_name(), req->i_t());
+
+        resp->set_n_regions(n_regions);
+        for (const auto &rp : results.region_props) {
+            auto pb_rp = resp->add_region_prop();
+            pb_rp->set_label(rp.label);
+            pb_rp->set_bbox_x0(rp.bbox_x0);
+            pb_rp->set_bbox_y0(rp.bbox_y0);
+            pb_rp->set_bbox_width(rp.bbox_width);
+            pb_rp->set_bbox_height(rp.bbox_height);
+            pb_rp->set_area(rp.area);
+            pb_rp->set_centroid_x(rp.centroid_x);
+            pb_rp->set_centroid_y(rp.centroid_y);
+        }
+        for (int i_ch = 0; i_ch < results.ch_names.size(); i_ch++) {
+            std::string ch_name = results.ch_names[i_ch];
+            xt::xarray<double> mean_intensity =
+                results.raw_intensity_mean[i_ch];
+
+            auto pb_ch = resp->add_raw_intensity();
+            pb_ch->set_ch_name(ch_name);
+            for (int i = 0; i < n_regions; i++) {
+                pb_ch->add_values(mean_intensity[i]);
+            }
+        }
     } catch (std::exception &e) {
         return grpc::Status(grpc::StatusCode::INTERNAL,
                             fmt::format("unexpected exception: {}", e.what()));
     }
 
-    resp->set_n_regions(n_regions);
+    return grpc::Status::OK;
+}
+
+grpc::Status
+APIServer::GetQuantification(ServerContext *context,
+                             const api::GetQuantificationRequest *req,
+                             api::GetQuantificationResponse *resp)
+{
+    try {
+        QuantificationResults results =
+            exp->Analysis()->GetQuantification(req->ndimage_name(), req->i_t());
+
+        for (const auto &rp : results.region_props) {
+            auto pb_rp = resp->add_region_prop();
+            pb_rp->set_label(rp.label);
+            pb_rp->set_bbox_x0(rp.bbox_x0);
+            pb_rp->set_bbox_y0(rp.bbox_y0);
+            pb_rp->set_bbox_width(rp.bbox_width);
+            pb_rp->set_bbox_height(rp.bbox_height);
+            pb_rp->set_area(rp.area);
+            pb_rp->set_centroid_x(rp.centroid_x);
+            pb_rp->set_centroid_y(rp.centroid_y);
+        }
+        for (int i_ch = 0; i_ch < results.ch_names.size(); i_ch++) {
+            std::string ch_name = results.ch_names[i_ch];
+            xt::xarray<double> mean_intensity =
+                results.raw_intensity_mean[i_ch];
+
+            auto pb_ch = resp->add_raw_intensity();
+            pb_ch->set_ch_name(ch_name);
+            for (int i = 0; i < mean_intensity.shape(0); i++) {
+                pb_ch->add_values(mean_intensity[i]);
+            }
+        }
+    } catch (std::exception &e) {
+        return grpc::Status(grpc::StatusCode::INTERNAL,
+                            fmt::format("unexpected exception: {}", e.what()));
+    }
+
     return grpc::Status::OK;
 }

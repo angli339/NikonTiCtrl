@@ -125,7 +125,7 @@ QBrush ImageHistView::cbarBrush()
         QColor color =
             QColor(cmap_data[offset + 3 * i], cmap_data[offset + 3 * i + 1],
                    cmap_data[offset + 3 * i + 2]);
-                cmap.setColorAt((double)(i + 0.5) / 256, color);
+        cmap.setColorAt((double)(i + 0.5) / 256, color);
     }
     return QBrush(cmap);
 }

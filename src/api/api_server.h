@@ -97,6 +97,11 @@ public:
                                  const api::QuantifyRegionsRequest *req,
                                  api::QuantifyRegionsResponse *resp) override;
 
+    grpc::Status
+    GetQuantification(ServerContext *context,
+                      const api::GetQuantificationRequest *req,
+                      api::GetQuantificationResponse *resp) override;
+
 private:
     std::shared_ptr<grpc::Server> server;
 
