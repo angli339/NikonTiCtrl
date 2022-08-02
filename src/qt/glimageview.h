@@ -37,6 +37,7 @@ public:
 public slots:
     void setVmin(uint16_t vmin);
     void setVmax(uint16_t vmax);
+    void setCmap(uint8_t icmap);
 
 protected:
     void initializeGL() override;
@@ -57,7 +58,7 @@ private:
     uint16_t imageHeight = 0;
     uint16_t vmin = 0;
     uint16_t vmax = 65535;
-    uint8_t icmap = 1;
+    uint8_t icmap = 0;
 };
 
 class GLImageControlBar : public QWidget {

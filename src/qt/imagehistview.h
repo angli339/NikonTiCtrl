@@ -22,6 +22,7 @@ public slots:
     void setData(std::vector<double> data);
     void setVmin(int vmin);
     void setVmax(int vmax);
+    void setCmap(int icmap);
 
 signals:
     void vminChanged(int vmin);
@@ -40,6 +41,7 @@ private:
 
     int vmin;
     int vmax;
+    int icmap = 0;
 
     bool vminSliderPressed;
     double vminSliderPressedOffset;

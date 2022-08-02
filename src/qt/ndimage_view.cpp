@@ -165,6 +165,16 @@ void NDImageView::setIndexT(int i_t)
 void NDImageView::setChannelName(int i_channel, QString channelName)
 {
     channelViewList[i_channel]->controlBar->setChannelName(channelName);
+    if (channelName == "RFP") {
+        channelViewList[i_channel]->glImageView->setCmap(1);
+        channelViewList[i_channel]->controlBar->histView->setCmap(1);
+    } else if (channelName == "YFP") {
+        channelViewList[i_channel]->glImageView->setCmap(2);
+        channelViewList[i_channel]->controlBar->histView->setCmap(2);
+    } else if (channelName == "BFP") {
+        channelViewList[i_channel]->glImageView->setCmap(3);
+        channelViewList[i_channel]->controlBar->histView->setCmap(3);
+    }
 }
 
 void NDImageView::setFrameData(int i_channel, ImageData frame)
