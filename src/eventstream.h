@@ -27,7 +27,8 @@ enum class EventType
     ExperimentClosed,
     
     PlateCreated,
-    PlateChanged,
+    PlateModified,
+    CurrentPlateChanged,
     NDImageCreated,
     NDImageChanged,
 };

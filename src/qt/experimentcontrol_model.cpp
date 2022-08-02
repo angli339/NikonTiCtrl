@@ -17,6 +17,7 @@ ExperimentControlModel::ExperimentControlModel(ExperimentControl *exp,
     handleEventFuture = std::async(std::launch::async,
                                    &ExperimentControlModel::handleEvents, this);
     exp->SubscribeEvents(&eventStream);
+    exp->Devices()->SubscribeEvents(&eventStream);
 }
 
 ExperimentControlModel::~ExperimentControlModel()
@@ -118,14 +119,26 @@ void ExperimentControlModel::handleEvents()
         case EventType::PlateCreated:
             sampleManagerModel->handlePlateCreated(e.value.c_str());
             break;
-        case EventType::PlateChanged:
-            sampleManagerModel->handlePlateChanged(e.value.c_str());
+        case EventType::PlateModified:
+            sampleManagerModel->handlePlateModified(e.value.c_str());
+            break;
+        case EventType::CurrentPlateChanged:
+            sampleManagerModel->handleCurrentPlateChanged(e.value.c_str());
             break;
         case EventType::NDImageCreated:
             imageManagerModel->handleNDImageCreated(e.value);
             break;
         case EventType::NDImageChanged:
             imageManagerModel->handleNDImageChanged(e.value);
+            break;
+        case EventType::DevicePropertyValueUpdate:
+            if (e.path.ToString() == "/PriorProScan/XYPosition") {
+                QStringList list = QString(e.value.c_str()).split(",");
+                if (list.length() != 2) {
+                    return;
+                }
+                sampleManagerModel->handleStagePositionUpdate(list[0].toDouble(), list[1].toDouble());
+            }
             break;
         }
     }

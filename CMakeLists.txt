@@ -243,6 +243,9 @@ set(QT_SOURCES
 
     src/qt/imagehistview.cpp
     src/qt/cmap/cmap_data.cpp
+
+    src/qt/widgets/platesamplewidget.cpp
+    
     third_party/QDarkStyleSheet/qdarkstyle/dark/darkstyle.qrc
 )
 

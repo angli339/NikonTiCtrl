@@ -118,6 +118,12 @@ void ExperimentControl::OpenExperimentDir(std::filesystem::path exp_dir)
         .type = EventType::ExperimentOpened,
         .value = exp_dir.string(),
     });
+
+    // Select the last sample as current sample
+    std::vector<::Plate *> plates = sample_manager->Plates();
+    if (plates.size() > 0) {
+        sample_manager->SetCurrentPlate(plates.back()->ID());
+    }
 }
 
 void ExperimentControl::CloseExperiment()
@@ -130,6 +136,11 @@ void ExperimentControl::CloseExperiment()
     SendEvent({
         .type = EventType::ExperimentClosed,
     });
+}
+
+bool ExperimentControl::is_open()
+{
+    return (!exp_dir.empty()) && (db != nullptr);
 }
 
 std::filesystem::path ExperimentControl::ExperimentDir()

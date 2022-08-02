@@ -28,6 +28,7 @@ public:
     void CloseExperiment();
     std::filesystem::path ExperimentDir();
     ExperimentDB *DB();
+    bool is_open();
 
     DeviceHub *Devices();
     SampleManager *Samples();

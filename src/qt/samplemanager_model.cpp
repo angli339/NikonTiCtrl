@@ -43,11 +43,49 @@ void SampleManagerModel::handlePlateCreated(QString plate_id)
     endInsertRows();
 }
 
-void SampleManagerModel::handlePlateChanged(QString plate_id)
+void SampleManagerModel::handlePlateModified(QString plate_id)
 {
     // rebuild the tree fow now
     handleExperimentClose();
     handleExperimentOpen();
+}
+
+void SampleManagerModel::handleCurrentPlateChanged(QString plate_id)
+{
+    Plate *plate = sampleManager->Plate(plate_id.toStdString());
+    if (plate == nullptr) {
+        emit currentPlateChanged("");
+        emit currentPlateTypeChanged("");
+        return;
+    }
+
+    emit currentPlateChanged(plate_id);
+    if (plate->Type() == PlateType::Wellplate96) {
+        emit currentPlateTypeChanged("wellplate96");
+    } else if (plate->Type() == PlateType::Wellplate384) {
+        emit currentPlateTypeChanged("wellplate384");
+    } else {
+        emit currentPlateTypeChanged("");
+    }
+}
+
+void SampleManagerModel::handleStagePositionUpdate(double x, double y)
+{
+    Plate *plate = sampleManager->CurrentPlate();
+    if (plate == nullptr) {
+        return;
+    };
+
+    if (!plate->PositionOrigin().has_value()) {
+        return;
+    }
+    auto pos_origin = plate->PositionOrigin().value();
+
+    // TODO: get direction from config file
+    double rel_x = -(x - pos_origin.x)/1000;
+    double rel_y = -(y - pos_origin.y)/1000;
+
+    emit FOVPositionChanged(rel_x, rel_y);
 }
 
 void SampleManagerModel::buildTree()

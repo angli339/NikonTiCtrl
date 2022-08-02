@@ -32,7 +32,14 @@ public:
     void handleExperimentOpen();
     void handleExperimentClose();
     void handlePlateCreated(QString plate_id);
-    void handlePlateChanged(QString plate_id);
+    void handlePlateModified(QString plate_id);
+    void handleCurrentPlateChanged(QString plate_id);
+    void handleStagePositionUpdate(double x, double y);
+
+signals:
+    void currentPlateChanged(QString plate_id);
+    void currentPlateTypeChanged(QString plate_type);
+    void FOVPositionChanged(double x, double y);
 
 private:
     SampleManager *sampleManager;
