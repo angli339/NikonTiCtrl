@@ -82,8 +82,8 @@ void SampleManagerModel::handleStagePositionUpdate(double x, double y)
     auto pos_origin = plate->PositionOrigin().value();
 
     // TODO: get direction from config file
-    double rel_x = -(x - pos_origin.x)/1000;
-    double rel_y = -(y - pos_origin.y)/1000;
+    double rel_x = -(x - pos_origin.x) / 1000;
+    double rel_y = -(y - pos_origin.y) / 1000;
 
     emit FOVPositionChanged(rel_x, rel_y);
 }
@@ -118,16 +118,20 @@ void SampleManagerModel::addPlateItem(Plate *plate)
     validTreeItems.insert(item);
 
     item->id = plate->ID();
-    item->summary = fmt::format("{}, {} wells", PlateTypeToString(plate->Type()), plate->NumEnabledWells());
+    item->summary =
+        fmt::format("{}, {} wells", PlateTypeToString(plate->Type()),
+                    plate->NumEnabledWells());
     if (plate->PositionOrigin().has_value()) {
         auto pos_origin = plate->PositionOrigin().value();
-        item->summary = fmt::format("{}, xy=({},{})", item->summary, pos_origin.x, pos_origin.y);
+        item->summary = fmt::format("{}, xy=({},{})", item->summary,
+                                    pos_origin.x, pos_origin.y);
     }
     auto metadata = plate->Metadata();
     if (metadata.contains("name")) {
-        item->summary = fmt::format("{}, name='{}'", item->summary, metadata["name"]);
+        item->summary =
+            fmt::format("{}, name='{}'", item->summary, metadata["name"]);
     }
-    
+
     for (const auto &well : plate->Wells()) {
         if (well->Enabled()) {
             addWellItem(item, well);
@@ -136,7 +140,7 @@ void SampleManagerModel::addPlateItem(Plate *plate)
 }
 
 void SampleManagerModel::addWellItem(SampleManagerTreeItem *plateItem,
-                                   Well *well)
+                                     Well *well)
 {
     SampleManagerTreeItem *item = new SampleManagerTreeItem;
     item->parent = plateItem;
@@ -150,7 +154,8 @@ void SampleManagerModel::addWellItem(SampleManagerTreeItem *plateItem,
     item->summary = fmt::format("{} sites", well->NumEnabledSites());
     auto metadata = well->Metadata();
     if (metadata.contains("preset_name")) {
-        item->summary = fmt::format("{}, {}", item->summary, metadata["preset_name"]);
+        item->summary =
+            fmt::format("{}, {}", item->summary, metadata["preset_name"]);
     }
 
     for (const auto &site : well->Sites()) {
@@ -158,7 +163,8 @@ void SampleManagerModel::addWellItem(SampleManagerTreeItem *plateItem,
     }
 }
 
-void SampleManagerModel::addSiteItem(SampleManagerTreeItem *wellItem, Site *site)
+void SampleManagerModel::addSiteItem(SampleManagerTreeItem *wellItem,
+                                     Site *site)
 {
     SampleManagerTreeItem *item = new SampleManagerTreeItem;
     item->parent = wellItem;
@@ -271,10 +277,7 @@ Qt::ItemFlags SampleManagerModel::flags(const QModelIndex &index) const
     return QAbstractItemModel::flags(index);
 }
 
-int SampleManagerTreeItem::columnCount()
-{
-    return 2;
-}
+int SampleManagerTreeItem::columnCount() { return 2; }
 QVariant SampleManagerTreeItem::columnName(int col)
 {
     switch (col) {

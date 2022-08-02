@@ -1,9 +1,9 @@
 #ifndef SAMPLEMANAGER_MODEL_H
 #define SAMPLEMANAGER_MODEL_H
 
+#include <set>
 #include <string>
 #include <vector>
-#include <set>
 
 #include <QAbstractItemModel>
 
@@ -53,8 +53,7 @@ private:
     void addSiteItem(SampleManagerTreeItem *wellItem, Site *site);
 };
 
-enum class SampleManagerTreeItemType
-{
+enum class SampleManagerTreeItemType {
     Plate,
     Well,
     Site,

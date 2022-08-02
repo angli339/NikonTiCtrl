@@ -2,10 +2,7 @@
 
 #include "experimentcontrol.h"
 
-SampleManager::SampleManager(ExperimentControl *exp)
-{
-    this->exp = exp;
-}
+SampleManager::SampleManager(ExperimentControl *exp) { this->exp = exp; }
 
 SampleManager::~SampleManager()
 {
@@ -26,20 +23,22 @@ void SampleManager::LoadFromDB()
     plates.clear();
     plate_map.clear();
 
-    for (const auto& plate_row : exp->DB()->GetAllPlates()) {
+    for (const auto &plate_row : exp->DB()->GetAllPlates()) {
         ::Plate *plate = new ::Plate;
         plate->uuid = plate_row.uuid;
-        plate->type = PlateTypeFromString(plate_row.type);        
+        plate->type = PlateTypeFromString(plate_row.type);
         plate->id = plate_row.plate_id;
-        if (plate_row.pos_origin_x.has_value() && plate_row.pos_origin_y.has_value()) {
-            plate->pos_origin = {plate_row.pos_origin_x.value(), plate_row.pos_origin_y.value()};
+        if (plate_row.pos_origin_x.has_value() &&
+            plate_row.pos_origin_y.has_value()) {
+            plate->pos_origin = {plate_row.pos_origin_x.value(),
+                                 plate_row.pos_origin_y.value()};
         }
 
         plates.push_back(plate);
         plate_map[plate->id] = plate;
     }
 
-    for (const auto& well_row : exp->DB()->GetAllWells()) {
+    for (const auto &well_row : exp->DB()->GetAllWells()) {
         ::Plate *plate = plate_map[well_row.plate_id];
         ::Well *well = new ::Well;
         well->plate = plate;
@@ -53,7 +52,7 @@ void SampleManager::LoadFromDB()
         plate->well_map[well->id] = well;
     }
 
-    for (const auto& site_row : exp->DB()->GetAllSites()) {
+    for (const auto &site_row : exp->DB()->GetAllSites()) {
         ::Plate *plate = plate_map[site_row.plate_id];
         ::Well *well = plate->well_map[site_row.well_id];
         ::Site *site = new ::Site;
@@ -71,7 +70,7 @@ void SampleManager::LoadFromDB()
 
 void SampleManager::writePlateRow(const ::Plate *plate)
 {
-    PlateRow row = PlateRow {
+    PlateRow row = PlateRow{
         .index = plate->Index(),
         .uuid = plate->UUID(),
         .plate_id = plate->ID(),
@@ -126,7 +125,7 @@ void SampleManager::AddPlate(PlateType plate_type, std::string plate_id)
     if (it != plate_map.end()) {
         throw std::invalid_argument("id already exists");
     }
-    
+
     // Create plate
     ::Plate *plate = new ::Plate(plate_type, plate_id);
     plate->index = plates.size();
@@ -137,7 +136,7 @@ void SampleManager::AddPlate(PlateType plate_type, std::string plate_id)
     exp->DB()->BeginTransaction();
     try {
         writePlateRow(plate);
-        for (const auto & well: plate->wells) {
+        for (const auto &well : plate->wells) {
             writeWellRow(well);
         }
         exp->DB()->Commit();
@@ -145,7 +144,8 @@ void SampleManager::AddPlate(PlateType plate_type, std::string plate_id)
         plates.pop_back();
         plate_map.erase(plate_id);
         exp->DB()->Rollback();
-        throw std::runtime_error(fmt::format("cannot write to DB: {}, rolled back", e.what()));
+        throw std::runtime_error(
+            fmt::format("cannot write to DB: {}, rolled back", e.what()));
     }
 
     lk.unlock();
@@ -160,7 +160,8 @@ void SampleManager::AddPlate(PlateType plate_type, std::string plate_id)
     }
 }
 
-void SampleManager::SetPlatePositionOrigin(std::string plate_id, double x, double y)
+void SampleManager::SetPlatePositionOrigin(std::string plate_id, double x,
+                                           double y)
 {
     if (!exp->is_open()) {
         throw std::invalid_argument("no open experiment");
@@ -168,7 +169,8 @@ void SampleManager::SetPlatePositionOrigin(std::string plate_id, double x, doubl
 
     ::Plate *plate = Plate(plate_id);
     if (plate == nullptr) {
-        throw std::invalid_argument(fmt::format("plate {} does not exists", plate_id));
+        throw std::invalid_argument(
+            fmt::format("plate {} does not exists", plate_id));
     }
 
     plate->pos_origin = Pos2D{x, y};
@@ -181,16 +183,18 @@ void SampleManager::SetPlatePositionOrigin(std::string plate_id, double x, doubl
     } catch (std::exception &e) {
         plate->pos_origin.reset();
         exp->DB()->Rollback();
-        throw std::runtime_error(fmt::format("cannot write to DB: {}, rolled back", e.what()));
+        throw std::runtime_error(
+            fmt::format("cannot write to DB: {}, rolled back", e.what()));
     }
-    
+
     SendEvent({
         .type = EventType::PlateModified,
         .value = plate_id,
     });
 }
 
-void SampleManager::SetPlateMetadata(std::string plate_id, std::string key, nlohmann::ordered_json value)
+void SampleManager::SetPlateMetadata(std::string plate_id, std::string key,
+                                     nlohmann::ordered_json value)
 {
     if (!exp->is_open()) {
         throw std::invalid_argument("no open experiment");
@@ -198,7 +202,8 @@ void SampleManager::SetPlateMetadata(std::string plate_id, std::string key, nloh
 
     ::Plate *plate = Plate(plate_id);
     if (plate == nullptr) {
-        throw std::invalid_argument(fmt::format("plate {} does not exists", plate_id));
+        throw std::invalid_argument(
+            fmt::format("plate {} does not exists", plate_id));
     }
 
     nlohmann::ordered_json old_metadata = plate->metadata;
@@ -212,7 +217,8 @@ void SampleManager::SetPlateMetadata(std::string plate_id, std::string key, nloh
     } catch (std::exception &e) {
         plate->metadata = old_metadata;
         exp->DB()->Rollback();
-        throw std::runtime_error(fmt::format("cannot write to DB: {}, rolled back", e.what()));
+        throw std::runtime_error(
+            fmt::format("cannot write to DB: {}, rolled back", e.what()));
     }
 
     SendEvent({
@@ -221,27 +227,32 @@ void SampleManager::SetPlateMetadata(std::string plate_id, std::string key, nloh
     });
 }
 
-void SampleManager::SetWellsEnabled(std::string plate_id, std::vector<std::string> well_ids, bool enabled) {
+void SampleManager::SetWellsEnabled(std::string plate_id,
+                                    std::vector<std::string> well_ids,
+                                    bool enabled)
+{
     if (!exp->is_open()) {
         throw std::invalid_argument("no open experiment");
     }
-    
+
     ::Plate *plate = Plate(plate_id);
     if (plate == nullptr) {
-        throw std::invalid_argument(fmt::format("plate {} does not exists", plate_id));
+        throw std::invalid_argument(
+            fmt::format("plate {} does not exists", plate_id));
     }
 
     std::vector<::Well *> wells;
-    for (const auto & well_id : well_ids) {
+    for (const auto &well_id : well_ids) {
         ::Well *well = plate->Well(well_id);
         if (well == nullptr) {
-            throw std::invalid_argument(fmt::format("well {} does not exists in plate {}", well_id, plate_id));
+            throw std::invalid_argument(fmt::format(
+                "well {} does not exists in plate {}", well_id, plate_id));
         }
         wells.push_back(well);
     }
 
     std::map<std::string, bool> old_enabled;
-    for (const auto & well : wells) {
+    for (const auto &well : wells) {
         old_enabled[well->id] = well->enabled;
         well->enabled = enabled;
     }
@@ -249,16 +260,17 @@ void SampleManager::SetWellsEnabled(std::string plate_id, std::vector<std::strin
     // Write to DB
     exp->DB()->BeginTransaction();
     try {
-        for (const auto & well : wells) {
+        for (const auto &well : wells) {
             writeWellRow(well);
         }
         exp->DB()->Commit();
     } catch (std::exception &e) {
-        for (const auto & well : wells) {
+        for (const auto &well : wells) {
             well->enabled = old_enabled[well->id];
         }
         exp->DB()->Rollback();
-        throw std::runtime_error(fmt::format("cannot write to DB: {}, rolled back", e.what()));
+        throw std::runtime_error(
+            fmt::format("cannot write to DB: {}, rolled back", e.what()));
     }
 
     SendEvent({
@@ -267,27 +279,33 @@ void SampleManager::SetWellsEnabled(std::string plate_id, std::vector<std::strin
     });
 }
 
-void SampleManager::SetWellsMetadata(std::string plate_id, std::vector<std::string> well_ids, std::string key, nlohmann::ordered_json value) {
+void SampleManager::SetWellsMetadata(std::string plate_id,
+                                     std::vector<std::string> well_ids,
+                                     std::string key,
+                                     nlohmann::ordered_json value)
+{
     if (!exp->is_open()) {
         throw std::invalid_argument("no open experiment");
     }
-    
+
     ::Plate *plate = Plate(plate_id);
     if (plate == nullptr) {
-        throw std::invalid_argument(fmt::format("plate {} does not exists", plate_id));
+        throw std::invalid_argument(
+            fmt::format("plate {} does not exists", plate_id));
     }
 
     std::vector<::Well *> wells;
-    for (const auto & well_id : well_ids) {
+    for (const auto &well_id : well_ids) {
         ::Well *well = plate->Well(well_id);
         if (well == nullptr) {
-            throw std::invalid_argument(fmt::format("well {} does not exists in plate {}", well_id, plate_id));
+            throw std::invalid_argument(fmt::format(
+                "well {} does not exists in plate {}", well_id, plate_id));
         }
         wells.push_back(well);
     }
 
     std::map<std::string, nlohmann::ordered_json> old_metadata;
-    for (const auto & well : wells) {
+    for (const auto &well : wells) {
         old_metadata[well->id] = well->metadata;
         well->metadata[key] = value;
     }
@@ -295,16 +313,17 @@ void SampleManager::SetWellsMetadata(std::string plate_id, std::vector<std::stri
     // Write to DB
     exp->DB()->BeginTransaction();
     try {
-        for (const auto & well : wells) {
+        for (const auto &well : wells) {
             writeWellRow(well);
         }
         exp->DB()->Commit();
     } catch (std::exception &e) {
-        for (const auto & well : wells) {
+        for (const auto &well : wells) {
             well->metadata = old_metadata[well->id];
         }
         exp->DB()->Rollback();
-        throw std::runtime_error(fmt::format("cannot write to DB: {}, rolled back", e.what()));
+        throw std::runtime_error(
+            fmt::format("cannot write to DB: {}, rolled back", e.what()));
     }
 
     SendEvent({
@@ -313,26 +332,32 @@ void SampleManager::SetWellsMetadata(std::string plate_id, std::vector<std::stri
     });
 }
 
-void SampleManager::CreateSitesOnCenteredGrid(std::string plate_id, std::vector<std::string> well_ids,
-        int n_x, int n_y, double spacing_x, double spacing_y)
+void SampleManager::CreateSitesOnCenteredGrid(std::string plate_id,
+                                              std::vector<std::string> well_ids,
+                                              int n_x, int n_y,
+                                              double spacing_x,
+                                              double spacing_y)
 {
     if (!exp->is_open()) {
         throw std::invalid_argument("no open experiment");
     }
-    
+
     ::Plate *plate = Plate(plate_id);
     if (plate == nullptr) {
-        throw std::invalid_argument(fmt::format("plate {} does not exists", plate_id));
+        throw std::invalid_argument(
+            fmt::format("plate {} does not exists", plate_id));
     }
 
     std::vector<::Well *> wells;
-    for (const auto & well_id : well_ids) {
+    for (const auto &well_id : well_ids) {
         ::Well *well = plate->Well(well_id);
         if (well == nullptr) {
-            throw std::invalid_argument(fmt::format("well {} does not exists in plate {}", well_id, plate_id));
+            throw std::invalid_argument(fmt::format(
+                "well {} does not exists in plate {}", well_id, plate_id));
         }
         if (well->NumSites() != 0) {
-            throw std::runtime_error(fmt::format("sites already created in well {}", well->ID()));
+            throw std::runtime_error(
+                fmt::format("sites already created in well {}", well->ID()));
         }
         wells.push_back(well);
     }
@@ -352,8 +377,8 @@ void SampleManager::CreateSitesOnCenteredGrid(std::string plate_id, std::vector<
         throw std::invalid_argument(
             "too many sites, site_id formatter is not implemented");
     }
-    
-    for (const auto & well : wells) {
+
+    for (const auto &well : wells) {
         int i_site = 0;
         for (int i_y = 0; i_y < n_y; i_y++) {
             if (i_y % 2 == 0) {
@@ -391,24 +416,25 @@ void SampleManager::CreateSitesOnCenteredGrid(std::string plate_id, std::vector<
                     i_site++;
                 }
             }
-        } 
+        }
     }
 
     // Write to DB
     exp->DB()->BeginTransaction();
     try {
-        for (const auto & well : wells) {
-            for (const auto & site : well->sites) {
+        for (const auto &well : wells) {
+            for (const auto &site : well->sites) {
                 writeSiteRow(site);
             }
         }
         exp->DB()->Commit();
     } catch (std::exception &e) {
-        for (const auto & well : wells) {
+        for (const auto &well : wells) {
             well->clearSites();
         }
         exp->DB()->Rollback();
-        throw std::runtime_error(fmt::format("cannot write to DB: {}, rolled back", e.what()));
+        throw std::runtime_error(
+            fmt::format("cannot write to DB: {}, rolled back", e.what()));
     }
 
     SendEvent({
@@ -422,35 +448,33 @@ void SampleManager::SetCurrentPlate(std::string plate_id)
     if (!exp->is_open()) {
         throw std::invalid_argument("no open experiment");
     }
-    
+
     if (plate_id.empty()) {
         this->current_plate = nullptr;
         return;
     }
-    
+
     ::Plate *plate = Plate(plate_id);
     if (plate == nullptr) {
-        throw std::invalid_argument(fmt::format("plate {} not found", plate_id));
+        throw std::invalid_argument(
+            fmt::format("plate {} not found", plate_id));
     }
     this->current_plate = plate;
-    
+
     SendEvent({
         .type = EventType::CurrentPlateChanged,
         .value = plate_id,
     });
 }
 
-::Plate *SampleManager::CurrentPlate()
-{
-    return this->current_plate;
-}
+::Plate *SampleManager::CurrentPlate() { return this->current_plate; }
 
 ::Plate *SampleManager::Plate(std::string plate_id)
 {
     if (!exp->is_open()) {
         throw std::invalid_argument("no open experiment");
     }
-    
+
     std::shared_lock<std::shared_mutex> lk(plate_mutex);
     auto it = plate_map.find(plate_id);
     if (it == plate_map.end()) {
@@ -460,7 +484,7 @@ void SampleManager::SetCurrentPlate(std::string plate_id)
 }
 
 ::Well *SampleManager::Well(std::string plate_id, std::string well_id)
-{    
+{
     ::Plate *plate = Plate(plate_id);
     if (!plate) {
         return nullptr;
@@ -468,7 +492,8 @@ void SampleManager::SetCurrentPlate(std::string plate_id)
     return plate->Well(well_id);
 }
 
-::Site *SampleManager::Site(std::string plate_id, std::string well_id, std::string site_id)
+::Site *SampleManager::Site(std::string plate_id, std::string well_id,
+                            std::string site_id)
 {
     ::Well *well = Well(plate_id, well_id);
     if (!well) {
@@ -482,7 +507,7 @@ void SampleManager::SetCurrentPlate(std::string plate_id)
     if (uuid.empty()) {
         return nullptr;
     }
-    for (const auto& plate : plates) {
+    for (const auto &plate : plates) {
         if (plate->uuid == uuid) {
             return plate;
         }
@@ -496,7 +521,7 @@ void SampleManager::SetCurrentPlate(std::string plate_id)
         return nullptr;
     }
     // For now, just search it...
-    for (const auto& plate : plates) {
+    for (const auto &plate : plates) {
         for (const auto &well : plate->wells) {
             if (well->uuid == uuid) {
                 return well;
@@ -512,7 +537,7 @@ void SampleManager::SetCurrentPlate(std::string plate_id)
         return nullptr;
     }
     // For now, just search it...
-    for (const auto& plate : plates) {
+    for (const auto &plate : plates) {
         for (const auto &well : plate->wells) {
             for (const auto &site : well->sites) {
                 if (site->uuid == uuid) {
@@ -524,7 +549,4 @@ void SampleManager::SetCurrentPlate(std::string plate_id)
     return nullptr;
 }
 
-std::vector<Plate *> SampleManager::Plates()
-{
-    return plates;
-}
+std::vector<Plate *> SampleManager::Plates() { return plates; }

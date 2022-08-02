@@ -26,15 +26,9 @@ ChannelControlModel::ChannelControlModel(ChannelControl *channelControl,
 }
 
 
-QStringList ChannelControlModel::ListChannelNames()
-{
-    return channel_names;
-}
+QStringList ChannelControlModel::ListChannelNames() { return channel_names; }
 
-Channel ChannelControlModel::GetChannel(QString name)
-{
-    return channels[name];
-}
+Channel ChannelControlModel::GetChannel(QString name) { return channels[name]; }
 
 void ChannelControlModel::SetChannelExposure(QString name, int exposure_ms)
 {

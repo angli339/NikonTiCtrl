@@ -1,9 +1,9 @@
 #ifndef TIFFFILE_H
 #define TIFFFILE_H
 
-#include <tiffio.h>
-#include <string>
 #include <optional>
+#include <string>
+#include <tiffio.h>
 #include <xtensor/xarray.hpp>
 
 class TiffDecoder {

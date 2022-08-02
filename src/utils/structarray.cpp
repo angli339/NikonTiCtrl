@@ -1,9 +1,10 @@
 #include "structarray.h"
 
-StructArray::StructArray(std::vector<std::string> names, Dtype dtype, size_t size)
+StructArray::StructArray(std::vector<std::string> names, Dtype dtype,
+                         size_t size)
 {
     std::vector<StructArrayFieldDef> dtype_fields;
-    for (const auto & name : names) {
+    for (const auto &name : names) {
         dtype_fields.push_back({name, dtype});
     }
     init(dtype_fields, size);
@@ -18,10 +19,10 @@ void StructArray::init(std::vector<StructArrayFieldDef> dtype, size_t size)
 {
     this->dtype = dtype;
     this->size = size;
-    
+
     this->names.reserve(dtype.size());
     size_t offset = 0;
-    for (const auto & field : dtype) {
+    for (const auto &field : dtype) {
         this->names.push_back(field.name);
         this->fields.push_back({field.name, field.dtype, offset});
         switch (field.dtype) {
@@ -38,15 +39,18 @@ void StructArray::init(std::vector<StructArrayFieldDef> dtype, size_t size)
             offset += 1;
             break;
         case Dtype::uint16:
-            data[field.name] = xt::xarray<uint16_t>(xt::zeros<uint16_t>({size}));
+            data[field.name] =
+                xt::xarray<uint16_t>(xt::zeros<uint16_t>({size}));
             offset += 2;
             break;
         case Dtype::uint32:
-            data[field.name] = xt::xarray<uint32_t>(xt::zeros<uint32_t>({size}));
+            data[field.name] =
+                xt::xarray<uint32_t>(xt::zeros<uint32_t>({size}));
             offset += 4;
             break;
         case Dtype::uint64:
-            data[field.name] = xt::xarray<uint64_t>(xt::zeros<uint64_t>({size}));
+            data[field.name] =
+                xt::xarray<uint64_t>(xt::zeros<uint64_t>({size}));
             offset += 8;
             break;
         case Dtype::int8:

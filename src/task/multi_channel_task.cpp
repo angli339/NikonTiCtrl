@@ -1,5 +1,5 @@
-#include "experimentcontrol.h"
 #include "task/multi_channel_task.h"
+#include "experimentcontrol.h"
 
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
@@ -193,7 +193,8 @@ Status MultiChannelTask::StopAcqusition()
 
 Status MultiChannelTask::Acquire(std::string ndimage_name,
                                  std::vector<Channel> channels, int i_z,
-                                 int i_t, Site *site, nlohmann::ordered_json metadata)
+                                 int i_t, Site *site,
+                                 nlohmann::ordered_json metadata)
 {
     if (channels.empty()) {
         throw std::invalid_argument("channel not set");
@@ -312,7 +313,7 @@ Status MultiChannelTask::Acquire(std::string ndimage_name,
             }
 
             exp->Images()->AddImage(ndimage_name, i_ch, i_z, i_t, data,
-                                   new_metadata);
+                                    new_metadata);
             LOG_INFO("[{}][{}] Frame completed [{:.0f} ms]", ndimage_name,
                      i_ch + 1, sw_frame.Milliseconds());
         }

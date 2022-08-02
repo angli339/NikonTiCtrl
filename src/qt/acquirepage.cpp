@@ -1,11 +1,11 @@
 #include "qt/acquirepage.h"
 
+#include <QFileDialog>
 #include <QHBoxLayout>
 #include <QLabel>
-#include <QVBoxLayout>
-#include <QFileDialog>
 #include <QMessageBox>
 #include <QSplitter>
+#include <QVBoxLayout>
 
 #include "logging.h"
 
@@ -99,7 +99,7 @@ AcquirePage::AcquirePage(QWidget *parent) : QWidget(parent)
     this->layout()->setSpacing(0);
     this->layout()->setContentsMargins(5, 5, 5, 5);
     this->layout()->addWidget(mainSplitter);
-    
+
     connect(imagingControlView, &AcquisitionControlView::liveViewStarted, this,
             &AcquirePage::startLiveViewDisplay);
     connect(dataManagerView, &ImageManagerView::ndImageSelected, this,
@@ -118,25 +118,28 @@ void AcquirePage::setExperimentControlModel(ExperimentControlModel *model)
     }
     connect(model, &ExperimentControlModel::experimentOpened,
             this->experimentDirButton, &QPushButton::setText);
-    connect(experimentDirButton, &QPushButton::clicked, this, &AcquirePage::selectExperimentDir);
+    connect(experimentDirButton, &QPushButton::clicked, this,
+            &AcquirePage::selectExperimentDir);
 
-    connect(model->ImageManagerModel(), &ImageManagerModel::ndImageCreated, this,
-            &AcquirePage::handleNDImageUpdate);
-    connect(model->ImageManagerModel(), &ImageManagerModel::ndImageChanged, this,
-            &AcquirePage::handleNDImageUpdate);
+    connect(model->ImageManagerModel(), &ImageManagerModel::ndImageCreated,
+            this, &AcquirePage::handleNDImageUpdate);
+    connect(model->ImageManagerModel(), &ImageManagerModel::ndImageChanged,
+            this, &AcquirePage::handleNDImageUpdate);
     connect(model, &ExperimentControlModel::experimentClosed, this,
-        &AcquirePage::handleExperimentClose);
-    
-    connect(ndImageView->tSlider, &QSlider::valueChanged, this, &AcquirePage::handleTSliderValueChange);
-    connect(ndImageView->zSlider, &QSlider::valueChanged, this, &AcquirePage::handleZSliderValueChange);
+            &AcquirePage::handleExperimentClose);
+
+    connect(ndImageView->tSlider, &QSlider::valueChanged, this,
+            &AcquirePage::handleTSliderValueChange);
+    connect(ndImageView->zSlider, &QSlider::valueChanged, this,
+            &AcquirePage::handleZSliderValueChange);
 }
 
 void AcquirePage::selectExperimentDir()
 {
 
-    QString dir = QFileDialog::getExistingDirectory(this,
-        "Select Experiment Directory",
-        expControlModel->GetUserDataRoot());
+    QString dir =
+        QFileDialog::getExistingDirectory(this, "Select Experiment Directory",
+                                          expControlModel->GetUserDataRoot());
     if (dir.isEmpty()) {
         return;
     }

@@ -3,7 +3,8 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 
-AcquisitionControlView::AcquisitionControlView(QWidget *parent) : QWidget(parent)
+AcquisitionControlView::AcquisitionControlView(QWidget *parent)
+    : QWidget(parent)
 {
     QVBoxLayout *containerLayout = new QVBoxLayout(this);
     containerLayout->setSpacing(0);

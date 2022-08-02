@@ -4,9 +4,9 @@
 #include <vector>
 
 #include <QGridLayout>
-#include <QWidget>
-#include <QScrollBar>
 #include <QLabel>
+#include <QScrollBar>
+#include <QWidget>
 
 #include "qt/glimageview.h"
 

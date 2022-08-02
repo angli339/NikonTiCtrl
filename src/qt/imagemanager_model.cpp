@@ -2,7 +2,8 @@
 
 #include "logging.h"
 
-ImageManagerModel::ImageManagerModel(ImageManager *imageManager, QObject *parent)
+ImageManagerModel::ImageManagerModel(ImageManager *imageManager,
+                                     QObject *parent)
     : QAbstractItemModel(parent)
 {
     this->imageManager = imageManager;
@@ -72,7 +73,8 @@ void ImageManagerModel::addNDImageItem(NDImage *ndimage)
     validTreeItems.insert(item);
 }
 
-void ImageManagerModel::updateNDImageItem(ImageManagerTreeItem *item, NDImage *ndimage)
+void ImageManagerModel::updateNDImageItem(ImageManagerTreeItem *item,
+                                          NDImage *ndimage)
 {
     item->ndimage = ndimage;
     item->ndimage_name = ndimage->Name();
@@ -85,7 +87,8 @@ void ImageManagerModel::updateNDImageItem(ImageManagerTreeItem *item, NDImage *n
     } else {
         item->type = "XY";
     }
-    item->channels = fmt::format("{}", fmt::join(ndimage->ChannelNames(), " ,"));
+    item->channels =
+        fmt::format("{}", fmt::join(ndimage->ChannelNames(), " ,"));
 }
 
 void ImageManagerModel::handleNDImageCreated(std::string name)
@@ -105,7 +108,7 @@ void ImageManagerModel::handleNDImageChanged(std::string name)
 {
     NDImage *ndimage = imageManager->GetNDImage(name);
     ImageManagerTreeItem *item = nullptr;
-    for (auto & it : rootItem->child) {
+    for (auto &it : rootItem->child) {
         if (it->ndimage == ndimage) {
             item = it;
         }
@@ -122,7 +125,7 @@ void ImageManagerModel::handleNDImageChanged(std::string name)
 };
 
 QModelIndex ImageManagerModel::index(int row, int column,
-                                    const QModelIndex &parent) const
+                                     const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent)) {
         return QModelIndex();
@@ -186,7 +189,7 @@ int ImageManagerModel::columnCount(const QModelIndex &parent) const
 }
 
 QVariant ImageManagerModel::headerData(int section, Qt::Orientation orientation,
-                                      int role) const
+                                       int role) const
 {
     if (orientation == Qt::Horizontal && role == Qt::DisplayRole) {
         return rootItem->columnName(section);

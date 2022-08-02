@@ -1,11 +1,11 @@
 #ifndef ANALYSISMANAGER_H
 #define ANALYSISMANAGER_H
 
-#include <string>
-#include <map>
-#include <vector>
-#include <tuple>
 #include <filesystem>
+#include <map>
+#include <string>
+#include <tuple>
+#include <vector>
 
 #include "analysis/segmentation.h"
 #include "utils/hdf5file.h"
@@ -20,8 +20,10 @@ public:
     ~AnalysisManager();
     void LoadFile();
 
-    xt::xarray<double> GetSegmentationScore(std::string ndimage_name, std::string ch_name, int i_t);
-    int QuantifyRegions(std::string ndimage_name, int i_t, std::string segmentation_ch);
+    xt::xarray<double> GetSegmentationScore(std::string ndimage_name,
+                                            std::string ch_name, int i_t);
+    int QuantifyRegions(std::string ndimage_name, int i_t,
+                        std::string segmentation_ch);
 
 private:
     ExperimentControl *exp;
@@ -29,7 +31,8 @@ private:
 
     UNet unet;
 
-    std::map<std::tuple<std::string, int>, QuantificationResults> quantifications;
+    std::map<std::tuple<std::string, int>, QuantificationResults>
+        quantifications;
 };
 
 struct QuantificationResults {

@@ -45,28 +45,29 @@ public:
 
     // Experiment
     grpc::Status OpenExperiment(ServerContext *context,
-                                   const api::OpenExperimentRequest *req,
-                                   google::protobuf::Empty *resp) override;
+                                const api::OpenExperimentRequest *req,
+                                google::protobuf::Empty *resp) override;
 
     // Sample
     grpc::Status ListPlate(ServerContext *context,
-                             const google::protobuf::Empty *req,
-                             api::ListPlateResponse *resp) override;
+                           const google::protobuf::Empty *req,
+                           api::ListPlateResponse *resp) override;
     grpc::Status AddPlate(ServerContext *context,
-                             const api::AddPlateRequest *req,
-                             google::protobuf::Empty *resp) override;
-    grpc::Status SetPlatePositionOrigin(ServerContext *context,
-                             const api::SetPlatePositionOriginRequest *req,
-                             google::protobuf::Empty *resp) override;
+                          const api::AddPlateRequest *req,
+                          google::protobuf::Empty *resp) override;
+    grpc::Status
+    SetPlatePositionOrigin(ServerContext *context,
+                           const api::SetPlatePositionOriginRequest *req,
+                           google::protobuf::Empty *resp) override;
     grpc::Status SetPlateMetadata(ServerContext *context,
-                             const api::SetPlateMetadataRequest *req,
-                             google::protobuf::Empty *resp) override;
+                                  const api::SetPlateMetadataRequest *req,
+                                  google::protobuf::Empty *resp) override;
     grpc::Status SetWellsEnabled(ServerContext *context,
-                             const api::SetWellsEnabledRequest *req,
-                             google::protobuf::Empty *resp) override;
+                                 const api::SetWellsEnabledRequest *req,
+                                 google::protobuf::Empty *resp) override;
     grpc::Status SetWellsMetadata(ServerContext *context,
-                             const api::SetWellsMetadataRequest *req,
-                             google::protobuf::Empty *resp) override;
+                                  const api::SetWellsMetadataRequest *req,
+                                  google::protobuf::Empty *resp) override;
     grpc::Status CreateSites(ServerContext *context,
                              const api::CreateSitesRequest *req,
                              google::protobuf::Empty *resp) override;
@@ -83,19 +84,18 @@ public:
                             const api::GetNDImageRequest *req,
                             api::GetNDImageResponse *resp) override;
     grpc::Status GetImageData(ServerContext *context,
-                          const api::GetImageDataRequest *req,
-                          api::GetImageDataResponse *resp) override;
+                              const api::GetImageDataRequest *req,
+                              api::GetImageDataResponse *resp) override;
 
     // Image Analysis
     grpc::Status
     GetSegmentationScore(ServerContext *context,
                          const api::GetSegmentationScoreRequest *req,
                          api::GetSegmentationScoreResponse *resp) override;
-    
-    grpc::Status
-    QuantifyRegions(ServerContext *context,
-                         const api::QuantifyRegionsRequest *req,
-                         api::QuantifyRegionsResponse *resp) override;
+
+    grpc::Status QuantifyRegions(ServerContext *context,
+                                 const api::QuantifyRegionsRequest *req,
+                                 api::QuantifyRegionsResponse *resp) override;
 
 private:
     std::shared_ptr<grpc::Server> server;

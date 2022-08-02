@@ -22,10 +22,7 @@ public:
 
     void setChannel(QString channel_name);
     void setState(QString state);
-    void setMessage(QString message)
-    {
-        messageLabel->setText(message);
-    }
+    void setMessage(QString message) { messageLabel->setText(message); }
 
     void toggleLiveView();
 

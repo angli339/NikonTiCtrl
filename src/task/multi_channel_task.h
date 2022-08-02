@@ -22,7 +22,8 @@ public:
     MultiChannelTask(ExperimentControl *exp);
 
     Status Acquire(std::string ndimage_name, std::vector<Channel> channels,
-                   int i_z, int i_t, Site *site = nullptr, nlohmann::ordered_json metadata = nullptr);
+                   int i_z, int i_t, Site *site = nullptr,
+                   nlohmann::ordered_json metadata = nullptr);
 
 protected:
     Status EnableTrigger();

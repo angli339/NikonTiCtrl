@@ -1,5 +1,5 @@
-#include "experimentcontrol.h"
 #include "task/live_view_task.h"
+#include "experimentcontrol.h"
 
 #include "logging.h"
 
@@ -9,10 +9,7 @@ LiveViewTask::LiveViewTask(ExperimentControl *exp)
     this->dcam = exp->Devices()->GetHamamatsuDCam();
 }
 
-bool LiveViewTask::IsRunning()
-{
-    return is_running;
-}
+bool LiveViewTask::IsRunning() { return is_running; }
 
 void LiveViewTask::Run()
 {
@@ -37,10 +34,7 @@ void LiveViewTask::Run()
     }
 }
 
-void LiveViewTask::Stop()
-{
-    StopAcqusition();
-}
+void LiveViewTask::Stop() { StopAcqusition(); }
 
 void LiveViewTask::PrepareBuffer()
 {

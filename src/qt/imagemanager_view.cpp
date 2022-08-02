@@ -26,7 +26,7 @@ void ImageManagerView::setModel(ImageManagerModel *model)
     this->model = model;
 
     this->imageList->setModel(model);
-    
+
     imageList->setColumnWidth(0, 100);
     imageList->setColumnWidth(1, 40);
     imageList->setColumnWidth(2, 60);
@@ -57,7 +57,7 @@ bool ImageManagerView::eventFilter(QObject *source, QEvent *event)
 }
 
 void ImageManagerView::handleSelectionChanged(const QItemSelection &selected,
-                                             const QItemSelection &deselected)
+                                              const QItemSelection &deselected)
 {
     QModelIndexList selectedRows = imageList->selectionModel()->selectedRows();
     if (selectedRows.isEmpty()) {

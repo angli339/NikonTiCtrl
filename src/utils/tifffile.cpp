@@ -1,8 +1,8 @@
 #include "tifffile.h"
 #include "tiff_stream.h"
 
-#include <stdexcept>
 #include <fmt/format.h>
+#include <stdexcept>
 
 TiffDecoder::TiffDecoder(std::string buf)
 {
@@ -61,7 +61,7 @@ std::optional<uint16_t> TiffDecoder::SampleFormat()
 }
 
 xt::xarray<uint16_t> TiffDecoder::ReadMono16()
-{  
+{
     if (BitsPerSample() != 16) {
         throw std::runtime_error("not 16-bit");
     }
@@ -69,7 +69,8 @@ xt::xarray<uint16_t> TiffDecoder::ReadMono16()
         throw std::runtime_error("not 1 sample/pixel");
     }
     std::optional<uint16_t> sample_format = SampleFormat();
-    if (sample_format.has_value() && (sample_format.value() != SAMPLEFORMAT_UINT)) {
+    if (sample_format.has_value() &&
+        (sample_format.value() != SAMPLEFORMAT_UINT)) {
         throw std::runtime_error("not uint");
     }
 
@@ -79,23 +80,27 @@ xt::xarray<uint16_t> TiffDecoder::ReadMono16()
     uint32_t rows_per_strip;
     TIFFGetField(tif, TIFFTAG_ROWSPERSTRIP, &rows_per_strip);
     if (rows_per_strip != height) {
-        throw std::runtime_error("format not yet supported: expecting single strip");
+        throw std::runtime_error(
+            "format not yet supported: expecting single strip");
     }
 
     uint16_t planar_config;
     TIFFGetField(tif, TIFFTAG_PLANARCONFIG, &planar_config);
     if (planar_config != PLANARCONFIG_CONTIG) {
-        throw std::runtime_error("format not supported: expecting PLANARCONFIG_CONTIG");
+        throw std::runtime_error(
+            "format not supported: expecting PLANARCONFIG_CONTIG");
     }
 
-    xt::xarray<uint16_t> data = xt::xarray<uint16_t>::from_shape({height, width});
+    xt::xarray<uint16_t> data =
+        xt::xarray<uint16_t>::from_shape({height, width});
 
     TIFFReadEncodedStrip(tif, 0, data.data(), data.size() * sizeof(uint16_t));
 
     return data;
 }
 
-void TiffEncoder::SetCompression(uint16_t compression) {
+void TiffEncoder::SetCompression(uint16_t compression)
+{
     this->compression = compression;
 }
 
@@ -104,19 +109,14 @@ void TiffEncoder::SetDescription(std::string description)
     this->description = description;
 }
 
-void TiffEncoder::SetArtist(std::string artist)
-{
-    this->artist = artist;
-}
+void TiffEncoder::SetArtist(std::string artist) { this->artist = artist; }
 
-void TiffEncoder::SetSoftware(std::string software) {
+void TiffEncoder::SetSoftware(std::string software)
+{
     this->software = software;
 }
 
-void TiffEncoder::SetCameraMake(std::string make)
-{
-    this->camera_make = make;
-}
+void TiffEncoder::SetCameraMake(std::string make) { this->camera_make = make; }
 
 void TiffEncoder::SetCameraModel(std::string model)
 {
@@ -145,7 +145,7 @@ std::string TiffEncoder::EncodeMono16(xt::xarray<uint16_t> data)
     }
     uint16_t image_height = data.shape(0);
     uint16_t image_width = data.shape(1);
-    
+
     std::stringstream stream;
 
     TIFF *tif = TIFFStreamOpenWrite("stringstream", &stream);
@@ -171,7 +171,7 @@ std::string TiffEncoder::EncodeMono16(xt::xarray<uint16_t> data)
 
     if (pixel_size_um.has_value()) {
         double pixel_size_um_x = std::get<0>(pixel_size_um.value());
-        double pixel_size_um_y= std::get<1>(pixel_size_um.value());
+        double pixel_size_um_y = std::get<1>(pixel_size_um.value());
 
         double pixel_per_cm_x = 10 * 1000 / pixel_size_um_x;
         double pixel_per_cm_y = 10 * 1000 / pixel_size_um_y;

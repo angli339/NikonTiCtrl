@@ -4,8 +4,8 @@
 #include "device/devicehub.h"
 #include "device/hamamatsu/hamamatsu_dcam.h"
 #include "eventstream.h"
-#include "image/imagemanager.h"
 #include "image/imagedata.h"
+#include "image/imagemanager.h"
 
 class ExperimentControl;
 

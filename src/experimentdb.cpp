@@ -93,13 +93,16 @@ FROM "Well" "Well"
 WHERE 0 = 1;
 )";
 
-ExperimentDB::ExperimentDB(std::filesystem::path filename) {
+ExperimentDB::ExperimentDB(std::filesystem::path filename)
+{
     bool is_new_file = !std::filesystem::exists(filename);
 
-    int rc = sqlite3_open_v2(filename.string().c_str(), &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
-    if (rc != SQLITE_OK){
-      sqlite3_close(db);
-      throw std::runtime_error(fmt::format("can't open database: {}\n", sqlite3_errmsg(db)));
+    int rc = sqlite3_open_v2(filename.string().c_str(), &db,
+                             SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+    if (rc != SQLITE_OK) {
+        sqlite3_close(db);
+        throw std::runtime_error(
+            fmt::format("can't open database: {}\n", sqlite3_errmsg(db)));
     }
     this->filename = filename;
 
@@ -110,15 +113,14 @@ ExperimentDB::ExperimentDB(std::filesystem::path filename) {
     }
 }
 
-ExperimentDB::~ExperimentDB(){
-    sqlite3_close(db);
-}
+ExperimentDB::~ExperimentDB() { sqlite3_close(db); }
 
 std::vector<PlateRow> ExperimentDB::GetAllPlates()
 {
     std::vector<PlateRow> results;
 
-    sqlite3_stmt *stmt = prepare(R"(SELECT "index", uuid, plate_id, type, metadata, pos_origin_x, pos_origin_y FROM Plate ORDER BY "index")");
+    sqlite3_stmt *stmt = prepare(
+        R"(SELECT "index", uuid, plate_id, type, metadata, pos_origin_x, pos_origin_y FROM Plate ORDER BY "index")");
     while (step(stmt)) {
         auto row = PlateRow{
             .index = sqlite3_column_int(stmt, 0),
@@ -143,8 +145,9 @@ std::vector<PlateRow> ExperimentDB::GetAllPlates()
 std::vector<WellRow> ExperimentDB::GetAllWells()
 {
     std::vector<WellRow> results;
-    
-    sqlite3_stmt *stmt = prepare(R"(SELECT "index", uuid, plate_id, well_id, rel_pos_x, rel_pos_y, enabled, metadata FROM Well ORDER BY plate_id, "index")");
+
+    sqlite3_stmt *stmt = prepare(
+        R"(SELECT "index", uuid, plate_id, well_id, rel_pos_x, rel_pos_y, enabled, metadata FROM Well ORDER BY plate_id, "index")");
     while (step(stmt)) {
         results.emplace_back(WellRow{
             .index = sqlite3_column_int(stmt, 0),
@@ -165,8 +168,9 @@ std::vector<WellRow> ExperimentDB::GetAllWells()
 std::vector<SiteRow> ExperimentDB::GetAllSites()
 {
     std::vector<SiteRow> results;
-    
-    sqlite3_stmt *stmt = prepare(R"(SELECT "index", uuid, plate_id, well_id, site_id, rel_pos_x, rel_pos_y, enabled, metadata FROM Site ORDER BY plate_id, well_id, "index")");
+
+    sqlite3_stmt *stmt = prepare(
+        R"(SELECT "index", uuid, plate_id, well_id, site_id, rel_pos_x, rel_pos_y, enabled, metadata FROM Site ORDER BY plate_id, well_id, "index")");
     while (step(stmt)) {
         results.emplace_back(SiteRow{
             .index = sqlite3_column_int(stmt, 0),
@@ -188,8 +192,9 @@ std::vector<SiteRow> ExperimentDB::GetAllSites()
 std::vector<NDImageRow> ExperimentDB::GetAllNDImages()
 {
     std::vector<NDImageRow> results;
-    
-    sqlite3_stmt *stmt = prepare(R"(SELECT "index", name, ch_names, width, height, n_ch, n_z, n_t, plate_id, well_id, site_id FROM NDImage ORDER BY "index")");
+
+    sqlite3_stmt *stmt = prepare(
+        R"(SELECT "index", name, ch_names, width, height, n_ch, n_z, n_t, plate_id, well_id, site_id FROM NDImage ORDER BY "index")");
     while (step(stmt)) {
         results.emplace_back(NDImageRow{
             .index = sqlite3_column_int(stmt, 0),
@@ -213,8 +218,10 @@ std::vector<NDImageRow> ExperimentDB::GetAllNDImages()
 std::vector<ImageRow> ExperimentDB::GetAllImages()
 {
     std::vector<ImageRow> results;
-    
-    sqlite3_stmt *stmt = prepare("SELECT ndimage_name, ch_name, i_z, i_t, path, exposure_ms, pos_x, pos_y, pos_z FROM Image");
+
+    sqlite3_stmt *stmt =
+        prepare("SELECT ndimage_name, ch_name, i_z, i_t, path, exposure_ms, "
+                "pos_x, pos_y, pos_z FROM Image");
     while (step(stmt)) {
         auto row = ImageRow{
             .ndimage_name = (const char *)(sqlite3_column_text(stmt, 0)),
@@ -258,7 +265,8 @@ void ExperimentDB::checkSchema()
     try {
         exec(sql_check_schema);
     } catch (std::exception &e) {
-        throw std::runtime_error(fmt::format("unexpected db schema: {}", e.what()));
+        throw std::runtime_error(
+            fmt::format("unexpected db schema: {}", e.what()));
     }
 }
 
@@ -268,7 +276,8 @@ void ExperimentDB::InsertOrReplaceRow(PlateRow row)
         INSERT OR REPLACE INTO "Plate" ("index", uuid, plate_id, type, pos_origin_x, pos_origin_y, metadata)
         VALUES (?,?,?,?,?,?,?)
         )");
-    bind(stmt, row.index, row.uuid, row.plate_id, row.type, row.pos_origin_x, row.pos_origin_y, row.metadata.dump());
+    bind(stmt, row.index, row.uuid, row.plate_id, row.type, row.pos_origin_x,
+         row.pos_origin_y, row.metadata.dump());
     step(stmt);
     finalize(stmt);
 }
@@ -279,7 +288,8 @@ void ExperimentDB::InsertOrReplaceRow(WellRow row)
         INSERT OR REPLACE INTO "Well" ("index", uuid, plate_id, well_id, rel_pos_x, rel_pos_y, enabled, metadata)
         VALUES (?,?,?,?,?,?,?,?)
         )");
-    bind(stmt, row.index, row.uuid, row.plate_id, row.well_id, row.rel_pos_x, row.rel_pos_y, row.enabled, row.metadata.dump());
+    bind(stmt, row.index, row.uuid, row.plate_id, row.well_id, row.rel_pos_x,
+         row.rel_pos_y, row.enabled, row.metadata.dump());
     step(stmt);
     finalize(stmt);
 }
@@ -290,7 +300,8 @@ void ExperimentDB::InsertOrReplaceRow(SiteRow row)
         INSERT OR REPLACE INTO "Site" ("index", uuid, plate_id, well_id, site_id, rel_pos_x, rel_pos_y, enabled, metadata)
         VALUES (?,?,?,?,?,?,?,?,?)
         )");
-    bind(stmt, row.index, row.uuid, row.plate_id, row.well_id, row.site_id, row.rel_pos_x, row.rel_pos_y, row.enabled, row.metadata.dump());
+    bind(stmt, row.index, row.uuid, row.plate_id, row.well_id, row.site_id,
+         row.rel_pos_x, row.rel_pos_y, row.enabled, row.metadata.dump());
     step(stmt);
     finalize(stmt);
 }
@@ -301,9 +312,8 @@ void ExperimentDB::InsertOrReplaceRow(NDImageRow row)
         INSERT OR REPLACE INTO "NDImage" ("index", name, ch_names, width, height, n_ch, n_z, n_t, plate_id, well_id, site_id)
         VALUES (?,?,?,?,?,?,?,?,?,?,?)
         )");
-    bind(stmt, row.index, row.name, row.ch_names.dump(),
-        row.width, row.height, row.n_ch, row.n_z, row.n_t,
-        row.plate_id, row.well_id, row.site_id);
+    bind(stmt, row.index, row.name, row.ch_names.dump(), row.width, row.height,
+         row.n_ch, row.n_z, row.n_t, row.plate_id, row.well_id, row.site_id);
     step(stmt);
     finalize(stmt);
 }
@@ -314,7 +324,8 @@ void ExperimentDB::InsertOrReplaceRow(ImageRow row)
         INSERT OR REPLACE INTO "Image" (ndimage_name, ch_name, i_z, i_t, path, exposure_ms, pos_x, pos_y, pos_z)
         VALUES (?,?,?,?,?,?,?,?,?)
         )");
-    bind(stmt, row.ndimage_name, row.ch_name, row.i_z, row.i_t, row.path, row.exposure_ms, row.pos_x, row.pos_y, row.pos_z);
+    bind(stmt, row.ndimage_name, row.ch_name, row.i_z, row.i_t, row.path,
+         row.exposure_ms, row.pos_x, row.pos_y, row.pos_z);
     step(stmt);
     finalize(stmt);
 }
@@ -334,7 +345,7 @@ void ExperimentDB::Commit()
 {
     try {
         exec("COMMIT");
-    } catch(...) {
+    } catch (...) {
         db_mutex.unlock();
         throw;
     }
@@ -345,7 +356,7 @@ void ExperimentDB::Rollback()
 {
     try {
         exec("ROLLBACK");
-    } catch(...) {
+    } catch (...) {
         db_mutex.unlock();
         throw;
     }
@@ -356,11 +367,10 @@ void ExperimentDB::exec(std::string sql)
 {
     char *errmsg;
     int rc = sqlite3_exec(db, sql.c_str(), NULL, NULL, &errmsg);
-    if (rc != SQLITE_OK){
+    if (rc != SQLITE_OK) {
         std::string err = fmt::format("exec: {}\n", errmsg);
         sqlite3_free(errmsg);
         throw std::runtime_error(err);
-        
     }
 }
 
@@ -368,8 +378,9 @@ sqlite3_stmt *ExperimentDB::prepare(std::string sql)
 {
     sqlite3_stmt *stmt;
     int rc = sqlite3_prepare_v2(db, sql.c_str(), sql.size(), &stmt, 0);
-    if (rc != SQLITE_OK){
-        throw std::runtime_error(fmt::format("prepare: {}\n", sqlite3_errmsg(db)));
+    if (rc != SQLITE_OK) {
+        throw std::runtime_error(
+            fmt::format("prepare: {}\n", sqlite3_errmsg(db)));
     }
     return stmt;
 }
@@ -390,15 +401,16 @@ bool ExperimentDB::step(sqlite3_stmt *stmt)
 void ExperimentDB::finalize(sqlite3_stmt *stmt)
 {
     int rc = sqlite3_finalize(stmt);
-    if (rc != SQLITE_OK){
-        throw std::runtime_error(fmt::format("finalize: {}\n", sqlite3_errmsg(db)));
+    if (rc != SQLITE_OK) {
+        throw std::runtime_error(
+            fmt::format("finalize: {}\n", sqlite3_errmsg(db)));
     }
 }
 
-void ExperimentDB::bind(sqlite3_stmt *stmt, int index, const std::string& value)
+void ExperimentDB::bind(sqlite3_stmt *stmt, int index, const std::string &value)
 {
     int rc = sqlite3_bind_text(stmt, index, value.c_str(), value.size(), NULL);
-    if (rc != SQLITE_OK){
+    if (rc != SQLITE_OK) {
         throw std::runtime_error(fmt::format("bind: {}\n", sqlite3_errmsg(db)));
     }
 }
@@ -406,7 +418,7 @@ void ExperimentDB::bind(sqlite3_stmt *stmt, int index, const std::string& value)
 void ExperimentDB::bind(sqlite3_stmt *stmt, int index, const double value)
 {
     int rc = sqlite3_bind_double(stmt, index, value);
-    if (rc != SQLITE_OK){
+    if (rc != SQLITE_OK) {
         throw std::runtime_error(fmt::format("bind: {}\n", sqlite3_errmsg(db)));
     }
 }
@@ -414,12 +426,13 @@ void ExperimentDB::bind(sqlite3_stmt *stmt, int index, const double value)
 void ExperimentDB::bind(sqlite3_stmt *stmt, int index, const int value)
 {
     int rc = sqlite3_bind_int(stmt, index, value);
-    if (rc != SQLITE_OK){
+    if (rc != SQLITE_OK) {
         throw std::runtime_error(fmt::format("bind: {}\n", sqlite3_errmsg(db)));
     }
 }
 
-void ExperimentDB::bind(sqlite3_stmt *stmt, int index, std::optional<double> value)
+void ExperimentDB::bind(sqlite3_stmt *stmt, int index,
+                        std::optional<double> value)
 {
     int rc;
     if (value.has_value()) {
@@ -427,7 +440,7 @@ void ExperimentDB::bind(sqlite3_stmt *stmt, int index, std::optional<double> val
     } else {
         rc = sqlite3_bind_null(stmt, index);
     }
-    if (rc != SQLITE_OK){
+    if (rc != SQLITE_OK) {
         throw std::runtime_error(fmt::format("bind: {}\n", sqlite3_errmsg(db)));
     }
 }
@@ -435,16 +448,15 @@ void ExperimentDB::bind(sqlite3_stmt *stmt, int index, std::optional<double> val
 void ExperimentDB::bind(sqlite3_stmt *stmt, int index, const bool value)
 {
     int rc = sqlite3_bind_int(stmt, index, value ? 1 : 0);
-    if (rc != SQLITE_OK){
+    if (rc != SQLITE_OK) {
         throw std::runtime_error(fmt::format("bind: {}\n", sqlite3_errmsg(db)));
     }
 }
 
-template<class ...Args>
-void ExperimentDB::bind(sqlite3_stmt *stmt, const Args& ... args)
+template <class... Args>
+void ExperimentDB::bind(sqlite3_stmt *stmt, const Args &...args)
 {
     int index = 1;
     (void)std::initializer_list<int>{
-        ((void)bind(stmt, index++, std::forward<decltype(args)>(args)), 0)...
-    };
+        ((void)bind(stmt, index++, std::forward<decltype(args)>(args)), 0)...};
 }

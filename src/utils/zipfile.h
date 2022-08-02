@@ -1,12 +1,12 @@
 #ifndef ZIPFILE_H
 #define ZIPFILE_H
 
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <map>
 #include <filesystem>
+#include <fstream>
+#include <map>
+#include <sstream>
+#include <string>
+#include <vector>
 
 struct ZipDirEntry;
 struct ZipEndOfCentralDir;
@@ -56,7 +56,8 @@ struct ZipEndOfCentralDir {
 };
 
 struct Zip64EndOfCentralDir {
-    uint64_t size_eocd = 0; // does not include 12 bytes of signature + size_eocd
+    uint64_t size_eocd =
+        0; // does not include 12 bytes of signature + size_eocd
     uint16_t creator_version = 0;
     uint16_t reader_version = 0;
     uint32_t disk_number = 0;
@@ -68,8 +69,7 @@ struct Zip64EndOfCentralDir {
     std::string extra;
 };
 
-struct Zip64EndCentralDirLocator
-{
+struct Zip64EndCentralDirLocator {
     uint32_t dir_disk_number = 0;
     uint64_t eocd64_offset = 0;
     uint32_t total_disk_number = 0;

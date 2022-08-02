@@ -6,9 +6,9 @@
 #include <shared_mutex>
 #include <vector>
 
+#include "eventstream.h"
 #include "image/imagedata.h"
 #include "image/ndimage.h"
-#include "eventstream.h"
 #include "utils/zipfile.h"
 
 class ExperimentControl;
@@ -26,8 +26,8 @@ public:
     bool HasNDImage(std::string ndimage_name);
     NDImage *GetNDImage(std::string ndimage_name);
 
-    void NewNDImage(std::string ndimage_name,
-                    std::vector<std::string> ch_names, Site *site=nullptr);
+    void NewNDImage(std::string ndimage_name, std::vector<std::string> ch_names,
+                    Site *site = nullptr);
     void AddImage(std::string ndimage_name, int i_ch, int i_z, int i_t,
                   ImageData data, nlohmann::ordered_json metadata);
 
@@ -47,7 +47,7 @@ private:
     std::shared_mutex dataset_mutex;
     std::vector<NDImage *> dataset;
     std::map<std::string, NDImage *> dataset_map;
-    
+
     void writeNDImageRow(NDImage *ndimage);
     void writeImageRow(NDImage *ndimage, int i_ch, int i_z, int i_t);
 };

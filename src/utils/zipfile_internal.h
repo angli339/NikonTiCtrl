@@ -4,10 +4,10 @@
 #include <fstream>
 #include <string>
 
-template <typename T>
-void zipRead(std::istream &is, T *value)
+template <typename T> void zipRead(std::istream &is, T *value)
 {
-    static_assert(std::is_same_v<T, uint8_t> || std::is_same_v<T, uint16_t> || std::is_same_v<T, uint32_t> || std::is_same_v<T, uint64_t>);
+    static_assert(std::is_same_v<T, uint8_t> || std::is_same_v<T, uint16_t> ||
+                  std::is_same_v<T, uint32_t> || std::is_same_v<T, uint64_t>);
     is.read(reinterpret_cast<char *>(value), sizeof(*value));
 }
 
@@ -44,10 +44,10 @@ inline std::string zipReadString(std::istream &is, size_t size)
     return value;
 }
 
-template <typename T>
-void zipWrite(std::ostream &os, T value)
+template <typename T> void zipWrite(std::ostream &os, T value)
 {
-    static_assert(std::is_same_v<T, uint8_t> || std::is_same_v<T, uint16_t> || std::is_same_v<T, uint32_t> || std::is_same_v<T, uint64_t>);
+    static_assert(std::is_same_v<T, uint8_t> || std::is_same_v<T, uint16_t> ||
+                  std::is_same_v<T, uint32_t> || std::is_same_v<T, uint64_t>);
     os.write(reinterpret_cast<char *>(&value), sizeof(value));
 }
 

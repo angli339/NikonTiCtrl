@@ -3,16 +3,14 @@
 #include "logging.h"
 
 ExperimentControlModel::ExperimentControlModel(ExperimentControl *exp,
-                                         QObject *parent)
+                                               QObject *parent)
     : QObject(parent)
 {
     this->exp = exp;
 
-    channelControlModel =
-        new ::ChannelControlModel(exp->Channels());
+    channelControlModel = new ::ChannelControlModel(exp->Channels());
     imageManagerModel = new ::ImageManagerModel(exp->Images());
-    sampleManagerModel =
-        new ::SampleManagerModel(exp->Samples());
+    sampleManagerModel = new ::SampleManagerModel(exp->Samples());
 
     handleEventFuture = std::async(std::launch::async,
                                    &ExperimentControlModel::handleEvents, this);
@@ -64,7 +62,8 @@ QString ExperimentControlModel::ExperimentDir()
 void ExperimentControlModel::SetSelectedSite(Site *site)
 {
     if (site != nullptr) {
-        LOG_DEBUG("site {}/{}/{} selected", site->Well()->Plate()->ID(), site->Well()->ID(), site->ID());
+        LOG_DEBUG("site {}/{}/{} selected", site->Well()->Plate()->ID(),
+                  site->Well()->ID(), site->ID());
     } else {
         LOG_DEBUG("site selection cleared");
     }
@@ -137,7 +136,8 @@ void ExperimentControlModel::handleEvents()
                 if (list.length() != 2) {
                     return;
                 }
-                sampleManagerModel->handleStagePositionUpdate(list[0].toDouble(), list[1].toDouble());
+                sampleManagerModel->handleStagePositionUpdate(
+                    list[0].toDouble(), list[1].toDouble());
             }
             break;
         }

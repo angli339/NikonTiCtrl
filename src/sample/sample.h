@@ -19,8 +19,7 @@ class Plate;
 class Well;
 class Site;
 
-enum class PlateType
-{
+enum class PlateType {
     Slide,
     Wellplate96,
     Wellplate384
@@ -36,10 +35,11 @@ struct Pos2D {
 
 class Plate {
     friend class SampleManager;
+
 public:
     Plate(PlateType plate_type, std::string plate_id);
     ~Plate();
-    
+
     int Index() const;
     std::string UUID() const;
     PlateType Type() const;
@@ -71,6 +71,7 @@ private:
 class Well {
     friend class Plate;
     friend class SampleManager;
+
 public:
     Well(::Plate *plate, std::string id, Pos2D rel_pos);
     ~Well();
@@ -110,6 +111,7 @@ private:
 class Site {
     friend class Well;
     friend class SampleManager;
+
 public:
     Site(::Well *well, std::string id, Pos2D rel_pos);
 

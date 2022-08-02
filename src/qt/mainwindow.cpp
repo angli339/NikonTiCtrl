@@ -10,7 +10,8 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
-    QString appName = QString("Nikon Ti Control (%1)").arg(gitTagVersion.c_str());
+    QString appName =
+        QString("Nikon Ti Control (%1)").arg(gitTagVersion.c_str());
     setWindowTitle(appName);
 
     //
@@ -89,13 +90,13 @@ void MainWindow::showDataPage()
     contentArea->setCurrentWidget(dataPage);
 }
 
-
 void MainWindow::updateLabels()
-{   
+{
     QMap<QString, QMap<QString, QString>> propertyValueLabels;
-    for (const auto &[property_path, value_label_map] : config.system.labels)  {
+    for (const auto &[property_path, value_label_map] : config.system.labels) {
         for (const auto &[value, label] : value_label_map) {
-            propertyValueLabels[property_path.ToString().c_str()][value.c_str()] = label.name.c_str();
+            propertyValueLabels[property_path.ToString().c_str()]
+                               [value.c_str()] = label.name.c_str();
         }
     }
     acquirePage->deviceControlView->setPropertyValueLabels(propertyValueLabels);

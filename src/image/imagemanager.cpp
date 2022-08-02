@@ -3,19 +3,16 @@
 #include <ctime>
 #include <fmt/chrono.h>
 #include <fmt/os.h>
-#include <stdexcept>
 #include <nlohmann/json.hpp>
+#include <stdexcept>
 
 #include "config.h"
-#include "logging.h"
 #include "experimentcontrol.h"
+#include "logging.h"
 #include "utils/tifffile.h"
 #include "version.h"
 
-ImageManager::ImageManager(ExperimentControl *exp)
-{
-    this->exp = exp;
-}
+ImageManager::ImageManager(ExperimentControl *exp) { this->exp = exp; }
 
 ImageManager::~ImageManager()
 {
@@ -36,11 +33,12 @@ void ImageManager::LoadFromDB()
     dataset.clear();
     dataset_map.clear();
 
-    for (const auto& ndimage_row : exp->DB()->GetAllNDImages()) {
+    for (const auto &ndimage_row : exp->DB()->GetAllNDImages()) {
         NDImage *ndimage = new NDImage;
         ndimage->index = ndimage_row.index;
         ndimage->name = ndimage_row.name;
-        ndimage->channel_names = ndimage_row.ch_names.get<std::vector<std::string>>();
+        ndimage->channel_names =
+            ndimage_row.ch_names.get<std::vector<std::string>>();
         ndimage->width = ndimage_row.width;
         ndimage->height = ndimage_row.height;
         ndimage->n_ch = ndimage_row.n_ch;
@@ -54,7 +52,7 @@ void ImageManager::LoadFromDB()
         dataset_map[ndimage->name] = ndimage;
     }
 
-    for (const auto& image_row : exp->DB()->GetAllImages()) {
+    for (const auto &image_row : exp->DB()->GetAllImages()) {
         NDImage *ndimage = dataset_map[image_row.ndimage_name];
         int i_ch = ndimage->ChannelIndex(image_row.ch_name);
         if (i_ch == -1) {
@@ -67,7 +65,7 @@ void ImageManager::LoadFromDB()
     }
 
     LOG_DEBUG("DB loaded");
-    
+
     zipfile.open(exp->ExperimentDir() / "images.zip");
     LOG_DEBUG("zip opened");
 }
@@ -146,17 +144,19 @@ NDImage *ImageManager::GetNDImage(std::string ndimage_name)
 }
 
 void ImageManager::NewNDImage(std::string ndimage_name,
-                             std::vector<std::string> ch_names, Site *site)
+                              std::vector<std::string> ch_names, Site *site)
 {
     std::unique_lock<std::shared_mutex> lk(dataset_mutex);
 
     auto it = dataset_map.find(ndimage_name);
     if (it != dataset_map.end()) {
         if (it->second->ChannelNames() != ch_names) {
-            throw std::invalid_argument("duplicated ndimage_name with different channels");
+            throw std::invalid_argument(
+                "duplicated ndimage_name with different channels");
         }
         if (it->second->Site() != site) {
-            throw std::invalid_argument("duplicated ndimage_name with different site");
+            throw std::invalid_argument(
+                "duplicated ndimage_name with different site");
         }
         return;
     }
@@ -178,7 +178,8 @@ void ImageManager::NewNDImage(std::string ndimage_name,
         dataset.pop_back();
         dataset_map.erase(ndimage_name);
         exp->DB()->Rollback();
-        throw std::runtime_error(fmt::format("cannot write NDImage to DB: {}, rolled back", e.what()));
+        throw std::runtime_error(fmt::format(
+            "cannot write NDImage to DB: {}, rolled back", e.what()));
     }
 
     lk.unlock();
@@ -189,8 +190,9 @@ void ImageManager::NewNDImage(std::string ndimage_name,
     });
 }
 
-void ImageManager::AddImage(std::string ndimage_name, int i_ch, int i_z, int i_t,
-                           ImageData data, nlohmann::ordered_json metadata)
+void ImageManager::AddImage(std::string ndimage_name, int i_ch, int i_z,
+                            int i_t, ImageData data,
+                            nlohmann::ordered_json metadata)
 
 {
     NDImage *ndimage = GetNDImage(ndimage_name);
@@ -203,14 +205,16 @@ void ImageManager::AddImage(std::string ndimage_name, int i_ch, int i_z, int i_t
     ndimage->height = data.Height();
     ndimage->dtype = data.DataType();
     ndimage->ctype = data.ColorType();
-    
-    std::string filename = fmt::format("{}-{}-{:03d}-{:04d}.tif", ndimage->name, ndimage->channel_names[i_ch], i_z, i_t);
+
+    std::string filename = fmt::format("{}-{}-{:03d}-{:04d}.tif", ndimage->name,
+                                       ndimage->channel_names[i_ch], i_z, i_t);
     std::filesystem::path relpath = fmt::format("images/{}", filename);
-    
+
     std::vector<size_t> im_shape = {data.Height(), data.Width()};
-    xt::xarray<uint16_t> im_arr = xt::adapt((uint16_t *)data.Buf().get(), data.size(),
-        xt::no_ownership(), im_shape);
-    
+    xt::xarray<uint16_t> im_arr =
+        xt::adapt((uint16_t *)data.Buf().get(), data.size(), xt::no_ownership(),
+                  im_shape);
+
     TiffEncoder tif;
     tif.SetDescription(metadata.dump());
     tif.SetCompression(COMPRESSION_ZSTD);
@@ -233,7 +237,8 @@ void ImageManager::AddImage(std::string ndimage_name, int i_ch, int i_z, int i_t
         dataset.pop_back();
         dataset_map.erase(ndimage_name);
         exp->DB()->Rollback();
-        throw std::runtime_error(fmt::format("cannot write NDImage to DB: {}, rolled back", e.what()));
+        throw std::runtime_error(fmt::format(
+            "cannot write NDImage to DB: {}, rolled back", e.what()));
     }
 
     SendEvent({

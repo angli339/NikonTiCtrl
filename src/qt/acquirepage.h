@@ -8,9 +8,9 @@
 #include <QWidget>
 
 #include "experimentcontrol.h"
-#include "qt/imagemanager_view.h"
-#include "qt/devicecontrol_view.h"
 #include "qt/acquisitioncontrol_view.h"
+#include "qt/devicecontrol_view.h"
+#include "qt/imagemanager_view.h"
 #include "qt/ndimage_view.h"
 #include "qt/samplemanager_view.h"
 

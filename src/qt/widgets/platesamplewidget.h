@@ -1,16 +1,15 @@
 #ifndef PLATESAMPLEWIDGET_H
 #define PLATESAMPLEWIDGET_H
 
-#include <QWidget>
-#include <QGraphicsView>
-#include <QGraphicsScene>
 #include <QGraphicsPathItem>
+#include <QGraphicsScene>
+#include <QGraphicsView>
+#include <QWidget>
 #include <map>
 
 class GraphicsWellItem;
 
-class PlateSampleWidget : public QWidget
-{
+class PlateSampleWidget : public QWidget {
     Q_OBJECT
 public:
     explicit PlateSampleWidget(QWidget *parent = nullptr);
@@ -45,7 +44,7 @@ public:
     QMap<QString, GraphicsWellItem *> wellitem_map;
 
     bool zoom;
-    
+
     double fov_width;
     double fov_height;
     double fov_x0;
@@ -74,22 +73,24 @@ public:
     QColor fov_rect_color = Qt::darkRed;
     qreal fn_circle_size = 25.0 / 60; // mm
     QColor fn_circle_color = Qt::darkYellow;
-    
+
 
     QColor highlight_border_color = QColor("#BBB");
     qreal hightlight_border_width = 1.5;
     QColor highlight_label_color = QColor("#EEE");
 };
 
-class GraphicsWellItem : public QGraphicsItem
-{
+class GraphicsWellItem : public QGraphicsItem {
 public:
-    explicit GraphicsWellItem(QString id, double pos_x, double pos_y, double size, double radius, QGraphicsItem *parent = nullptr);
+    explicit GraphicsWellItem(QString id, double pos_x, double pos_y,
+                              double size, double radius,
+                              QGraphicsItem *parent = nullptr);
 
     QRectF boundingRect() const;
 
 protected:
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+               QWidget *widget = nullptr) override;
 
 public:
     QString id;

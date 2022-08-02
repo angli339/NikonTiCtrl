@@ -1,8 +1,8 @@
 #include "platesamplewidget.h"
 
 #include <QGraphicsTextItem>
-#include <QVBoxLayout>
 #include <QPainterPath>
+#include <QVBoxLayout>
 
 PlateSampleWidget::PlateSampleWidget(QWidget *parent) : QWidget(parent)
 {
@@ -17,7 +17,7 @@ PlateSampleWidget::PlateSampleWidget(QWidget *parent) : QWidget(parent)
 
 QSize PlateSampleWidget::sizeHint() const
 {
-    return QSize(300/(85.48*2)*(127.76*2), 300);
+    return QSize(300 / (85.48 * 2) * (127.76 * 2), 300);
 }
 
 void PlateSampleWidget::clear()
@@ -35,7 +35,7 @@ void PlateSampleWidget::clear()
 void PlateSampleWidget::setPlateType(QString plate_type)
 {
     clear();
-    
+
     this->plate_type = plate_type;
     if (plate_type == "wellplate96") {
         n_col = 12;
@@ -68,7 +68,7 @@ void PlateSampleWidget::setPlateType(QString plate_type)
         rownames.push_back(QString(rowname));
     }
     for (int i_col = 0; i_col < n_col; i_col++) {
-        QString colname = QString("%1").arg(i_col+1, 2, 10, QLatin1Char('0'));
+        QString colname = QString("%1").arg(i_col + 1, 2, 10, QLatin1Char('0'));
         colnames.push_back(colname);
     }
 
@@ -84,7 +84,7 @@ void PlateSampleWidget::zoomCenter(QString well_id)
     if (!wellitem_map.contains(well_id)) {
         return;
     }
-    
+
     GraphicsWellItem *wellitem = wellitem_map[well_id];
     zoomCenter(wellitem->x0 - A1_x0, wellitem->y0 - A1_y0);
 }
@@ -98,7 +98,7 @@ void PlateSampleWidget::zoomCenter(double rel_x0, double rel_y0)
     scene->setSceneRect(x1, y1, width, height);
     graphView->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
 
-    for (auto & wellitem: wellitem_map) {
+    for (auto &wellitem : wellitem_map) {
         wellitem->label->show();
     }
     zoom = true;
@@ -106,10 +106,10 @@ void PlateSampleWidget::zoomCenter(double rel_x0, double rel_y0)
 
 void PlateSampleWidget::zoomFit()
 {
-    scene->setSceneRect(-1, -1, plate_size_x+2, plate_size_y+2);
+    scene->setSceneRect(-1, -1, plate_size_x + 2, plate_size_y + 2);
     graphView->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
 
-    for (auto & wellitem : wellitem_map) {
+    for (auto &wellitem : wellitem_map) {
         wellitem->label->hide();
     }
     zoom = false;
@@ -118,9 +118,9 @@ void PlateSampleWidget::zoomFit()
 void PlateSampleWidget::setFOVSize(double fov_width, double fov_height)
 {
     if (fov_rect) {
-        fov_rect->setRect(-fov_width/2, -fov_height/2, fov_width, fov_height);
+        fov_rect->setRect(-fov_width / 2, -fov_height / 2, fov_width,
+                          fov_height);
     }
-    
 }
 
 void PlateSampleWidget::setFOVPos(double rel_x0, double rel_y0)
@@ -131,7 +131,7 @@ void PlateSampleWidget::setFOVPos(double rel_x0, double rel_y0)
         fov_rect->setPos(A1_x0 + rel_x0, A1_y0 + rel_y0);
         fov_rect->show();
     }
-    
+
     if (fn_circle) {
         fn_circle->setPos(A1_x0 + rel_x0, A1_y0 + rel_y0);
         fn_circle->show();
@@ -181,7 +181,6 @@ void PlateSampleWidget::setWellHighlighted(QString well_id, bool highlighted)
         rowlabel_item->setBrush(colrowlabel_color);
         collabel_item->setBrush(colrowlabel_color);
     }
-
 }
 
 void PlateSampleWidget::initScene()
@@ -191,23 +190,22 @@ void PlateSampleWidget::initScene()
     pen.setCosmetic(true);
 
     QPainterPath path_boundary;
-    path_boundary.addRoundedRect(0, 0, plate_size_x, plate_size_y, plate_radius, plate_radius);
+    path_boundary.addRoundedRect(0, 0, plate_size_x, plate_size_y, plate_radius,
+                                 plate_radius);
     scene->addPath(path_boundary, pen);
 
     // Row labels
     for (int i_row = 0; i_row < n_row; i_row++) {
-        QGraphicsSimpleTextItem * labelitem = addColRowLabel(
-            rownames[i_row],
-            A1_x0 - well_size / 2 - colrowlabel_height,
+        QGraphicsSimpleTextItem *labelitem = addColRowLabel(
+            rownames[i_row], A1_x0 - well_size / 2 - colrowlabel_height,
             A1_y0 + i_row * spacing);
         rowlabels.push_back(labelitem);
     }
 
     // Column labels
     for (int i_col = 0; i_col < n_col; i_col++) {
-        QGraphicsSimpleTextItem * labelitem = addColRowLabel(
-            QString("%1").arg(i_col+1),
-            A1_x0 + i_col * spacing,
+        QGraphicsSimpleTextItem *labelitem = addColRowLabel(
+            QString("%1").arg(i_col + 1), A1_x0 + i_col * spacing,
             A1_y0 - well_size / 2 - colrowlabel_height / 2 - 1);
         collabels.push_back(labelitem);
     }
@@ -217,8 +215,10 @@ void PlateSampleWidget::initScene()
         for (int i_col = 0; i_col < n_col; i_col++) {
             double well_pos_x0 = A1_x0 + i_col * spacing;
             double well_pos_y0 = A1_y0 + i_row * spacing;
-            QString well_id = QString("%1%2").arg(rownames[i_row]).arg(colnames[i_col]);
-            GraphicsWellItem *wellItem = new GraphicsWellItem(well_id, well_pos_x0, well_pos_y0, well_size, well_radius);
+            QString well_id =
+                QString("%1%2").arg(rownames[i_row]).arg(colnames[i_col]);
+            GraphicsWellItem *wellItem = new GraphicsWellItem(
+                well_id, well_pos_x0, well_pos_y0, well_size, well_radius);
             wellitem_map[well_id] = wellItem;
             scene->addItem(wellItem);
         }
@@ -235,7 +235,9 @@ void PlateSampleWidget::initScene()
     scene->addItem(fov_rect);
 
     // FN circle
-    fn_circle = new QGraphicsEllipseItem(-fn_circle_size/2, -fn_circle_size/2, fn_circle_size, fn_circle_size);
+    fn_circle =
+        new QGraphicsEllipseItem(-fn_circle_size / 2, -fn_circle_size / 2,
+                                 fn_circle_size, fn_circle_size);
     QPen fn_pen(fn_circle_color, 1.5);
     fn_pen.setCosmetic(true);
     fn_circle->setPen(fn_pen);
@@ -244,7 +246,8 @@ void PlateSampleWidget::initScene()
     scene->addItem(fn_circle);
 }
 
-QGraphicsSimpleTextItem  *PlateSampleWidget::addColRowLabel(QString text, double x0, double y0)
+QGraphicsSimpleTextItem *PlateSampleWidget::addColRowLabel(QString text,
+                                                           double x0, double y0)
 {
     QGraphicsSimpleTextItem *textitem = new QGraphicsSimpleTextItem(text);
     textitem->setBrush(colrowlabel_color);
@@ -252,7 +255,7 @@ QGraphicsSimpleTextItem  *PlateSampleWidget::addColRowLabel(QString text, double
     QFont font;
     font.setBold(true);
     textitem->setFont(font);
-    
+
     QRectF bb = textitem->sceneBoundingRect();
     textitem->setScale(colrowlabel_height / bb.height());
 
@@ -268,7 +271,10 @@ void PlateSampleWidget::resizeEvent(QResizeEvent *event)
     graphView->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
 }
 
-GraphicsWellItem::GraphicsWellItem(QString id, double pos_x, double pos_y, double size, double radius, QGraphicsItem *parent) : QGraphicsItem(parent)
+GraphicsWellItem::GraphicsWellItem(QString id, double pos_x, double pos_y,
+                                   double size, double radius,
+                                   QGraphicsItem *parent)
+    : QGraphicsItem(parent)
 {
     this->id = id;
     this->x0 = pos_x;
@@ -311,7 +317,8 @@ QRectF GraphicsWellItem::boundingRect() const
     return outline->boundingRect();
 }
 
-void GraphicsWellItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void GraphicsWellItem::paint(QPainter *painter,
+                             const QStyleOptionGraphicsItem *option,
+                             QWidget *widget)
 {
-
 }

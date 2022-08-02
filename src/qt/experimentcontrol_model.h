@@ -17,7 +17,7 @@ class ExperimentControlModel : public QObject {
     Q_OBJECT
 public:
     explicit ExperimentControlModel(ExperimentControl *exp,
-                                 QObject *parent = nullptr);
+                                    QObject *parent = nullptr);
     ~ExperimentControlModel();
 
     ChannelControlModel *ChannelControlModel();

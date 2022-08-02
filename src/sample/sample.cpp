@@ -11,7 +11,8 @@ PlateType PlateTypeFromString(std::string value)
     } else if (value == "wellplate384") {
         return PlateType::Wellplate384;
     } else {
-        throw std::invalid_argument(fmt::format("invalid PlateType '{}'", value));
+        throw std::invalid_argument(
+            fmt::format("invalid PlateType '{}'", value));
     }
 }
 
@@ -50,36 +51,18 @@ Plate::~Plate()
     well_map.clear();
 }
 
-int Plate::Index() const
-{
-    return index;
-}
+int Plate::Index() const { return index; }
 
-std::string Plate::UUID() const
-{
-    return uuid;
-}
+std::string Plate::UUID() const { return uuid; }
 
-PlateType Plate::Type() const
-{
-    return type;
-}
+PlateType Plate::Type() const { return type; }
 
 
-std::string Plate::ID() const
-{
-    return id;
-}
+std::string Plate::ID() const { return id; }
 
-const std::optional<Pos2D> Plate::PositionOrigin() const
-{
-    return pos_origin;
-}
+const std::optional<Pos2D> Plate::PositionOrigin() const { return pos_origin; }
 
-const nlohmann::ordered_json Plate::Metadata()  const
-{
-    return metadata;
-}
+const nlohmann::ordered_json Plate::Metadata() const { return metadata; }
 
 ::Well *Plate::Well(std::string well_id) const
 {
@@ -90,20 +73,14 @@ const nlohmann::ordered_json Plate::Metadata()  const
     return it->second;
 }
 
-const std::vector<::Well *> Plate::Wells() const
-{
-    return wells;
-}
+const std::vector<::Well *> Plate::Wells() const { return wells; }
 
-int Plate::NumWells() const
-{
-    return wells.size();
-}
+int Plate::NumWells() const { return wells.size(); }
 
 int Plate::NumEnabledWells() const
 {
     int n_enabled = 0;
-    for (const auto & well : wells) {
+    for (const auto &well : wells) {
         if (well->Enabled()) {
             n_enabled++;
         }
@@ -145,11 +122,11 @@ void Plate::createWells(PlateType plate_type)
             std::string col_id = fmt::format("{:02d}", i_col + 1);
             std::string row_id = fmt::format("{:c}", 'A' + i_row);
             std::string well_id = fmt::format("{}{}", row_id, col_id);
-            
+
             Pos2D rel_pos;
             rel_pos.x = i_col * spacing_x;
             rel_pos.y = i_row * spacing_y;
-            
+
             addWell(new ::Well(this, well_id, rel_pos));
         }
     }
@@ -159,7 +136,8 @@ void Plate::addWell(::Well *well)
 {
     auto it = well_map.find(well->ID());
     if (it != well_map.end()) {
-        throw std::invalid_argument(fmt::format("cannot add well with duplicated id '{}'", well->ID()));
+        throw std::invalid_argument(
+            fmt::format("cannot add well with duplicated id '{}'", well->ID()));
     }
     well->index = wells.size();
     wells.push_back(well);
@@ -180,30 +158,15 @@ Well::Well(::Plate *plate, std::string id, Pos2D rel_pos)
     this->enabled = false;
 }
 
-Well::~Well()
-{
-    clearSites();
-}
+Well::~Well() { clearSites(); }
 
-int Well::Index() const
-{
-    return index;
-}
+int Well::Index() const { return index; }
 
-std::string Well::UUID() const
-{
-    return uuid;
-}
+std::string Well::UUID() const { return uuid; }
 
-std::string Well::ID() const
-{
-    return id;
-}
+std::string Well::ID() const { return id; }
 
-Pos2D Well::RelativePosition() const
-{
-    return this->rel_pos;
-}
+Pos2D Well::RelativePosition() const { return this->rel_pos; }
 
 const std::optional<Pos2D> Well::Position() const
 {
@@ -217,20 +180,11 @@ const std::optional<Pos2D> Well::Position() const
     return pos;
 }
 
-bool Well::Enabled() const
-{
-    return this->enabled;
-}
+bool Well::Enabled() const { return this->enabled; }
 
-const nlohmann::ordered_json Well::Metadata() const
-{
-    return metadata;
-}
+const nlohmann::ordered_json Well::Metadata() const { return metadata; }
 
-::Plate *Well::Plate() const
-{
-    return this->plate;
-}
+::Plate *Well::Plate() const { return this->plate; }
 
 ::Site *Well::Site(std::string site_id)
 {
@@ -243,20 +197,14 @@ const nlohmann::ordered_json Well::Metadata() const
     return it->second;
 }
 
-const std::vector<::Site *> Well::Sites() const
-{
-    return sites;
-}
+const std::vector<::Site *> Well::Sites() const { return sites; }
 
-int Well::NumSites() const
-{
-    return sites.size();
-}
+int Well::NumSites() const { return sites.size(); }
 
 int Well::NumEnabledSites() const
 {
     int n_enabled = 0;
-    for (const auto & site : sites) {
+    for (const auto &site : sites) {
         if (site->Enabled()) {
             n_enabled++;
         }
@@ -269,7 +217,8 @@ void Well::addSite(::Site *site)
     std::unique_lock<std::shared_mutex> lk(sites_mutex);
     auto it = site_map.find(site->ID());
     if (it != site_map.end()) {
-        throw std::invalid_argument(fmt::format("cannot add site with duplicated id '{}'", site->ID()));
+        throw std::invalid_argument(
+            fmt::format("cannot add site with duplicated id '{}'", site->ID()));
     }
     site->index = sites.size();
     sites.push_back(site);
@@ -294,7 +243,7 @@ Site::Site(::Well *well, std::string id, Pos2D rel_pos)
     if (id.empty()) {
         throw std::invalid_argument("id cannot be empty");
     }
-    
+
     this->well = well;
 
     this->uuid = utils::uuid();
@@ -302,25 +251,13 @@ Site::Site(::Well *well, std::string id, Pos2D rel_pos)
     this->rel_pos = rel_pos;
 }
 
-int Site::Index() const
-{
-    return index;
-}
+int Site::Index() const { return index; }
 
-std::string Site::UUID() const
-{
-    return uuid;
-}
+std::string Site::UUID() const { return uuid; }
 
-std::string Site::ID() const
-{
-    return id;
-}
+std::string Site::ID() const { return id; }
 
-Pos2D Site::RelativePosition() const
-{
-    return this->rel_pos;
-}
+Pos2D Site::RelativePosition() const { return this->rel_pos; }
 
 const std::optional<Pos2D> Site::Position() const
 {
@@ -334,17 +271,8 @@ const std::optional<Pos2D> Site::Position() const
     return pos;
 }
 
-bool Site::Enabled() const
-{
-    return this->enabled;
-}
+bool Site::Enabled() const { return this->enabled; }
 
-const nlohmann::ordered_json Site::Metadata() const
-{
-    return this->metadata;
-}
+const nlohmann::ordered_json Site::Metadata() const { return this->metadata; }
 
-Well *Site::Well() const
-{
-    return this->well;
-}
+Well *Site::Well() const { return this->well; }

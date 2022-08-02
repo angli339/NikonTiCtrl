@@ -2,9 +2,9 @@
 #define SAMPLEMANAGER_VIEW_H
 
 #include <QLabel>
+#include <QPushButton>
 #include <QTreeView>
 #include <QWidget>
-#include <QPushButton>
 
 #include "qt/samplemanager_model.h"
 #include "qt/widgets/platesamplewidget.h"
@@ -18,7 +18,7 @@ public:
     bool eventFilter(QObject *source, QEvent *event);
     void handleSelectionChanged(const QItemSelection &selected,
                                 const QItemSelection &deselected);
-    
+
     void handleCurrentPlateChanged(QString plate_id);
 
 public:

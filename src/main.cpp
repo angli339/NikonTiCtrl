@@ -84,14 +84,15 @@ int main(int argc, char *argv[])
     }
 
     LOG_INFO("Current user: {}<{}>", config.user.name, config.user.email);
-    
+
     //
     // Add devices
     //
     DeviceHub dev;
     try {
         dev.AddDevice("NikonTi", new NikonTi::Microscope);
-        dev.AddDevice("PriorProScan", new PriorProscan::Proscan("ASRL1::INSTR"));
+        dev.AddDevice("PriorProScan",
+                      new PriorProscan::Proscan("ASRL1::INSTR"));
         dev.AddCamera("Hamamatsu", new Hamamatsu::DCam);
         // dev.AddDevice("FLIR", new FLIR::Camera);
 

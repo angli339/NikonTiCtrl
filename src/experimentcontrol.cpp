@@ -24,7 +24,7 @@ ExperimentControl::~ExperimentControl()
 {
     dev_event_stream.Close();
     handle_dev_event_future.get();
-    
+
     if (db) {
         delete db;
     }
@@ -58,7 +58,8 @@ std::filesystem::path ExperimentControl::BaseDir()
     if (!std::filesystem::exists(config.user.data_root)) {
         if (!std::filesystem::create_directories(config.user.data_root)) {
             throw std::runtime_error(
-                fmt::format("failed to create base dir {}", config.user.data_root.string()));
+                fmt::format("failed to create base dir {}",
+                            config.user.data_root.string()));
         }
     }
     base_dir = config.user.data_root;
@@ -143,38 +144,17 @@ bool ExperimentControl::is_open()
     return (!exp_dir.empty()) && (db != nullptr);
 }
 
-std::filesystem::path ExperimentControl::ExperimentDir()
-{
-    return exp_dir;
-}
+std::filesystem::path ExperimentControl::ExperimentDir() { return exp_dir; }
 
-ExperimentDB *ExperimentControl::DB()
-{
-    return db;
-}
+ExperimentDB *ExperimentControl::DB() { return db; }
 
-DeviceHub *ExperimentControl::Devices()
-{
-    return dev;
-}
+DeviceHub *ExperimentControl::Devices() { return dev; }
 
-SampleManager *ExperimentControl::Samples()
-{
-    return sample_manager;
-}
-ChannelControl *ExperimentControl::Channels()
-{
-    return channel_control;
-}
-ImageManager *ExperimentControl::Images()
-{
-    return image_manager;
-}
+SampleManager *ExperimentControl::Samples() { return sample_manager; }
+ChannelControl *ExperimentControl::Channels() { return channel_control; }
+ImageManager *ExperimentControl::Images() { return image_manager; }
 
-AnalysisManager *ExperimentControl::Analysis()
-{
-    return analysis_manager;
-}
+AnalysisManager *ExperimentControl::Analysis() { return analysis_manager; }
 
 void ExperimentControl::runLiveView()
 {
@@ -275,15 +255,12 @@ void ExperimentControl::StopLiveView()
     current_task_future.get();
 }
 
-bool ExperimentControl::IsLiveRunning()
-{
-    return live_view_task->IsRunning();
-}
+bool ExperimentControl::IsLiveRunning() { return live_view_task->IsRunning(); }
 
 void ExperimentControl::runMultiChannelTask(std::string ndimage_name,
-                                         std::vector<Channel> channels, int i_z,
-                                         int i_t, Site *site,
-                                         nlohmann::ordered_json metadata)
+                                            std::vector<Channel> channels,
+                                            int i_z, int i_t, Site *site,
+                                            nlohmann::ordered_json metadata)
 {
     if (is_busy) {
         throw std::runtime_error(
@@ -328,9 +305,9 @@ void ExperimentControl::runMultiChannelTask(std::string ndimage_name,
 }
 
 void ExperimentControl::AcquireMultiChannel(std::string ndimage_name,
-                                         std::vector<Channel> channels, int i_z,
-                                         int i_t, Site *site,
-                                         nlohmann::ordered_json metadata)
+                                            std::vector<Channel> channels,
+                                            int i_z, int i_t, Site *site,
+                                            nlohmann::ordered_json metadata)
 {
     //
     // Check for obvious errors and throw exception immediately

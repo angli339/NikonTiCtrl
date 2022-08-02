@@ -191,9 +191,9 @@ PropertyValueMap ChannelControl::getChannelPropertyValue(
     return channel_property_value;
 }
 
-PropertyValueMap ChannelControl::diffSnapshotPropertyValue(
-    PropertyValueMap snapshot,
-    PropertyValueMap propery_value)
+PropertyValueMap
+ChannelControl::diffSnapshotPropertyValue(PropertyValueMap snapshot,
+                                          PropertyValueMap propery_value)
 {
     PropertyValueMap diff;
     for (const auto &[property, value] : propery_value) {

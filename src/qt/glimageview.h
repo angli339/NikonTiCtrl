@@ -24,14 +24,8 @@ public:
     using QOpenGLWidget::QOpenGLWidget;
     ~GLImageView();
 
-    uint16_t getImageWidth()
-    {
-        return imageWidth;
-    }
-    uint16_t getImageHeight()
-    {
-        return imageHeight;
-    }
+    uint16_t getImageWidth() { return imageWidth; }
+    uint16_t getImageHeight() { return imageHeight; }
     void setImageFrame(ImageData frame);
 
 public slots:

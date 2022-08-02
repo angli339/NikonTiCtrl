@@ -1,9 +1,9 @@
 #ifndef IMAGEMANAGER_MODEL_H
 #define IMAGEMANAGER_MODEL_H
 
+#include <set>
 #include <string>
 #include <vector>
-#include <set>
 
 #include <QAbstractItemModel>
 
@@ -18,7 +18,7 @@ class ImageManagerModel : public QAbstractItemModel {
 
 public:
     explicit ImageManagerModel(ImageManager *imageManager,
-                              QObject *parent = nullptr);
+                               QObject *parent = nullptr);
     ~ImageManagerModel();
 
     void handleExperimentOpen();
@@ -72,10 +72,7 @@ public:
     // backend type
     NDImage *ndimage = nullptr;
 
-    int columnCount()
-    {
-        return 3;
-    }
+    int columnCount() { return 3; }
     QVariant columnName(int col)
     {
         switch (col) {

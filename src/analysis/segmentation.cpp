@@ -27,10 +27,11 @@ xt::xarray<uint16_t> EqualizeCLAHE(xt::xarray<uint16_t> im, double clip_limit)
 }
 
 xt::xarray<uint16_t> RegionLabel(xt::xarray<float> im_score,
-                      std::vector<ImageRegionProp> &region_props,
-                      double threshold)
+                                 std::vector<ImageRegionProp> &region_props,
+                                 double threshold)
 {
-    cv::Mat score_mat(im_score.shape(0), im_score.shape(1), CV_32F, im_score.data());
+    cv::Mat score_mat(im_score.shape(0), im_score.shape(1), CV_32F,
+                      im_score.data());
     cv::Mat mask_mat;
     cv::threshold(score_mat, mask_mat, threshold, 1, cv::THRESH_BINARY);
     mask_mat.convertTo(mask_mat, CV_8U, 255, 0);
@@ -43,7 +44,8 @@ xt::xarray<uint16_t> RegionLabel(xt::xarray<float> im_score,
         mask_mat, label_mat, stats_mat, centroids_mat, 8, CV_16U);
 
     // Label Image
-    xt::xarray<uint16_t> im_label = xt::xarray<uint16_t>::from_shape({(size_t)(label_mat.rows), (size_t)(label_mat.cols)});
+    xt::xarray<uint16_t> im_label = xt::xarray<uint16_t>::from_shape(
+        {(size_t)(label_mat.rows), (size_t)(label_mat.cols)});
     size_t bufsize = im_label.size() * sizeof(uint16_t);
     if (bufsize != label_mat.total() * label_mat.elemSize()) {
         throw std::runtime_error("unexpected label_mat size");
@@ -75,8 +77,8 @@ xt::xarray<uint16_t> RegionLabel(xt::xarray<float> im_score,
 }
 
 
-
-UNet::UNet(const std::string server_addr, const std::string model_name, const std::string input_name, const std::string output_name)
+UNet::UNet(const std::string server_addr, const std::string model_name,
+           const std::string input_name, const std::string output_name)
 {
     grpc::ChannelArguments channel_args;
     channel_args.SetInt(GRPC_ARG_MAX_SEND_MESSAGE_LENGTH, 20 * 1024 * 1024);
@@ -101,7 +103,8 @@ xt::xarray<float> UNet::GetScore(xt::xarray<float> im)
     req.mutable_model_spec()->set_signature_name("serving_default");
     // req.mutable_model_spec()->mutable_version()->set_value(1);
 
-    tensorflow::TensorProto &input_tensor = (*req.mutable_inputs())[this->input_name];
+    tensorflow::TensorProto &input_tensor =
+        (*req.mutable_inputs())[this->input_name];
     input_tensor.set_dtype(tensorflow::DataType::DT_FLOAT);
 
     input_tensor.mutable_tensor_shape()->add_dim()->set_size(1);
@@ -132,9 +135,10 @@ xt::xarray<float> UNet::GetScore(xt::xarray<float> im)
     uint32_t out_height = output_tensor.tensor_shape().dim(1).size();
     uint32_t out_width = output_tensor.tensor_shape().dim(2).size();
 
-    xt::xarray<float> score = xt::xarray<float>::from_shape({out_height, out_width});
+    xt::xarray<float> score =
+        xt::xarray<float>::from_shape({out_height, out_width});
     memcpy(score.data(), output_tensor.float_val().data(),
-        output_tensor.float_val().size() * sizeof(float));
+           output_tensor.float_val().size() * sizeof(float));
 
     return score;
 }

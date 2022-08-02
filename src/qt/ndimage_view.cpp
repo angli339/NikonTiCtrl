@@ -76,7 +76,7 @@ void NDImageView::setNChannels(int n_channel)
     for (const auto &widget : channelViewList) {
         imGridLayout->removeWidget(widget);
     }
-    
+
     if (channelViewList.size() < n_channel) {
         int n_diff = n_channel - channelViewList.size();
         for (int i = 0; i < n_diff; i++) {

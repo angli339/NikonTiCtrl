@@ -1,10 +1,10 @@
 #ifndef HDF5FILE_H
 #define HDF5FILE_H
 
-#include <string>
-#include <hdf5.h>
 #include <filesystem>
 #include <fmt/format.h>
+#include <hdf5.h>
+#include <string>
 
 #include "utils/structarray.h"
 
@@ -18,7 +18,7 @@ public:
 
 
     template <typename T>
-    void write(std::string name, xt::xarray<T> arr, bool compress=false);
+    void write(std::string name, xt::xarray<T> arr, bool compress = false);
 
     void write(std::string name, StructArray arr);
     void flush();
@@ -28,7 +28,8 @@ public:
 };
 
 template <typename T>
-void HDF5File::write(std::string name, xt::xarray<T> arr, bool compress) {
+void HDF5File::write(std::string name, xt::xarray<T> arr, bool compress)
+{
     // Overwrite if exists
     if (exists(name)) {
         remove(name);
@@ -69,10 +70,11 @@ void HDF5File::write(std::string name, xt::xarray<T> arr, bool compress) {
     } else {
         // workaround as static_assert needs to depend on T
         // https://stackoverflow.com/a/69921429
-        static_assert(!sizeof(T*), "unknown type");
+        static_assert(!sizeof(T *), "unknown type");
     }
 
-    hid_t space_id = H5Screate_simple(arr.shape().size(), arr.shape().data(), NULL);
+    hid_t space_id =
+        H5Screate_simple(arr.shape().size(), arr.shape().data(), NULL);
     if (space_id == H5I_INVALID_HID) {
         throw std::runtime_error("cannot create space");
     }
@@ -102,7 +104,8 @@ void HDF5File::write(std::string name, xt::xarray<T> arr, bool compress) {
             H5Pclose(dcpl_id);
             H5Pclose(lcpl_id);
             H5Sclose(space_id);
-            throw std::runtime_error(fmt::format("cannot set chunk, err={}", status));
+            throw std::runtime_error(
+                fmt::format("cannot set chunk, err={}", status));
         }
 
         status = H5Pset_deflate(dcpl_id, 4);
@@ -110,7 +113,8 @@ void HDF5File::write(std::string name, xt::xarray<T> arr, bool compress) {
             H5Pclose(dcpl_id);
             H5Pclose(lcpl_id);
             H5Sclose(space_id);
-            throw std::runtime_error(fmt::format("cannot set deflate, err={}", status));
+            throw std::runtime_error(
+                fmt::format("cannot set deflate, err={}", status));
         }
     }
 
@@ -118,22 +122,26 @@ void HDF5File::write(std::string name, xt::xarray<T> arr, bool compress) {
     if (status < 0) {
         H5Pclose(lcpl_id);
         H5Sclose(space_id);
-        throw std::runtime_error(fmt::format("cannot set property, err={}", status));
+        throw std::runtime_error(
+            fmt::format("cannot set property, err={}", status));
     }
 
-    hid_t ds_id = H5Dcreate2(file_id, name.c_str(), type_id, space_id, lcpl_id, dcpl_id, H5P_DEFAULT);
+    hid_t ds_id = H5Dcreate2(file_id, name.c_str(), type_id, space_id, lcpl_id,
+                             dcpl_id, H5P_DEFAULT);
     if (ds_id == H5I_INVALID_HID) {
         H5Pclose(lcpl_id);
         H5Sclose(space_id);
         throw std::runtime_error("cannot create dataset");
     }
-    
-    status = H5Dwrite(ds_id, mem_type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, arr.data());
+
+    status =
+        H5Dwrite(ds_id, mem_type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, arr.data());
     if (status < 0) {
         H5Dclose(ds_id);
         H5Pclose(lcpl_id);
         H5Sclose(space_id);
-        throw std::runtime_error(fmt::format("cannot write dataset, err={}", status));
+        throw std::runtime_error(
+            fmt::format("cannot write dataset, err={}", status));
     }
 
     H5Dclose(ds_id);

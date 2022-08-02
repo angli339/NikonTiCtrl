@@ -1,13 +1,13 @@
 #ifndef EXPERIMENTDB_H
 #define EXPERIMENTDB_H
 
-#include <string>
-#include <optional>
-#include <vector>
 #include <filesystem>
 #include <mutex>
-#include <sqlite3.h>
 #include <nlohmann/json.hpp>
+#include <optional>
+#include <sqlite3.h>
+#include <string>
+#include <vector>
 
 struct PlateRow {
     int index;
@@ -91,7 +91,7 @@ public:
 
 private:
     std::filesystem::path filename;
-    
+
     std::mutex db_mutex;
     sqlite3 *db;
 
@@ -103,14 +103,13 @@ private:
     bool step(sqlite3_stmt *stmt);
     void finalize(sqlite3_stmt *stmt);
 
-    void bind(sqlite3_stmt *stmt, int index, const std::string& value);
+    void bind(sqlite3_stmt *stmt, int index, const std::string &value);
     void bind(sqlite3_stmt *stmt, int index, const double value);
     void bind(sqlite3_stmt *stmt, int index, const int value);
     void bind(sqlite3_stmt *stmt, int index, const bool value);
     void bind(sqlite3_stmt *stmt, int index, std::optional<double> value);
-    
-    template<class ...Args>
-    void bind(sqlite3_stmt *stmt, const Args& ... args);
+
+    template <class... Args> void bind(sqlite3_stmt *stmt, const Args &...args);
 };
 
 #endif

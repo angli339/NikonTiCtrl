@@ -5,7 +5,8 @@
 HDF5File::HDF5File(std::filesystem::path path)
 {
     if (!std::filesystem::exists(path)) {
-        file_id = H5Fcreate(path.string().c_str(), H5F_ACC_EXCL, H5P_DEFAULT, H5P_DEFAULT);
+        file_id = H5Fcreate(path.string().c_str(), H5F_ACC_EXCL, H5P_DEFAULT,
+                            H5P_DEFAULT);
         if (file_id == H5I_INVALID_HID) {
             throw std::runtime_error("H5Fcreate failed");
         }
@@ -17,10 +18,7 @@ HDF5File::HDF5File(std::filesystem::path path)
     }
 }
 
-HDF5File::~HDF5File()
-{
-    H5Fclose(file_id);
-}
+HDF5File::~HDF5File() { H5Fclose(file_id); }
 
 bool HDF5File::exists(std::string name)
 {
@@ -68,74 +66,84 @@ void HDF5File::write(std::string name, StructArray arr)
 
     // Create compound type and fill buffer with data
     hid_t type_id = H5Tcreate(H5T_COMPOUND, arr.ItemSize());
-    for (const auto & field : arr.Fields()) {
+    for (const auto &field : arr.Fields()) {
         hid_t member_type_id;
         switch (field.dtype) {
         case Dtype::float32:
             member_type_id = H5T_NATIVE_FLOAT;
             for (int i = 0; i < arr.Size(); i++) {
-                *(float *)(buf + i * arr.ItemSize() + field.offset) = arr.Field<float>(field.name)[i];
+                *(float *)(buf + i * arr.ItemSize() + field.offset) =
+                    arr.Field<float>(field.name)[i];
             }
             break;
         case Dtype::float64:
             member_type_id = H5T_NATIVE_DOUBLE;
             for (int i = 0; i < arr.Size(); i++) {
-                *(double *)(buf + i * arr.ItemSize() + field.offset) = arr.Field<double>(field.name)[i];
+                *(double *)(buf + i * arr.ItemSize() + field.offset) =
+                    arr.Field<double>(field.name)[i];
             }
             break;
         case Dtype::uint8:
             member_type_id = H5T_NATIVE_UINT8;
             for (int i = 0; i < arr.Size(); i++) {
-                *(uint8_t *)(buf + i * arr.ItemSize() + field.offset) = arr.Field<uint8_t>(field.name)[i];
+                *(uint8_t *)(buf + i * arr.ItemSize() + field.offset) =
+                    arr.Field<uint8_t>(field.name)[i];
             }
             break;
         case Dtype::uint16:
             member_type_id = H5T_NATIVE_UINT16;
             for (int i = 0; i < arr.Size(); i++) {
-                *(uint16_t *)(buf + i * arr.ItemSize() + field.offset) = arr.Field<uint16_t>(field.name)[i];
+                *(uint16_t *)(buf + i * arr.ItemSize() + field.offset) =
+                    arr.Field<uint16_t>(field.name)[i];
             }
             break;
         case Dtype::uint32:
             member_type_id = H5T_NATIVE_UINT32;
             for (int i = 0; i < arr.Size(); i++) {
-                *(uint32_t *)(buf + i * arr.ItemSize() + field.offset) = arr.Field<uint32_t>(field.name)[i];
+                *(uint32_t *)(buf + i * arr.ItemSize() + field.offset) =
+                    arr.Field<uint32_t>(field.name)[i];
             }
             break;
         case Dtype::uint64:
             member_type_id = H5T_NATIVE_UINT64;
             for (int i = 0; i < arr.Size(); i++) {
-                *(uint64_t *)(buf + i * arr.ItemSize() + field.offset) = arr.Field<uint64_t>(field.name)[i];
+                *(uint64_t *)(buf + i * arr.ItemSize() + field.offset) =
+                    arr.Field<uint64_t>(field.name)[i];
             }
             break;
         case Dtype::int8:
             member_type_id = H5T_NATIVE_INT8;
             for (int i = 0; i < arr.Size(); i++) {
-                *(int8_t *)(buf + i * arr.ItemSize() + field.offset) = arr.Field<int8_t>(field.name)[i];
+                *(int8_t *)(buf + i * arr.ItemSize() + field.offset) =
+                    arr.Field<int8_t>(field.name)[i];
             }
             break;
         case Dtype::int16:
             member_type_id = H5T_NATIVE_INT16;
             for (int i = 0; i < arr.Size(); i++) {
-                *(int16_t *)(buf + i * arr.ItemSize() + field.offset) = arr.Field<int16_t>(field.name)[i];
+                *(int16_t *)(buf + i * arr.ItemSize() + field.offset) =
+                    arr.Field<int16_t>(field.name)[i];
             }
             break;
         case Dtype::int32:
             member_type_id = H5T_NATIVE_INT32;
             for (int i = 0; i < arr.Size(); i++) {
-                *(int32_t *)(buf + i * arr.ItemSize() + field.offset) = arr.Field<int32_t>(field.name)[i];
+                *(int32_t *)(buf + i * arr.ItemSize() + field.offset) =
+                    arr.Field<int32_t>(field.name)[i];
             }
             break;
         case Dtype::int64:
             member_type_id = H5T_NATIVE_INT64;
             for (int i = 0; i < arr.Size(); i++) {
-                *(int64_t *)(buf + i * arr.ItemSize() + field.offset) = arr.Field<int64_t>(field.name)[i];
+                *(int64_t *)(buf + i * arr.ItemSize() + field.offset) =
+                    arr.Field<int64_t>(field.name)[i];
             }
             break;
         }
         H5Tinsert(type_id, field.name.c_str(), field.offset, member_type_id);
     }
 
-    const hsize_t dims[] = { arr.Size() };
+    const hsize_t dims[] = {arr.Size()};
     hid_t space_id = H5Screate_simple(1, dims, NULL);
     if (space_id == H5I_INVALID_HID) {
         free(buf);
@@ -155,10 +163,12 @@ void HDF5File::write(std::string name, StructArray arr)
         free(buf);
         H5Pclose(lcpl_id);
         H5Sclose(space_id);
-        throw std::runtime_error(fmt::format("cannot set link property, err={}", status));
+        throw std::runtime_error(
+            fmt::format("cannot set link property, err={}", status));
     }
 
-    hid_t ds_id = H5Dcreate2(file_id, name.c_str(), type_id, space_id, lcpl_id, H5P_DEFAULT, H5P_DEFAULT);
+    hid_t ds_id = H5Dcreate2(file_id, name.c_str(), type_id, space_id, lcpl_id,
+                             H5P_DEFAULT, H5P_DEFAULT);
     if (ds_id == H5I_INVALID_HID) {
         free(buf);
         H5Pclose(lcpl_id);
@@ -172,7 +182,8 @@ void HDF5File::write(std::string name, StructArray arr)
         H5Dclose(ds_id);
         H5Pclose(lcpl_id);
         H5Sclose(space_id);
-        throw std::runtime_error(fmt::format("cannot write dataset, err={}", status));
+        throw std::runtime_error(
+            fmt::format("cannot write dataset, err={}", status));
     }
 
     free(buf);

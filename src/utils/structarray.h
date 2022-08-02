@@ -1,11 +1,11 @@
 #ifndef STRUCTARRAY_H
 #define STRUCTARRAY_H
 
-#include <string>
-#include <vector>
 #include <map>
-#include <xtensor/xarray.hpp>
+#include <string>
 #include <variant>
+#include <vector>
+#include <xtensor/xarray.hpp>
 
 enum class Dtype {
     float32,
@@ -42,37 +42,30 @@ public:
 
     const std::vector<StructArrayFieldDef> &DataType() { return this->dtype; }
     const std::vector<StructArrayyField> &Fields() { return this->fields; }
-    const std::vector<std::string> &Names() { return this-> names; }
+    const std::vector<std::string> &Names() { return this->names; }
 
-    template <typename T>
-    xt::xarray<T> &Field(std::string name);
+    template <typename T> xt::xarray<T> &Field(std::string name);
 
 private:
     void init(std::vector<StructArrayFieldDef> dtype, size_t size);
-    
+
     std::vector<StructArrayFieldDef> dtype;
     size_t size = 0;
-    
+
     std::vector<std::string> names;
     std::vector<StructArrayyField> fields;
     size_t itemsize = 0;
 
-    std::map<std::string, std::variant<
-        xt::xarray<float>,
-        xt::xarray<double>,
-        xt::xarray<uint8_t>,
-        xt::xarray<uint16_t>,
-        xt::xarray<uint32_t>,
-        xt::xarray<uint64_t>,
-        xt::xarray<int8_t>,
-        xt::xarray<int16_t>,
-        xt::xarray<int32_t>,
-        xt::xarray<int64_t>
-        >> data;
+    std::map<std::string,
+             std::variant<xt::xarray<float>, xt::xarray<double>,
+                          xt::xarray<uint8_t>, xt::xarray<uint16_t>,
+                          xt::xarray<uint32_t>, xt::xarray<uint64_t>,
+                          xt::xarray<int8_t>, xt::xarray<int16_t>,
+                          xt::xarray<int32_t>, xt::xarray<int64_t>>>
+        data;
 };
 
-template <typename T>
-xt::xarray<T> &StructArray::Field(std::string name)
+template <typename T> xt::xarray<T> &StructArray::Field(std::string name)
 {
     return std::get<xt::xarray<T>>(data[name]);
 }

@@ -1,22 +1,22 @@
 #include "zipfile.h"
 #include "zipfile_internal.h"
 
-#include <fmt/format.h>
-#include <filesystem>
-#include <zlib.h>
 #include <ctime>
+#include <filesystem>
+#include <fmt/format.h>
+#include <zlib.h>
 
-const static uint32_t sigLocalFileHeader           = 0x04034b50;
-const static uint32_t sigCentralFileHeader         = 0x02014b50;
-const static uint32_t sigEndCentralDir             = 0x06054b50;
-const static uint32_t sigZip64EndCentralDirRecord  = 0x06064b50;
+const static uint32_t sigLocalFileHeader = 0x04034b50;
+const static uint32_t sigCentralFileHeader = 0x02014b50;
+const static uint32_t sigEndCentralDir = 0x06054b50;
+const static uint32_t sigZip64EndCentralDirRecord = 0x06064b50;
 const static uint32_t sigZip64EndCentralDirLocator = 0x07064b50;
 
-const static uint8_t lenLocalHeader               = 30; // + filename + extra
-const static uint8_t lenCentralDirHeader          = 46; // + filename + extra + comment
-const static uint8_t lenEndCentralDir             = 22; // + comment
+const static uint8_t lenLocalHeader = 30;      // + filename + extra
+const static uint8_t lenCentralDirHeader = 46; // + filename + extra + comment
+const static uint8_t lenEndCentralDir = 22;    // + comment
 const static uint8_t lenZip64EndCentralDirLocator = 20; //
-const static uint8_t lenZip64EndCentralDir        = 56; // + extra
+const static uint8_t lenZip64EndCentralDir = 56;        // + extra
 
 // CreatorVersion
 const static uint16_t creatorDOS = 0;
@@ -34,22 +34,17 @@ const static uint16_t methodStore = 0; // no compression
 const static uint16_t flagUTF8 = 0x800;
 
 // Extra header IDs
-const static uint16_t zip64ExtraID   = 0x0001;   // Zip64 extended information
+const static uint16_t zip64ExtraID = 0x0001; // Zip64 extended information
 const static uint16_t zip64ExtraSize = 24;
-const static uint16_t extTimeExtraID = 0x5455;   // Extended timestamp
-const static uint16_t extTimeExtraSize = 5;      // ModTime only
-const static uint8_t  extTimeFlagModTime = 0x01; // ModTime only
+const static uint16_t extTimeExtraID = 0x5455;  // Extended timestamp
+const static uint16_t extTimeExtraSize = 5;     // ModTime only
+const static uint8_t extTimeFlagModTime = 0x01; // ModTime only
 
 ZipFile::ZipFile() {}
 
-ZipFile::ZipFile(std::filesystem::path filename)
-{
-    open(filename);
-}
+ZipFile::ZipFile(std::filesystem::path filename) { open(filename); }
 
-ZipFile::~ZipFile() {
-    close();
-}
+ZipFile::~ZipFile() { close(); }
 
 void ZipFile::open(std::filesystem::path filename)
 {
@@ -65,7 +60,8 @@ void ZipFile::open(std::filesystem::path filename)
         readCentralDir();
     } else {
         fs = std::fstream();
-        fs.open(filename, std::ios::binary | std::ios::in | std::ios::out | std::ios::trunc);
+        fs.open(filename, std::ios::binary | std::ios::in | std::ios::out |
+                              std::ios::trunc);
         if (!fs.is_open()) {
             throw std::runtime_error("failed to create file");
         }
@@ -73,8 +69,8 @@ void ZipFile::open(std::filesystem::path filename)
 
         eocd64 = new Zip64EndOfCentralDir;
         eocd64->size_eocd = lenZip64EndCentralDir - 12;
-        eocd64->creator_version = zipVersion63|(creatorDOS<<8);
-        eocd64->reader_version = zipVersion45|(creatorDOS<<8);
+        eocd64->creator_version = zipVersion63 | (creatorDOS << 8);
+        eocd64->reader_version = zipVersion45 | (creatorDOS << 8);
 
         eocd64_locator = new Zip64EndCentralDirLocator;
         eocd64_locator->total_disk_number = 1;
@@ -88,7 +84,7 @@ void ZipFile::close()
         fs.close();
     }
 
-    for (auto & entry : dir_entries) {
+    for (auto &entry : dir_entries) {
         delete entry;
     }
     dir_entries.clear();
@@ -117,7 +113,8 @@ void ZipFile::readEndOfCentralDir()
     zipRead(fs, &eocd->dir_offset);
     zipRead(fs, &eocd->len_comment);
     if (eocd->len_comment != 0) {
-        throw std::runtime_error("error when reading end of central dir record");
+        throw std::runtime_error(
+            "error when reading end of central dir record");
     }
     if ((eocd->disk_number != 0) || (eocd->dir_disk_number != 0)) {
         throw std::runtime_error("multi-volume zip file is not supported");
@@ -125,17 +122,20 @@ void ZipFile::readEndOfCentralDir()
     if (eocd->dir_offset + eocd->dir_size > offset_eocd) {
         throw std::runtime_error("invalid central dir offset");
     }
-    
+
     // Zip64
     if (readZip64EndOfCentralDir(offset_eocd)) {
         return;
-    } else if ((eocd->n_dir_records == 0xffff) || (eocd->dir_size == 0xffffffff) || (eocd->dir_offset == 0xffffffff)) {
+    } else if ((eocd->n_dir_records == 0xffff) ||
+               (eocd->dir_size == 0xffffffff) ||
+               (eocd->dir_offset == 0xffffffff))
+    {
         throw std::runtime_error("failed to read zip64 central dir");
     } else {
         eocd64 = new Zip64EndOfCentralDir;
         eocd64->size_eocd = lenZip64EndCentralDir - 12;
-        eocd64->creator_version = zipVersion63|(creatorDOS<<8);
-        eocd64->reader_version = zipVersion45|(creatorDOS<<8);
+        eocd64->creator_version = zipVersion63 | (creatorDOS << 8);
+        eocd64->reader_version = zipVersion45 | (creatorDOS << 8);
         eocd64->disk_number = eocd->disk_number;
         eocd64->dir_disk_number = eocd->dir_disk_number;
         eocd64->n_dir_records = eocd->n_dir_records;
@@ -151,10 +151,10 @@ void ZipFile::readEndOfCentralDir()
 
 bool ZipFile::readZip64EndOfCentralDir(size_t offset_eocd)
 {
-    fs.seekg(offset_eocd-lenZip64EndCentralDirLocator, std::ios::beg);
+    fs.seekg(offset_eocd - lenZip64EndCentralDirLocator, std::ios::beg);
     if (zipReadU32(fs) != sigZip64EndCentralDirLocator) {
         return false;
-    } 
+    }
 
     // Read Zip64 end of central dir locator
     eocd64_locator = new Zip64EndCentralDirLocator;
@@ -181,7 +181,9 @@ bool ZipFile::readZip64EndOfCentralDir(size_t offset_eocd)
     eocd64->extra = zipReadString(fs, size_extra);
 
     // Check values
-    if ((eocd64_locator->dir_disk_number != 0) || (eocd64_locator->total_disk_number != 1)) {
+    if ((eocd64_locator->dir_disk_number != 0) ||
+        (eocd64_locator->total_disk_number != 1))
+    {
         throw std::runtime_error("multi-volume zip64 file is not supported");
     }
 
@@ -194,7 +196,9 @@ void ZipFile::readCentralDir()
 
     for (int i = 0; i < eocd64->n_dir_records; i++) {
         if (zipReadU32(fs) != sigCentralFileHeader) {
-            throw std::runtime_error(fmt::format("invalid central dir header at record {}/{}", i, eocd->n_dir_records));
+            throw std::runtime_error(
+                fmt::format("invalid central dir header at record {}/{}", i,
+                            eocd->n_dir_records));
         }
         ZipDirEntry *entry = new ZipDirEntry;
         zipRead(fs, &entry->creator_version);
@@ -260,7 +264,7 @@ void ZipFile::readCentralDir()
 std::vector<std::string> ZipFile::Filenames()
 {
     std::vector<std::string> filenames;
-    for (const auto & entry : dir_entries) {
+    for (const auto &entry : dir_entries) {
         filenames.push_back(entry->filename);
     }
     return filenames;
@@ -274,7 +278,7 @@ std::string ZipFile::GetData(std::string name)
     } else {
         throw std::invalid_argument("not found");
     }
-    
+
     // Read local header
     ZipDirEntry local_entry;
     fs.seekg(central_dir_entry->header_offset);
@@ -297,7 +301,9 @@ std::string ZipFile::GetData(std::string name)
     if (local_entry.method != methodStore) {
         throw std::runtime_error("compressed data is not supported");
     }
-    if ((local_entry.compressed_size == 0xffffffff) || (local_entry.uncompressed_size == 0xffffffff)) {
+    if ((local_entry.compressed_size == 0xffffffff) ||
+        (local_entry.uncompressed_size == 0xffffffff))
+    {
         // find zip64 size
     }
 
@@ -322,12 +328,14 @@ void ZipFile::AddFile(std::string name, std::string buf)
     std::time_t unixtime = std::time(nullptr);
     std::tm *tm;
     tm = localtime(&unixtime);
-    uint16_t msdos_date = tm->tm_mday + ((tm->tm_mon + 1) << 5) + ((tm->tm_year + 1900 - 1980) << 9);
-    uint16_t msdos_time = tm->tm_sec/2 + (tm->tm_min << 5) + (tm->tm_hour << 11);
+    uint16_t msdos_date = tm->tm_mday + ((tm->tm_mon + 1) << 5) +
+                          ((tm->tm_year + 1900 - 1980) << 9);
+    uint16_t msdos_time =
+        tm->tm_sec / 2 + (tm->tm_min << 5) + (tm->tm_hour << 11);
 
     ZipDirEntry *entry = new ZipDirEntry;
-    entry->creator_version=zipVersion63|(creatorDOS<<8);
-    entry->reader_version=zipVersion45|(creatorDOS<<8);
+    entry->creator_version = zipVersion63 | (creatorDOS << 8);
+    entry->reader_version = zipVersion45 | (creatorDOS << 8);
     entry->flags = flagUTF8;
     entry->method = methodStore;
     entry->modified_date = msdos_date;
@@ -340,17 +348,26 @@ void ZipFile::AddFile(std::string name, std::string buf)
     entry->uncompressed_size64 = buf.size();
     entry->header_offset64 = eocd64->dir_offset;
 
-    entry->compressed_size = (entry->compressed_size64 < 0xffffffff) ? entry->compressed_size64  : 0xffffffff;
-    entry->uncompressed_size = (entry->uncompressed_size64 < 0xffffffff) ? entry->uncompressed_size64  : 0xffffffff;
-    entry->header_offset = (entry->header_offset64 < 0xffffffff) ? entry->header_offset64  : 0xffffffff;
-    
+    entry->compressed_size = (entry->compressed_size64 < 0xffffffff)
+                                 ? entry->compressed_size64
+                                 : 0xffffffff;
+    entry->uncompressed_size = (entry->uncompressed_size64 < 0xffffffff)
+                                   ? entry->uncompressed_size64
+                                   : 0xffffffff;
+    entry->header_offset = (entry->header_offset64 < 0xffffffff)
+                               ? entry->header_offset64
+                               : 0xffffffff;
+
     entry->unix_modtime = unixtime;
 
     // Encode extra fields
     std::stringstream ss_extra;
 
     // Zip64
-    if ((entry->compressed_size == 0xffffffff) || (entry->uncompressed_size == 0xffffffff) || (entry->header_offset == 0xffffffff)) {
+    if ((entry->compressed_size == 0xffffffff) ||
+        (entry->uncompressed_size == 0xffffffff) ||
+        (entry->header_offset == 0xffffffff))
+    {
         zipWrite(ss_extra, zip64ExtraID);
         zipWrite(ss_extra, zip64ExtraSize);
         zipWrite(ss_extra, entry->compressed_size64);
@@ -369,7 +386,7 @@ void ZipFile::AddFile(std::string name, std::string buf)
     entry->extra = ss_extra.str();
     entry->len_extra = entry->extra.size();
 
-    // Add entry    
+    // Add entry
     dir_entries.push_back(entry);
     dir_entry_map[name] = entry;
 
@@ -397,9 +414,10 @@ void ZipFile::AddFile(std::string name, std::string buf)
     // Update EOCD
     eocd64->n_dir_records_this_disk++;
     eocd64->n_dir_records++;
-    eocd64->dir_size += lenCentralDirHeader + entry->filename.size() + entry->extra.size() + entry->comment.size();
+    eocd64->dir_size += lenCentralDirHeader + entry->filename.size() +
+                        entry->extra.size() + entry->comment.size();
     eocd64->dir_offset = fs.tellp();
-    
+
     // Update central dir stream
     zipWrite(dir_stream, sigCentralFileHeader);
     zipWrite(dir_stream, entry->creator_version);
@@ -451,10 +469,15 @@ void ZipFile::flush()
     zipWrite(fs, eocd64_locator->total_disk_number);
 
     // Update end of central dir struct
-    eocd->n_dir_records = (eocd64->n_dir_records < 0xffff) ? eocd64->n_dir_records : 0xffff;
-    eocd->n_dir_records_this_disk = (eocd64->n_dir_records_this_disk < 0xffff) ? eocd64->n_dir_records_this_disk : 0xffff;
-    eocd->dir_size = (eocd64->dir_size < 0xffffffff) ? eocd64->dir_size : 0xffffffff;
-    eocd->dir_offset = (eocd64->dir_offset < 0xffffffff) ? eocd64->dir_offset : 0xffffffff;
+    eocd->n_dir_records =
+        (eocd64->n_dir_records < 0xffff) ? eocd64->n_dir_records : 0xffff;
+    eocd->n_dir_records_this_disk = (eocd64->n_dir_records_this_disk < 0xffff)
+                                        ? eocd64->n_dir_records_this_disk
+                                        : 0xffff;
+    eocd->dir_size =
+        (eocd64->dir_size < 0xffffffff) ? eocd64->dir_size : 0xffffffff;
+    eocd->dir_offset =
+        (eocd64->dir_offset < 0xffffffff) ? eocd64->dir_offset : 0xffffffff;
 
     // Write End of central dir to file
     zipWrite(fs, sigEndCentralDir);

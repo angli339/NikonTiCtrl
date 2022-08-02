@@ -1,14 +1,14 @@
 #ifndef EXPERIMENTCONTROL_H
 #define EXPERIMENTCONTROL_H
 
-#include <future>
 #include <filesystem>
+#include <future>
 
-#include "experimentdb.h"
-#include "image/imagemanager.h"
 #include "analysis/analysismanager.h"
 #include "device/devicehub.h"
 #include "eventstream.h"
+#include "experimentdb.h"
+#include "image/imagemanager.h"
 #include "sample/samplemanager.h"
 #include "task/channelcontrol.h"
 #include "task/live_view_task.h"
@@ -55,7 +55,7 @@ private:
 
     std::filesystem::path base_dir;
     std::filesystem::path exp_dir;
-    ExperimentDB *db =  nullptr;
+    ExperimentDB *db = nullptr;
 
     EventStream dev_event_stream;
     std::future<void> handle_dev_event_future;
@@ -69,8 +69,8 @@ private:
     std::future<void> current_task_future;
     void runLiveView();
     void runMultiChannelTask(std::string ndimage_name,
-                             std::vector<Channel> channels, int i_z, int i_t, Site *site,
-                             nlohmann::ordered_json metadata);
+                             std::vector<Channel> channels, int i_z, int i_t,
+                             Site *site, nlohmann::ordered_json metadata);
 };
 
 #endif

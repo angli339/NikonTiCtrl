@@ -11,12 +11,9 @@ class ImageHistView : public QWidget {
     Q_OBJECT
 public:
     explicit ImageHistView(int n_bins, std::pair<int, int> range,
-                            QWidget *parent = nullptr);
+                           QWidget *parent = nullptr);
 
-    QSize sizeHint() const override
-    {
-        return QSize(300, 50);
-    }
+    QSize sizeHint() const override { return QSize(300, 50); }
 
 public slots:
     void setData(std::vector<double> data);
