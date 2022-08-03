@@ -206,7 +206,7 @@ class API():
         df = pd.DataFrame(df, columns=["label", "bbox_x0", "bbox_y0", "bbox_width", "bbox_height", "area", "centroid_x", "centroid_y"])
 
         for ch in resp.raw_intensity:
-            df["raw_intensity_%s" % ch.ch_name] = ch.values
+            df["raw_intensity_%s" % ch.ch_name] = np.array(ch.values)
         return df
 
     def get_quantification(self, ndimage_name, i_t):
@@ -219,7 +219,7 @@ class API():
         df = pd.DataFrame(df, columns=["label", "bbox_x0", "bbox_y0", "bbox_width", "bbox_height", "area", "centroid_x", "centroid_y"])
 
         for ch in resp.raw_intensity:
-            df["raw_intensity_%s" % ch.ch_name] = ch.values
+            df["raw_intensity_%s" % ch.ch_name] = np.array(ch.values)
         return df
 
     def get_xy_stage_position(self) -> Tuple[float, float]:
