@@ -303,9 +303,8 @@ message GetSegmentationScoreResponse {
 
 message QuantifyRegionsRequest {
     string ndimage_name = 1;
-    int32 i_z = 2;
-    int32 i_t = 3;
-    string segmentation_ch = 4;
+    int32 i_t = 2;
+    string segmentation_ch = 3;
 }
 
 message QuantifyRegionsResponse {

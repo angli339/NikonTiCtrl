@@ -196,9 +196,9 @@ class API():
         data_dtype = dtype_from_pb[resp.data.dtype]
         return np.frombuffer(resp.data.buf, dtype=data_dtype).reshape(resp.data.height, resp.data.width)
 
-    def quantify_regions(self, ndimage_name, i_z, i_t, segmentation_ch):
+    def quantify_regions(self, ndimage_name, i_t, segmentation_ch):
         req = api_pb2.QuantifyRegionsRequest(
-            ndimage_name=ndimage_name, i_z=i_z, i_t=i_t, segmentation_ch=segmentation_ch)
+            ndimage_name=ndimage_name, i_t=i_t, segmentation_ch=segmentation_ch)
         resp = self.stub.QuantifyRegions(req)
         df = []
         for rp in resp.region_prop:
