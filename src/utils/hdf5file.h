@@ -5,6 +5,7 @@
 #include <fmt/format.h>
 #include <hdf5.h>
 #include <string>
+#include <mutex>
 
 #include "utils/structarray.h"
 
@@ -28,7 +29,10 @@ public:
     void flush();
 
 public:
+    std::mutex io_mutex;
     hid_t file_id;
+
+    bool exists_nolock(std::string name);
 };
 
 template <typename T>

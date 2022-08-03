@@ -263,6 +263,8 @@ void ZipFile::readCentralDir()
 
 std::vector<std::string> ZipFile::Filenames()
 {
+    std::shared_lock<std::shared_mutex> lk(zip_mutex);
+
     std::vector<std::string> filenames;
     for (const auto &entry : dir_entries) {
         filenames.push_back(entry->filename);
@@ -272,6 +274,11 @@ std::vector<std::string> ZipFile::Filenames()
 
 std::string ZipFile::GetData(std::string name)
 {
+    //
+    // Lock for I/O
+    //
+    std::unique_lock<std::shared_mutex> lk(zip_mutex);
+
     ZipDirEntry *central_dir_entry;
     if (auto it = dir_entry_map.find(name); it != dir_entry_map.end()) {
         central_dir_entry = it->second;
@@ -386,6 +393,12 @@ void ZipFile::AddFile(std::string name, std::string buf)
     entry->extra = ss_extra.str();
     entry->len_extra = entry->extra.size();
 
+    
+    //
+    // Lock for adding entry and I/O
+    //
+    std::unique_lock<std::shared_mutex> lk(zip_mutex);
+
     // Add entry
     dir_entries.push_back(entry);
     dir_entry_map[name] = entry;
@@ -443,6 +456,8 @@ void ZipFile::AddFile(std::string name, std::string buf)
 
 void ZipFile::flush()
 {
+    std::unique_lock<std::shared_mutex> lk(zip_mutex);
+
     fs.seekp(eocd64->dir_offset, std::ios::beg);
 
     // Write central dir to file

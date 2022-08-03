@@ -28,6 +28,11 @@ ExperimentControlModel::~ExperimentControlModel()
     delete sampleManagerModel;
 }
 
+ExperimentControl *ExperimentControlModel::Experiment()
+{ 
+    return exp;
+}
+
 ChannelControlModel *ExperimentControlModel::ChannelControlModel()
 {
     return channelControlModel;
@@ -109,6 +114,7 @@ void ExperimentControlModel::handleEvents()
             emit experimentOpened(e.value.c_str());
             sampleManagerModel->handleExperimentOpen();
             imageManagerModel->handleExperimentOpen();
+            emit quantificationUpdated();
             break;
         case EventType::ExperimentClosed:
             emit experimentClosed();
@@ -139,6 +145,9 @@ void ExperimentControlModel::handleEvents()
                 sampleManagerModel->handleStagePositionUpdate(
                     list[0].toDouble(), list[1].toDouble());
             }
+            break;
+        case EventType::QuantificationCompleted:
+            emit quantificationUpdated();
             break;
         }
     }

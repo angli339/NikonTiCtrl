@@ -31,6 +31,8 @@ enum class EventType
     CurrentPlateChanged,
     NDImageCreated,
     NDImageChanged,
+
+    QuantificationCompleted,
 };
 
 std::string EventTypeToString(EventType t);

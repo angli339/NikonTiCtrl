@@ -6,7 +6,9 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include <shared_mutex>
 
+#include "eventstream.h"
 #include "analysis/segmentation.h"
 #include "utils/hdf5file.h"
 
@@ -14,7 +16,7 @@ struct QuantificationResults;
 
 class ExperimentControl;
 
-class AnalysisManager {
+class AnalysisManager : public EventSender {
 public:
     AnalysisManager(ExperimentControl *exp);
     ~AnalysisManager();
@@ -26,6 +28,7 @@ public:
                         std::string segmentation_ch);
 
     std::vector<std::string> GetNDImageNames();
+    bool HasQuantification(std::string ndimage_name, int i_t);
     QuantificationResults GetQuantification(std::string ndimage_name, int i_t);
 
 private:
@@ -34,6 +37,7 @@ private:
 
     UNet unet;
 
+    std::shared_mutex mutex_quant;
     std::vector<std::string> ndimage_names;
     std::map<std::tuple<std::string, int>, QuantificationResults>
         quantifications;

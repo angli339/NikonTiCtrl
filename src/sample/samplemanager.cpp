@@ -507,6 +507,8 @@ void SampleManager::SetCurrentPlate(std::string plate_id)
     if (uuid.empty()) {
         return nullptr;
     }
+
+    std::shared_lock<std::shared_mutex> lk(plate_mutex);
     for (const auto &plate : plates) {
         if (plate->uuid == uuid) {
             return plate;
@@ -521,6 +523,7 @@ void SampleManager::SetCurrentPlate(std::string plate_id)
         return nullptr;
     }
     // For now, just search it...
+    std::shared_lock<std::shared_mutex> lk(plate_mutex);
     for (const auto &plate : plates) {
         for (const auto &well : plate->wells) {
             if (well->uuid == uuid) {
@@ -537,6 +540,7 @@ void SampleManager::SetCurrentPlate(std::string plate_id)
         return nullptr;
     }
     // For now, just search it...
+    std::shared_lock<std::shared_mutex> lk(plate_mutex);
     for (const auto &plate : plates) {
         for (const auto &well : plate->wells) {
             for (const auto &site : well->sites) {
@@ -549,4 +553,8 @@ void SampleManager::SetCurrentPlate(std::string plate_id)
     return nullptr;
 }
 
-std::vector<Plate *> SampleManager::Plates() { return plates; }
+std::vector<Plate *> SampleManager::Plates()
+{
+    std::shared_lock<std::shared_mutex> lk(plate_mutex);
+    return plates;
+}

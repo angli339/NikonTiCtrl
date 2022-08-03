@@ -20,6 +20,8 @@ public:
                                     QObject *parent = nullptr);
     ~ExperimentControlModel();
 
+    ExperimentControl *Experiment();
+
     ChannelControlModel *ChannelControlModel();
     ImageManagerModel *ImageManagerModel();
     SampleManagerModel *SampleManagerModel();
@@ -42,6 +44,7 @@ signals:
     void experimentClosed();
     void messageReceived(QString message);
     void liveViewStarted();
+    void quantificationUpdated();
 
 private:
     ExperimentControl *exp;

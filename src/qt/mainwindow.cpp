@@ -70,6 +70,7 @@ void MainWindow::setExperimentControl(ExperimentControl *imagingControl)
 {
     expControlModel = new ExperimentControlModel(imagingControl);
     acquirePage->setExperimentControlModel(expControlModel);
+    dataPage->setExperimentControlModel(expControlModel);
 }
 
 void MainWindow::showSetupPage()

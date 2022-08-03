@@ -7,6 +7,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <shared_mutex>
 
 struct ZipDirEntry;
 struct ZipEndOfCentralDir;
@@ -30,6 +31,8 @@ public:
     void AddFile(std::string name, std::string buf);
 
 private:
+    std::shared_mutex zip_mutex;
+
     std::fstream fs;
     std::stringstream dir_stream;
     bool flush_needed = false;

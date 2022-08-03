@@ -29,6 +29,8 @@ AnalysisManager::~AnalysisManager()
 
 void AnalysisManager::LoadFile()
 {
+    std::unique_lock<std::shared_mutex> lk(mutex_quant);
+    
     if (h5file) {
         delete h5file;
         h5file = nullptr;
@@ -222,13 +224,19 @@ int AnalysisManager::QuantifyRegions(std::string ndimage_name, int i_t,
         results.ch_names.push_back(ndimage->ChannelName(i_ch));
         results.raw_intensity_mean.push_back(ch_mean);
     }
-    quantifications[{ndimage_name, i_t}] = results;
 
-    if (std::find(ndimage_names.begin(), ndimage_names.end(), ndimage_name) ==
-        ndimage_names.end())
     {
-        ndimage_names.push_back(ndimage_name);
+        std::unique_lock<std::shared_mutex> lk(mutex_quant);
+
+        quantifications[{ndimage_name, i_t}] = results;
+
+        if (std::find(ndimage_names.begin(), ndimage_names.end(), ndimage_name) ==
+            ndimage_names.end())
+        {
+            ndimage_names.push_back(ndimage_name);
+        }
     }
+
 
     //
     // Save quantification
@@ -278,17 +286,36 @@ int AnalysisManager::QuantifyRegions(std::string ndimage_name, int i_t,
 
     LOG_DEBUG("Quantification completed");
 
+    SendEvent({
+        .type = EventType::QuantificationCompleted,
+        .value = ndimage_name,
+    });
+
     return region_prop_filtered.size();
 }
 
 std::vector<std::string> AnalysisManager::GetNDImageNames()
 {
+    std::shared_lock<std::shared_mutex> lk(mutex_quant);
     return ndimage_names;
+}
+
+bool AnalysisManager::HasQuantification(std::string ndimage_name, int i_t)
+{
+    std::shared_lock<std::shared_mutex> lk(mutex_quant);
+
+    auto it = quantifications.find({ndimage_name, i_t});
+    if (it == quantifications.end()) {
+        return false;
+    }
+    return true;
 }
 
 QuantificationResults
 AnalysisManager::GetQuantification(std::string ndimage_name, int i_t)
 {
+    std::shared_lock<std::shared_mutex> lk(mutex_quant);
+
     auto it = quantifications.find({ndimage_name, i_t});
     if (it == quantifications.end()) {
         throw std::invalid_argument("quantification not found");

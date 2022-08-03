@@ -49,6 +49,7 @@ public:
 
     ::Well *Well(std::string well_id) const;
     const std::vector<::Well *> Wells() const;
+    const std::vector<::Well *> EnabledWells() const;
     int NumWells() const;
     int NumEnabledWells() const;
 

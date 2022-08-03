@@ -31,6 +31,7 @@ ExperimentControl::~ExperimentControl()
 
     delete sample_manager;
     delete image_manager;
+    delete analysis_manager;
 
     delete channel_control;
     delete live_view_task;
@@ -43,6 +44,7 @@ void ExperimentControl::SubscribeEvents(EventStream *channel)
 
     sample_manager->SubscribeEvents(channel);
     image_manager->SubscribeEvents(channel);
+    analysis_manager->SubscribeEvents(channel);
 
     channel_control->SubscribeEvents(channel);
     live_view_task->SubscribeEvents(channel);

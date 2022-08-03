@@ -75,6 +75,17 @@ const nlohmann::ordered_json Plate::Metadata() const { return metadata; }
 
 const std::vector<::Well *> Plate::Wells() const { return wells; }
 
+const std::vector<::Well *> Plate::EnabledWells() const
+{
+    std::vector<::Well *> results;
+    for (const auto &well : wells) {
+        if (well->Enabled()) {
+            results.push_back(well);
+        }
+    }
+    return results; 
+}
+
 int Plate::NumWells() const { return wells.size(); }
 
 int Plate::NumEnabledWells() const

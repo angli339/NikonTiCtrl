@@ -18,9 +18,20 @@ HDF5File::HDF5File(std::filesystem::path path)
     }
 }
 
-HDF5File::~HDF5File() { H5Fclose(file_id); }
+HDF5File::~HDF5File()
+{
+    std::unique_lock<std::mutex> lk(io_mutex);
+    H5Fclose(file_id);
+}
 
 bool HDF5File::exists(std::string name)
+{
+    std::unique_lock<std::mutex> lk(io_mutex);
+
+    return exists_nolock(name);
+}
+
+bool HDF5File::exists_nolock(std::string name)
 {
     if (name.empty()) {
         throw std::invalid_argument("empty name");
@@ -30,7 +41,7 @@ bool HDF5File::exists(std::string name)
     size_t pos = name.find_last_of("/");
     if (!((pos == std::string::npos) || (pos == 0))) {
         std::string parent_path = name.substr(0, pos);
-        if (!exists(parent_path)) {
+        if (!exists_nolock(parent_path)) {
             return false;
         }
     }
@@ -47,6 +58,8 @@ bool HDF5File::exists(std::string name)
 
 void HDF5File::remove(std::string name)
 {
+    std::unique_lock<std::mutex> lk(io_mutex);
+
     herr_t status = H5Ldelete(file_id, name.c_str(), H5P_DEFAULT);
     if (status < 0) {
         throw std::runtime_error(fmt::format("H5Ldelete err={}", status));
@@ -55,6 +68,8 @@ void HDF5File::remove(std::string name)
 
 std::vector<std::string> HDF5File::list(std::string group_name)
 {
+    std::unique_lock<std::mutex> lk(io_mutex);
+
     hid_t group_id = H5Gopen2(file_id, group_name.c_str(), H5P_DEFAULT);
     if (group_id == H5I_INVALID_HID) {
         throw std::runtime_error("H5Gopen2 failed");
@@ -95,6 +110,8 @@ std::vector<std::string> HDF5File::list(std::string group_name)
 
 bool HDF5File::is_group(std::string name)
 {
+    std::unique_lock<std::mutex> lk(io_mutex);
+
     hid_t root_group = H5Gopen2(file_id, "/", H5P_DEFAULT);
     if (root_group == H5I_INVALID_HID) {
         throw std::runtime_error("cannot open root_group");
@@ -122,6 +139,8 @@ void HDF5File::write(std::string name, StructArray arr)
     if (exists(name)) {
         remove(name);
     }
+
+    std::unique_lock<std::mutex> lk(io_mutex);
 
     // Create compound type
     hid_t type_id = H5Tcreate(H5T_COMPOUND, arr.ItemSize());
@@ -211,6 +230,8 @@ void HDF5File::write(std::string name, StructArray arr)
 
 void HDF5File::flush()
 {
+    std::unique_lock<std::mutex> lk(io_mutex);
+
     herr_t status = H5Fflush(file_id, H5F_SCOPE_LOCAL);
     if (status < 0) {
         throw std::runtime_error(fmt::format("H5Fflush err={}", status));
@@ -219,6 +240,8 @@ void HDF5File::flush()
 
 StructArray HDF5File::read(std::string name)
 {
+    std::unique_lock<std::mutex> lk(io_mutex);
+
     hid_t ds_id = H5Dopen2(file_id, name.c_str(), H5P_DEFAULT);
     if (ds_id == H5I_INVALID_HID) {
         throw std::runtime_error("cannot read dataset");

@@ -46,6 +46,7 @@ void ImageManager::LoadFromDB()
         ndimage->n_t = ndimage_row.n_t;
         ndimage->dtype = DataType::Uint16;
         ndimage->ctype = ColorType::Mono16;
+        ndimage->site = exp->Samples()->Site(ndimage_row.plate_id, ndimage_row.well_id, ndimage_row.site_id);
         ndimage->image_manager = this;
 
         dataset.push_back(ndimage);
@@ -119,7 +120,30 @@ ImageData ImageManager::GetNextLiveViewFrame()
     return live_view_frame;
 }
 
-std::vector<NDImage *> ImageManager::ListNDImage() { return dataset; }
+std::vector<NDImage *> ImageManager::ListNDImage()
+{
+    std::shared_lock<std::shared_mutex> lk(dataset_mutex);
+    return dataset;
+}
+
+std::vector<NDImage *> ImageManager::ListNDImage(std::string plate_id,
+                                                 std::string well_id)
+{
+    std::shared_lock<std::shared_mutex> lk(dataset_mutex);
+
+    std::vector<NDImage *> results;
+    for (const auto &ndimage : dataset) {
+        if (ndimage->Site() == nullptr) {
+            continue;
+        }
+        if ((ndimage->Site()->Well()->Plate()->ID() == plate_id) &&
+            (ndimage->Site()->Well()->ID() == well_id))
+        {
+            results.push_back(ndimage);
+        }
+    }
+    return results;
+}
 
 bool ImageManager::HasNDImage(std::string ndimage_name)
 {

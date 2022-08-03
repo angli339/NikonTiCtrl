@@ -117,7 +117,10 @@
         "*.inc": "cpp",
         "stack": "cpp",
         "qtreeview": "cpp",
-        "qpushbutton": "cpp"
+        "qpushbutton": "cpp",
+        "qlabel": "cpp",
+        "qvboxlayout": "cpp",
+        "qtablewidget": "cpp"
     },
     "git.ignoreLimitWarning": true
 }
