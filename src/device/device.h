@@ -57,9 +57,14 @@ public:
 
     virtual StatusOr<std::string> GetValue() = 0;
     virtual Status SetValue(std::string value) = 0;
-    virtual Status WaitFor(std::chrono::milliseconds timeout) = 0;
-    virtual Status
-    WaitUntil(std::chrono::steady_clock::time_point timepoint) = 0;
+    virtual Status WaitFor(std::chrono::milliseconds timeout)
+    {
+        return absl::OkStatus();
+    }
+    virtual Status WaitUntil(std::chrono::steady_clock::time_point timepoint)
+    {
+        return absl::OkStatus();
+    }
 
     virtual std::optional<std::string> GetSnapshot() = 0;
 };

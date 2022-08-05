@@ -14,8 +14,8 @@
 #include <absl/status/status.h>
 #include <absl/status/statusor.h>
 
-#include "image/imagedata.h"
 #include "device/device.h"
+#include "image/imagedata.h"
 
 // dcamapi4.h
 typedef struct tag_dcam *HDCAM;
@@ -38,10 +38,7 @@ public:
     bool DetectDevice();
     Status Connect() override;
     Status Disconnect() override;
-    bool IsConnected() override
-    {
-        return connected;
-    }
+    bool IsConnected() override { return connected; }
 
     ::PropertyNode *Node(std::string name) override;
     std::map<std::string, ::PropertyNode *> NodeMap() override;
@@ -50,22 +47,10 @@ public:
     Status ReleaseBuffer();
     uint8_t BufferAllocated();
 
-    DataType GetDataType()
-    {
-        return dtype;
-    }
-    ColorType GetColorType()
-    {
-        return ctype;
-    }
-    uint32_t GetWidth()
-    {
-        return width;
-    }
-    uint32_t GetHeight()
-    {
-        return height;
-    }
+    DataType GetDataType() { return dtype; }
+    ColorType GetColorType() { return ctype; }
+    uint32_t GetWidth() { return width; }
+    uint32_t GetHeight() { return height; }
 
     Status StartAcquisition();
     Status StartContinousAcquisition();
@@ -100,25 +85,17 @@ class PropertyNode : public ::PropertyNode {
     friend class DCam;
 
 public:
-    virtual std::string Name() override
-    {
-        return name;
-    }
-    virtual std::string Description() override;
-    virtual bool Valid() override
-    {
-        return dev->IsConnected();
-    }
-    virtual bool Readable() override;
-    virtual bool Writeable() override;
-    virtual std::vector<std::string> Options() override;
+    std::string Name() override { return name; }
+    std::string Description() override;
+    bool Valid() override { return dev->IsConnected(); }
+    bool Readable() override;
+    bool Writeable() override;
+    std::vector<std::string> Options() override;
 
-    virtual StatusOr<std::string> GetValue() override;
-    virtual Status SetValue(std::string value) override;
-    Status WaitFor(std::chrono::milliseconds timeout) override;
-    Status WaitUntil(std::chrono::steady_clock::time_point timepoint) override;
+    StatusOr<std::string> GetValue() override;
+    Status SetValue(std::string value) override;
 
-    virtual std::optional<std::string> GetSnapshot() override;
+    std::optional<std::string> GetSnapshot() override;
 
 private:
     DCam *dev;

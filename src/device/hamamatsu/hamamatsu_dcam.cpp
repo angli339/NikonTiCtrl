@@ -286,10 +286,7 @@ Status DCam::ReleaseBuffer()
     return absl::OkStatus();
 }
 
-uint8_t DCam::BufferAllocated()
-{
-    return n_buffer_frame_alloc;
-}
+uint8_t DCam::BufferAllocated() { return n_buffer_frame_alloc; }
 
 Status DCam::FireTrigger()
 {
@@ -601,10 +598,7 @@ std::string PropertyNode::Description()
     return fmt::format("{}", fmt::join(description, "\n"));
 }
 
-bool PropertyNode::Readable()
-{
-    return (attribute & DCAMPROP_ATTR_READABLE);
-}
+bool PropertyNode::Readable() { return (attribute & DCAMPROP_ATTR_READABLE); }
 
 bool PropertyNode::Writeable()
 {
@@ -730,16 +724,6 @@ Status PropertyNode::SetValue(std::string value)
     }
 
     handleValueUpdate(value);
-    return absl::OkStatus();
-}
-
-Status PropertyNode::WaitFor(std::chrono::milliseconds timeout)
-{
-    return absl::OkStatus();
-}
-
-Status PropertyNode::WaitUntil(std::chrono::steady_clock::time_point timepoint)
-{
     return absl::OkStatus();
 }
 
