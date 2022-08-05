@@ -15,6 +15,7 @@
 #include "utils/time_utils.h"
 #include "version.h"
 
+#include "device/flir/flir_spinnaker.h"
 #include "device/hamamatsu/hamamatsu_dcam.h"
 #include "device/nikon/nikon_ti.h"
 #include "device/prior/prior_proscan.h"
@@ -94,7 +95,7 @@ int main(int argc, char *argv[])
         dev.AddDevice("PriorProScan",
                       new PriorProscan::Proscan("ASRL1::INSTR"));
         dev.AddCamera("Hamamatsu", new Hamamatsu::DCam);
-        // dev.AddDevice("FLIR", new FLIR::Camera);
+        dev.AddDevice("FLIR", new FLIR::Camera);
 
     } catch (std::exception &e) {
         LOG_ERROR("Failed to add device: {}", e.what());

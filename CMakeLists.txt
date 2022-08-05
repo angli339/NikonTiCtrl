@@ -66,6 +66,20 @@ set_target_properties(DCAMAPI PROPERTIES
     IMPORTED_LOCATION "C:/Windows/System32/DCAMAPI.DLL"
 )
 
+# ---------- FLIR Spinnaker ----------
+set(SPINNAKER_ROOT "C:/Program Files/FLIR Systems/Spinnaker")
+include_directories("${SPINNAKER_ROOT}/include")
+add_library(FLIR_Spinnaker SHARED IMPORTED)
+set_target_properties(FLIR_Spinnaker PROPERTIES
+    LINKER_LANGUAGE C
+    IMPORTED_IMPLIB "${SPINNAKER_ROOT}/lib64/vs2015/Spinnaker_v140.lib"
+    IMPORTED_LOCATION "${SPINNAKER_ROOT}/bin64/vs2015/Spinnaker_v140.dll"
+)
+install(FILES
+    "${SPINNAKER_ROOT}/bin64/vs2015/Spinnaker_v140.dll"
+    DESTINATION ${CMAKE_INSTALL_PREFIX}
+)
+
 ################################
 # Generated gRPC code
 ################################
@@ -282,6 +296,7 @@ add_executable(NikonTiControl
     src/device/nikon/nikon_ti.cpp
     src/device/prior/prior_proscan_prop_info.cpp
     src/device/prior/prior_proscan.cpp
+    src/device/flir/flir_spinnaker.cpp
 
     src/utils/time_utils.cpp
     src/utils/wmi.cpp
@@ -330,6 +345,7 @@ target_link_libraries(NikonTiControl PRIVATE
     # Device Interface
     DCAMAPI
     VISA
+    FLIR_Spinnaker
 )
 
 # --------------- Copy to binary dir for debugging ---------------
@@ -338,6 +354,7 @@ add_custom_command(TARGET NikonTiControl POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different 
         "${CMAKE_CURRENT_SOURCE_DIR}/third_party/MMCoreAPI/lib/MMCoreC.dll"
         "${MM_DEVICEADAPTER_DIR}/mmgr_dal_NikonTI.dll"
+        "${SPINNAKER_ROOT}/bin64/vs2015/Spinnaker_v140.dll"
         "${CMAKE_CURRENT_BINARY_DIR}"
 )
 
