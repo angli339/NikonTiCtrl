@@ -261,7 +261,7 @@ class Plate():
     def move_to_position(self, well_id: str, i_x: int, i_y: int, grid_spacing=-250, wait=True):
         # TODO validate i_x, i_y
         well = self._wells[well_id]
-        well_pos_x, well_pos_y = well.pos()
+        well_pos_x, well_pos_y = well.pos
         pos_x = well_pos_x + i_x * grid_spacing
         pos_y = well_pos_y + i_y * grid_spacing
         self._api.set_xy_stage_position(pos_x, pos_y)

@@ -97,7 +97,7 @@ class MultiSiteTaskStatusWidget():
 
 # TODO: reimplement without using df_sites
 class MultiSiteTask():
-    def __init__(self, df_sites, presets: dict[str, Channel], api: API, seq_no=0, fn_after_acq=None, fn_before_acq=None):
+    def __init__(self, df_sites, presets: dict[str, Channel], api: API, seq_no=0, fn_after_acq=None, fn_before_acq=None, fn_before_move=None):
         if df_sites["pos_x"].isnull().values.any():
             raise ValueError("contains missing positions")
         if df_sites["pos_y"].isnull().values.any():
@@ -121,6 +121,7 @@ class MultiSiteTask():
         self.current_row = None
         self.fn_after_acq = fn_after_acq
         self.fn_before_acq = fn_before_acq
+        self.fn_before_move = fn_before_move
 
     def _run(self, find_focus=True):
         self._t_start = datetime.datetime.now()
@@ -170,6 +171,11 @@ class MultiSiteTask():
                 self.status_bar.set_site_status(site_info_msg)
                 return
             
+            if self.fn_before_move:
+                acq_site = self.fn_before_move(self)
+                if not acq_site:
+                    continue
+
             ### Move to position
             self._api.set_xy_stage_position(pos_x, pos_y)
             self._api.wait_xy_stage()
