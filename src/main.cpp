@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
         dev.AddDevice("PriorProScan",
                       new PriorProscan::Proscan("ASRL1::INSTR"));
         dev.AddCamera("Hamamatsu", new Hamamatsu::DCam);
-        dev.AddDevice("FLIR", new FLIR::Camera);
+        // dev.AddDevice("FLIR", new FLIR::Camera);
 
     } catch (std::exception &e) {
         LOG_ERROR("Failed to add device: {}", e.what());
