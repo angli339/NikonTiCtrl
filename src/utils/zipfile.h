@@ -45,7 +45,7 @@ private:
     std::map<std::string, ZipDirEntry *> dir_entry_map;
     void readEndOfCentralDir();
     void readCentralDir();
-    bool readZip64EndOfCentralDir(size_t offset_eocd);
+    bool readZip64EndOfCentralDir(uint64_t offset_eocd);
 };
 
 struct ZipEndOfCentralDir {
@@ -89,19 +89,19 @@ struct ZipDirEntry {
     uint32_t compressed_size = 0;
     uint32_t uncompressed_size = 0;
     uint16_t len_filename = 0;
-    uint16_t len_extra = 0;
+    uint16_t len_extra_local = 0;
+    uint16_t len_extra_central = 0;
     uint16_t len_comment = 0;
     uint16_t start_disk_number = 0;
     uint16_t internal_attrs = 0;
     uint32_t external_attrs = 0;
     uint32_t header_offset = 0;
     std::string filename;
-    std::string extra;
+    std::string extra_local;
+    std::string extra_central;
     std::string comment;
 
     // Zip64
-    uint64_t compressed_size64 = 0;
-    uint64_t uncompressed_size64 = 0;
     uint64_t header_offset64 = 0;
 
     // Extended Timestamp
