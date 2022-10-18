@@ -192,6 +192,8 @@ void AcquirePage::handleExperimentClose()
     std::unique_lock<std::mutex> lk(im_mutex);
     ndImageSelected = "";
     ndImageLatest = "";
+    lk.unlock();
+    
     displayNDImage("");
     experimentDirButton->setText("Select directory...");
 }
