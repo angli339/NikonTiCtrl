@@ -14,7 +14,7 @@
           "/NikonTi/NosePiece": {
                "1": {
                     "name": "20x",
-                    "description": "Plan Apo 20x NA 0.75 Dry"
+                    "description": "Plan Apo 20x/0.75 Dry"
                },
                "2": {
                     "name": "---",
@@ -22,19 +22,19 @@
                },
                "3": {
                     "name": "60xO",
-                    "description": "Plan Apo VC 60x NA 1.40 Oil"
+                    "description": "Plan Apo VC 60x/1.40 Oil"
                },
                "4": {
                     "name": "100xO",
-                    "description": "Plan Apo VC 100x NA 1.40 Oil"
+                    "description": "Plan Apo VC 100x/1.40 Oil"
                },
                "5": {
                     "name": "---",
                     "description": "---"
                },
                "6": {
-                    "name": "---",
-                    "description": "---"
+                    "name": "40x",
+                    "description": "Plan Apo 40x/0.95 Dry"
                }
           },
           "/NikonTi/LightPath": {
@@ -83,8 +83,8 @@
           },
           "/PriorProScan/FilterWheel1": {
                "1": {
-                    "name": "---",
-                    "description": "---"
+                    "name": "425",
+                    "description": "FF01-425/26"
                },
                "2": {
                     "name": "GFP",
@@ -175,6 +175,20 @@
               "illumination_property": "/PriorProScan/LumenOutputIntensity",
               "default_exposure_ms": 50,
               "default_illumination_intensity": 40
+          },
+          {
+            "name": "YFP_425Ex",
+            "property_value" :
+                {
+                    "/NikonTi/DiaShutter": "Off",
+                    "/NikonTi/FilterBlock1": "2",
+                    "/PriorProScan/FilterWheel1": "1",
+                    "/PriorProScan/FilterWheel3": "4"
+                },
+            "shutter_property" : "/PriorProScan/LumenShutter",
+            "illumination_property": "/PriorProScan/LumenOutputIntensity",
+            "default_exposure_ms": 50,
+            "default_illumination_intensity": 40
           },
           {
               "name": "YFP_390Ex",
