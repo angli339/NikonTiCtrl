@@ -358,7 +358,7 @@ class Plate():
                 for index_col_item in index_col:
                     col_id = None
                     if isinstance(index_col_item, int):
-                        col_id = str(index_col_item)
+                        col_id = "{:02d}".format(index_col_item)
                     else:
                         raise ValueError("invalid col")
                     
