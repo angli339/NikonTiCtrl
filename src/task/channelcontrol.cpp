@@ -200,8 +200,7 @@ ChannelControl::diffSnapshotPropertyValue(PropertyValueMap snapshot,
         auto it = snapshot.find(property);
         if (it == snapshot.end()) {
             diff[property] = value;
-        }
-        if (it->second != value) {
+        } else if (it->second != value) {
             diff[property] = value;
         }
     }
