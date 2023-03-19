@@ -524,6 +524,16 @@ class WellplateSliceMetadata():
     def __init__(self, wellplate_slice):
         self._wellplate_slice = wellplate_slice
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key, value):     
+        if not isinstance(key, str):
+            raise ValueError("invalid key")
+        
+        req = api_pb2.SetWellsMetadataRequest(
+                plate_uuid = self._wellplate_slice._wellplate.uuid,
+                well_id = self._wellplate_slice._well_ids,
+                key = key,
+                json_value = json.dumps(value))
+        self._wellplate_slice._wellplate._api.stub.SetWellsMetadata(req)
+
         for well in self._wellplate_slice.wells():
             well.metadata[key] = value
