@@ -195,6 +195,15 @@ int AnalysisManager::QuantifyRegions(std::string ndimage_name, int i_t,
 
     LOG_DEBUG("Label image saved");
 
+    if (region_prop_filtered.size() == 0) {
+        SendEvent({
+            .type = EventType::QuantificationCompleted,
+            .value = ndimage_name,
+        });
+
+        return region_prop_filtered.size();
+    }
+
     //
     // Quantification
     //
