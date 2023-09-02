@@ -6,11 +6,11 @@ void from_json(const nlohmann::json& j, ChannelPreset& p)
     j.at("property_value").get_to(p.property_value);
 
     if (j.contains("shutter_property")) {
-        j.at("shutter_property").get_to(p.shutter_property);
+        p.shutter_property = j.at("shutter_property").get<std::string>();
     }
 
     if (j.contains("illumination_property")) {
-        j.at("illumination_property").get_to(p.illumination_property);
+        p.illumination_property = j.at("illumination_property").get<std::string>();
     }
 
     if (j.contains("default_exposure_ms")) {
