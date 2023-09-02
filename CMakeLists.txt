@@ -130,6 +130,7 @@ set (tf_proto
     "tensorflow/core/framework/full_type.proto"
     "tensorflow/core/framework/function.proto"
     "tensorflow/core/framework/graph.proto"
+    "tensorflow/core/framework/graph_debug_info.proto"
     "tensorflow/core/framework/node_def.proto"
     "tensorflow/core/framework/op_def.proto"
     "tensorflow/core/framework/resource_handle.proto"
