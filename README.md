@@ -7,7 +7,7 @@ Graphical user interface and API for controlling a Nikon Ti-E widefield fluoresc
 ### Build Dependencies
 * MSVC 2022 (with Git for Windows)
 * [Qt](https://www.qt.io/download-open-source) 6.5.3 (with CMake and [Ninja](https://ninja-build.org))
-* [vcpkg](https://vcpkg.io) 2023.08.09
+* [vcpkg](https://vcpkg.io) 2023.12.12
 * [DCAM-API](https://dcam-api.com) 24.1.6749
 * [DCAM-SDK4](https://dcam-api.com/dcam-sdk-login/) 22.12.6552 (download and extract into `third_party/dcamsdk`)
 * Micro-Manager 2.0 (e.g. 2.0.1_20220705, a version with Device API version 70, for copying device adapter `mmgr_dal_NikonTI.dll`)
