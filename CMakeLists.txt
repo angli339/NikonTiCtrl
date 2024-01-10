@@ -276,7 +276,7 @@ add_executable(NikonTiControl
     ${QT_SOURCES}
 
     src/analysis/analysismanager.cpp
-    src/analysis/segmentation.cpp
+    src/analysis/utils.cpp
     src/sample/sample.cpp
     src/sample/samplemanager.cpp
     src/image/imagemanager.cpp

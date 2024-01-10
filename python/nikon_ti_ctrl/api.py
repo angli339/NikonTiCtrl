@@ -182,14 +182,9 @@ class API():
         data_dtype = dtype_from_pb[resp.data.dtype]
         return np.frombuffer(resp.data.buf, dtype=data_dtype).reshape(resp.data.height, resp.data.width)
 
-    def get_segmentation_score(self, im: npt.ArrayLike):
-        if len(im.shape) != 2:
-            raise ValueError("expecting 2d image")
-        req = api_pb2.GetSegmentationScoreRequest()
-        req.data.height = im.shape[0]
-        req.data.width = im.shape[1]
-        req.data.dtype = dtype_to_pb[im.dtype.type]
-        req.data.buf = im.tobytes()
+    def get_segmentation_score(self, ndimage_name, i_t, segmentation_ch):
+        req = api_pb2.GetSegmentationScoreRequest(
+            ndimage_name=ndimage_name, i_t=i_t, ch_name=segmentation_ch)
 
         resp = self.stub.GetSegmentationScore(req)
 

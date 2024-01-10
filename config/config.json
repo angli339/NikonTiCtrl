@@ -1,9 +1,8 @@
 {
      "unet_model": {
         "server_addr": "127.0.0.1:8500",
-        "model_name": "yeaz_unet",
-        "input_name": "input_1",
-        "output_name": "conv2d_23"
+        "model_name": "unet_yeast_bf",
+        "input_name": "input"
      },
      "pixel_size": {
           "20x": 0.3125,

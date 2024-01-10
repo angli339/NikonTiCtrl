@@ -9,7 +9,7 @@
 #include <shared_mutex>
 
 #include "eventstream.h"
-#include "analysis/segmentation.h"
+#include "analysis/utils.h"
 #include "utils/hdf5file.h"
 
 struct QuantificationResults;
@@ -22,8 +22,8 @@ public:
     ~AnalysisManager();
     void LoadFile();
 
-    xt::xarray<double> GetSegmentationScore(std::string ndimage_name,
-                                            std::string ch_name, int i_t);
+    xt::xarray<double> GetSegmentationScore(std::string ndimage_name, int i_t,
+                                            std::string ch_name);
     int QuantifyRegions(std::string ndimage_name, int i_t,
                         std::string segmentation_ch);
 

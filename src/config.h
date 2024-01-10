@@ -20,9 +20,8 @@ struct ConfigUnetModel {
     std::string server_addr;
     std::string model_name;
     std::string input_name;
-    std::string output_name;
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ConfigUnetModel, server_addr, model_name, input_name, output_name)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ConfigUnetModel, server_addr, model_name, input_name)
 
 struct ConfigSystem {
     ConfigUnetModel unet_model;

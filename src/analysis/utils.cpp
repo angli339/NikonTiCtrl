@@ -1,8 +1,9 @@
-#include "segmentation.h"
+#include "utils.h"
 
 #include <stdexcept>
 
 #include <fmt/format.h>
+#include <xtensor/xview.hpp>
 #include <grpcpp/client_context.h>
 #include <grpcpp/create_channel.h>
 #include <opencv2/core.hpp>
@@ -26,16 +27,34 @@ xt::xarray<uint16_t> EqualizeCLAHE(xt::xarray<uint16_t> im, double clip_limit)
     return im_eq;
 }
 
-xt::xarray<uint16_t> RegionLabel(xt::xarray<float> im_score,
-                                 std::vector<ImageRegionProp> &region_props,
-                                 double threshold)
+xt::xarray<float> Normalize(xt::xarray<uint16_t> im)
 {
+    cv::Mat in_mat(im.shape(0), im.shape(1), CV_16UC1, im.data());
+    in_mat.convertTo(in_mat, CV_32FC1);
+
+    cv::Mat out_mat;
+    cv::normalize(in_mat, out_mat, 1, 0, cv::NormTypes::NORM_MINMAX);
+
+    xt::xarray<float> imnorm = xt::xarray<float>::from_shape(im.shape());
+    size_t bufsize = imnorm.size() * sizeof(float);
+    if (bufsize != out_mat.total() * out_mat.elemSize()) {
+        throw std::runtime_error("unexpected out_mat size");
+    }
+    memcpy(imnorm.data(), out_mat.data, bufsize);
+    return imnorm;
+}
+
+xt::xarray<uint16_t> RegionLabel(xt::xarray<float> im_score,
+                                 std::vector<ImageRegionProp> &region_props)
+{
+    // Threshold
     cv::Mat score_mat(im_score.shape(0), im_score.shape(1), CV_32F,
                       im_score.data());
     cv::Mat mask_mat;
-    cv::threshold(score_mat, mask_mat, threshold, 1, cv::THRESH_BINARY);
-    mask_mat.convertTo(mask_mat, CV_8U, 255, 0);
+    cv::threshold(score_mat, mask_mat, 0.5, 1, cv::THRESH_BINARY);
+    mask_mat.convertTo(mask_mat, CV_8U, 1, 0);
 
+    // Label image with region props
     cv::Mat label_mat;
     cv::Mat stats_mat;
     cv::Mat centroids_mat;
@@ -43,7 +62,6 @@ xt::xarray<uint16_t> RegionLabel(xt::xarray<float> im_score,
     int n_labels = cv::connectedComponentsWithStats(
         mask_mat, label_mat, stats_mat, centroids_mat, 8, CV_16U);
 
-    // Label Image
     xt::xarray<uint16_t> im_label = xt::xarray<uint16_t>::from_shape(
         {(size_t)(label_mat.rows), (size_t)(label_mat.cols)});
     size_t bufsize = im_label.size() * sizeof(uint16_t);
@@ -52,7 +70,7 @@ xt::xarray<uint16_t> RegionLabel(xt::xarray<float> im_score,
     }
     memcpy(im_label.data(), label_mat.data, bufsize);
 
-    // Region props
+    // Convert region props
     for (int label = 0; label < n_labels; label++) {
         ImageRegionProp prop;
         prop.label = label;
@@ -78,7 +96,7 @@ xt::xarray<uint16_t> RegionLabel(xt::xarray<float> im_score,
 
 
 UNet::UNet(const std::string server_addr, const std::string model_name,
-           const std::string input_name, const std::string output_name)
+           const std::string input_name)
 {
     grpc::ChannelArguments channel_args;
     channel_args.SetInt(GRPC_ARG_MAX_SEND_MESSAGE_LENGTH, 20 * 1024 * 1024);
@@ -90,7 +108,6 @@ UNet::UNet(const std::string server_addr, const std::string model_name,
     this->server_addr = server_addr;
     this->model_name = model_name;
     this->input_name = input_name;
-    this->output_name = output_name;
 }
 
 xt::xarray<float> UNet::GetScore(xt::xarray<float> im)
@@ -116,29 +133,58 @@ xt::xarray<float> UNet::GetScore(xt::xarray<float> im)
     memcpy(input_tensor.mutable_float_val()->mutable_data(), im.data(),
            im.size() * sizeof(float));
 
+    // Run predict
     grpc::Status status = stub->Predict(&ctx, req, &resp);
     if (!status.ok()) {
         throw std::runtime_error(
             fmt::format("stub.Predict: {}", status.error_message()));
     }
 
-    auto it = resp.outputs().find(this->output_name);
-    if (it == resp.outputs().end()) {
-        throw std::runtime_error("output tensor not found");
+    // Get output tensor proto
+    if (resp.outputs().size() != 1) {
+        throw std::runtime_error(
+            fmt::format("unexpected output: {} output tensors", resp.outputs().size()));
     }
-    tensorflow::TensorProto output_tensor = it->second;
+    tensorflow::TensorProto output_tensor = resp.outputs().begin()->second;
 
+    // Validate type and shape
     if (output_tensor.dtype() != tensorflow::DataType::DT_FLOAT) {
         throw std::runtime_error(
             fmt::format("unexpected output dtype {}", output_tensor.dtype()));
     }
-    uint32_t out_height = output_tensor.tensor_shape().dim(1).size();
-    uint32_t out_width = output_tensor.tensor_shape().dim(2).size();
 
-    xt::xarray<float> score =
-        xt::xarray<float>::from_shape({out_height, out_width});
+    // Convert tensor to xarray
+    std::vector<uint32_t> shape;
+    for (int i = 0; i < output_tensor.tensor_shape().dim_size(); i++) {
+        shape.push_back(output_tensor.tensor_shape().dim(i).size());
+    }
+    xt::xarray<float> score = xt::xarray<float>::from_shape(shape);
     memcpy(score.data(), output_tensor.float_val().data(),
-           output_tensor.float_val().size() * sizeof(float));
+                output_tensor.float_val_size() * sizeof(float));
 
-    return score;
+    // Slice output based on shape
+    if (shape.size() == 3) {
+        // shape = [1, height, width]
+        if (shape[0] != 1) {
+            throw std::runtime_error(
+                fmt::format("unexpected output shape ({})", fmt::join(shape, ", ")));
+        }
+        xt::xarray<float> score_sliced = xt::view(score, 0, xt::all(), xt::all());
+        return score_sliced;
+    } else if (shape.size() == 4) {
+        // shape = [1, height, width, 2]
+        if (shape[0] != 1) {
+            throw std::runtime_error(
+                fmt::format("unexpected output shape ({})", fmt::join(shape, ", ")));
+        }
+        if (shape[3] != 2) {
+            throw std::runtime_error(
+                fmt::format("unexpected output shape ({})", fmt::join(shape, ", ")));
+        }
+        xt::xarray<float> score_sliced = xt::view(score, 0, xt::all(), xt::all(), 1);
+        return score_sliced;
+    } else {
+        throw std::runtime_error(
+            fmt::format("unexpected output shape ({})", fmt::join(shape, ", ")));
+    }
 }

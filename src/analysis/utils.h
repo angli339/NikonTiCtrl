@@ -1,5 +1,5 @@
-#ifndef SEGMENTATION_H
-#define SEGMENTATION_H
+#ifndef UTILS_H
+#define UTILS_H
 
 #include <vector>
 
@@ -13,6 +13,8 @@
 xt::xarray<uint16_t> EqualizeCLAHE(xt::xarray<uint16_t> im,
                                    double clip_limit = 2);
 
+xt::xarray<float> Normalize(xt::xarray<uint16_t> im); 
+
 struct ImageRegionProp {
     uint16_t label;
     uint32_t bbox_x0;
@@ -25,8 +27,7 @@ struct ImageRegionProp {
 };
 
 xt::xarray<uint16_t> RegionLabel(xt::xarray<float> im_score,
-                                 std::vector<ImageRegionProp> &region_props,
-                                 double threshold = 0.5);
+                                 std::vector<ImageRegionProp> &region_props);
 
 template <typename T>
 xt::xarray<double> RegionSum(xt::xarray<T> im, xt::xarray<uint16_t> label,
@@ -35,14 +36,13 @@ xt::xarray<double> RegionSum(xt::xarray<T> im, xt::xarray<uint16_t> label,
 class UNet {
 public:
     UNet(const std::string server_addr, const std::string model_name,
-         const std::string input_name, const std::string output_name);
+         const std::string input_name);
     xt::xarray<float> GetScore(xt::xarray<float> im);
 
 private:
     std::string server_addr;
     std::string model_name;
     std::string input_name;
-    std::string output_name;
 
     std::shared_ptr<::grpc::Channel> grpc_channel;
     std::shared_ptr<::tensorflow::serving::PredictionService::Stub> stub;

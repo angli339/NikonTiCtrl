@@ -11,8 +11,7 @@
 AnalysisManager::AnalysisManager(ExperimentControl *exp)
     : unet(config.system.unet_model.server_addr,
            config.system.unet_model.model_name,
-           config.system.unet_model.input_name,
-           config.system.unet_model.output_name)
+           config.system.unet_model.input_name)
 {
     this->exp = exp;
     if (!exp->ExperimentDir().empty()) {
@@ -98,8 +97,8 @@ void AnalysisManager::LoadFile()
 }
 
 xt::xarray<double>
-AnalysisManager::GetSegmentationScore(std::string ndimage_name,
-                                      std::string ch_name, int i_t)
+AnalysisManager::GetSegmentationScore(std::string ndimage_name, int i_t,
+                                      std::string ch_name)
 {
     // Find image
     NDImage *ndimage = exp->Images()->GetNDImage(ndimage_name);
@@ -111,10 +110,10 @@ AnalysisManager::GetSegmentationScore(std::string ndimage_name,
                                 xt::no_ownership(), shape);
 
     // Preprocess
-    xt::xarray<uint16_t> im_eq = EqualizeCLAHE(im_raw_arr);
-
+    xt::xarray<float> imnorm = Normalize(im_raw_arr);
+    
     // U-Net
-    return unet.GetScore(im_eq);
+    return unet.GetScore(imnorm);
 }
 
 int AnalysisManager::QuantifyRegions(std::string ndimage_name, int i_t,
@@ -135,12 +134,11 @@ int AnalysisManager::QuantifyRegions(std::string ndimage_name, int i_t,
 
     LOG_DEBUG("Segment {}", ndimage_name);
     // Preprocess
-    xt::xarray<uint16_t> im_eq = EqualizeCLAHE(im_raw_arr);
-    xt::xarray<float> im_eq_f32 = xt::xarray<float>(im_eq) / 65535;
+    xt::xarray<float> imnorm = Normalize(im_raw_arr);
 
     // U-Net
-    xt::xarray<float> im_score = unet.GetScore(im_eq_f32);
-
+    xt::xarray<float> im_score = unet.GetScore(imnorm);
+    
     // Segment score image and calculate mean score of regions
     std::vector<ImageRegionProp> region_prop;
     xt::xarray<uint16_t> im_labels = RegionLabel(im_score, region_prop);
@@ -186,10 +184,12 @@ int AnalysisManager::QuantifyRegions(std::string ndimage_name, int i_t,
               region_prop_filtered.size(), region_prop.size());
 
     //
-    // Save label image
+    // Save U-Net score and label image
     //
+    xt::xarray<uint16_t> im_score_u16 = im_score * 65535;
     std::string group_name =
         fmt::format("/segmentation/{}/{}", ndimage_name, i_t);
+    h5file->write(fmt::format("{}/unet_score", group_name), im_score_u16, true);
     h5file->write(fmt::format("{}/label_image", group_name), im_labels, true);
     h5file->flush();
 
