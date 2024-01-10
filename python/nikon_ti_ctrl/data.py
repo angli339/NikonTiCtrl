@@ -31,4 +31,4 @@ class NDImage():
         return self._data
 
     def view_napari(self):
-        napari.view_image(self.data, channel_axis=2, name=self._ch_names)
+        return napari.view_image(self.data, channel_axis=2, name=self._ch_names)
