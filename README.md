@@ -19,5 +19,34 @@ Graphical user interface and API for controlling a Nikon Ti-E widefield fluoresc
 * [Ti Control](https://www.nikon.com/products/microscope-solutions/support/download/software/biological/index.htm#toc02) 4.4.6 (Microscope driver) 
 * [Nikon Ti SDK Redistributable](https://micro-manager.org/wiki/NikonTI) 4.4.1.714
 
+## Build
+
+### Build from source and install
+```
+mkdir build
+cd build
+
+# Configure
+cmake .. \
+    -G Ninja \
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake \
+    -DVCPKG_TARGET_TRIPLET=x64-windows-static \
+    -DCMAKE_INSTALL_PREFIX="C:/Program Files/NikonTiCtrl"
+
+# Build
+cmake --build .
+
+# Install
+cmake --install .
+```
+
+### To create zip package for release
+
+Run in `build` folder:
+```
+cpack --config CPackConfig.cmake
+```
+
 ## Screenshot
 ![screenshot](.github/screenshot.jpg)

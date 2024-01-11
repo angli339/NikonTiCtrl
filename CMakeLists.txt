@@ -77,7 +77,7 @@ set_target_properties(FLIR_Spinnaker PROPERTIES
 )
 install(FILES
     "${SPINNAKER_ROOT}/bin64/vs2015/Spinnaker_v140.dll"
-    DESTINATION ${CMAKE_INSTALL_PREFIX}
+    DESTINATION .
 )
 
 ################################
@@ -377,32 +377,44 @@ add_custom_command(TARGET NikonTiControl POST_BUILD
 # ---------------  Install ---------------
 # Install binary and runtime
 install (TARGETS NikonTiControl
-    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}
+    RUNTIME DESTINATION .
 )
 
 install(FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/third_party/MMCoreAPI/lib/MMCoreC.dll"
     "${MM_DEVICEADAPTER_DIR}/mmgr_dal_NikonTI.dll"
-    DESTINATION ${CMAKE_INSTALL_PREFIX}
+    DESTINATION .
 )
 
 # Install files from windeployqt
 install(
-    DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/windeployqt/" DESTINATION ${CMAKE_INSTALL_PREFIX}
+    DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/windeployqt/" DESTINATION .
 )
 
-# Install python API
+# Install python API and examples
 install(
-    DIRECTORY "python" DESTINATION ${CMAKE_INSTALL_PREFIX}
+    DIRECTORY "python" DESTINATION .
     FILES_MATCHING
     PATTERN "*.py"
+    PATTERN "*.ipynb"
     PATTERN "__pycache__" EXCLUDE
+)
+
+# Install tensorflow_server Docker Compose files
+install(
+    DIRECTORY "tensorflow_server" DESTINATION .
+    FILES_MATCHING
+    PATTERN "*.yml"
+    PATTERN "*.md"
+    PATTERN ".gitignore" EXCLUDE
+    PATTERN "unet_yeast_bf" EXCLUDE
 )
 
 ################################
 # Create package
 ################################
 set(CPACK_GENERATOR "ZIP")
-set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${GIT_TAG_VERSION}")
+set(CPACK_PACKAGE_VERSION ${GIT_TAG_VERSION})
+set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
 
 include(CPack)
