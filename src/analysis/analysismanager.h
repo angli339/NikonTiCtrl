@@ -3,13 +3,13 @@
 
 #include <filesystem>
 #include <map>
+#include <shared_mutex>
 #include <string>
 #include <tuple>
 #include <vector>
-#include <shared_mutex>
 
-#include "eventstream.h"
 #include "analysis/utils.h"
+#include "eventstream.h"
 #include "utils/hdf5file.h"
 
 struct QuantificationResults;

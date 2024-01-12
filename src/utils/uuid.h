@@ -7,6 +7,6 @@ namespace utils {
 
 std::string uuid();
 
-} // namesapce utils
+} // namespace utils
 
 #endif

@@ -17,7 +17,8 @@ LRESULT CALLBACK DevNotifyWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam,
 
     if (uMsg == WM_DEVICECHANGE) {
         if ((wParam != DBT_DEVICEARRIVAL) ||
-            (wParam != DBT_DEVICEREMOVECOMPLETE)) {
+            (wParam != DBT_DEVICEREMOVECOMPLETE))
+        {
             // Ingore other event types
             return retVal;
         }

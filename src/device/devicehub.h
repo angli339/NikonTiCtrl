@@ -40,8 +40,7 @@ public:
                              std::chrono::steady_clock::time_point timepoint);
 
     PropertyValueMap GetPropertySnapshot();
-    PropertyValueMap
-    GetPropertySnapshot(std::set<std::string> dev_name_set);
+    PropertyValueMap GetPropertySnapshot(std::set<std::string> dev_name_set);
 
     void SubscribeEvents(EventStream *channel);
 

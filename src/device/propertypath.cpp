@@ -22,13 +22,13 @@ PropertyPath::PropertyPath(std::string path)
             std::size_t pos = path.find_first_of('/', 1);
             if (pos == std::string::npos) {
                 // "/dev_name"
-                dev_name_ = path.substr(1, pos-1);
+                dev_name_ = path.substr(1, pos - 1);
                 return;
             } else {
                 // "/dev_name/property_name"
                 // "/dev_name/property_name/sub_property_name"
-                dev_name_ = path.substr(1, pos-1);
-                property_name_ = path.substr(pos+1, std::string::npos);
+                dev_name_ = path.substr(1, pos - 1);
+                property_name_ = path.substr(pos + 1, std::string::npos);
                 return;
             }
         } else {
@@ -55,7 +55,7 @@ std::string PropertyPath::ToString() const
             return "/" + dev_name_;
         }
         return "/" + dev_name_ + "/" + property_name_;
-    }    
+    }
 }
 
 std::vector<PropertyPath> PropertyPathList(PropertyValueMap path_value_map)

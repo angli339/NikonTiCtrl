@@ -66,7 +66,7 @@ struct Entry {
 };
 
 class Logger {
-  public:
+public:
     ~Logger();
 
     void SetFilename(fs::path filename);
@@ -76,7 +76,7 @@ class Logger {
     void Log(level::LevelEnum level, const std::string func,
              const std::string message, Fields fields = nullptr);
 
-  private:
+private:
     level::LevelEnum active_level = level::debug;
     level::LevelEnum flush_level = level::info;
 

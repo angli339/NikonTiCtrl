@@ -4,8 +4,8 @@
 #include <filesystem>
 #include <fmt/format.h>
 #include <hdf5.h>
-#include <string>
 #include <mutex>
+#include <string>
 
 #include "utils/structarray.h"
 
@@ -188,23 +188,28 @@ template <typename T> xt::xarray<T> HDF5File::read(std::string name)
         status =
             H5Dread(ds_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, arr.data());
     } else if (H5Tequal(type_id, H5T_NATIVE_DOUBLE) &&
-               std::is_same_v<T, double>) {
+               std::is_same_v<T, double>)
+    {
         status =
             H5Dread(ds_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, arr.data());
     } else if (H5Tequal(type_id, H5T_NATIVE_UINT8) &&
-               std::is_same_v<T, uint8_t>) {
+               std::is_same_v<T, uint8_t>)
+    {
         status =
             H5Dread(ds_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, arr.data());
     } else if (H5Tequal(type_id, H5T_NATIVE_UINT16) &&
-               std::is_same_v<T, uint16_t>) {
+               std::is_same_v<T, uint16_t>)
+    {
         status =
             H5Dread(ds_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, arr.data());
     } else if (H5Tequal(type_id, H5T_NATIVE_UINT32) &&
-               std::is_same_v<T, uint32_t>) {
+               std::is_same_v<T, uint32_t>)
+    {
         status =
             H5Dread(ds_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, arr.data());
     } else if (H5Tequal(type_id, H5T_NATIVE_UINT64) &&
-               std::is_same_v<T, uint64_t>) {
+               std::is_same_v<T, uint64_t>)
+    {
         status =
             H5Dread(ds_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, arr.data());
     } else if (H5Tequal(type_id, H5T_NATIVE_INT8) && std::is_same_v<T, int8_t>)
@@ -212,15 +217,18 @@ template <typename T> xt::xarray<T> HDF5File::read(std::string name)
         status =
             H5Dread(ds_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, arr.data());
     } else if (H5Tequal(type_id, H5T_NATIVE_INT16) &&
-               std::is_same_v<T, int16_t>) {
+               std::is_same_v<T, int16_t>)
+    {
         status =
             H5Dread(ds_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, arr.data());
     } else if (H5Tequal(type_id, H5T_NATIVE_INT32) &&
-               std::is_same_v<T, int32_t>) {
+               std::is_same_v<T, int32_t>)
+    {
         status =
             H5Dread(ds_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, arr.data());
     } else if (H5Tequal(type_id, H5T_NATIVE_INT64) &&
-               std::is_same_v<T, int64_t>) {
+               std::is_same_v<T, int64_t>)
+    {
         status =
             H5Dread(ds_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, arr.data());
     } else {

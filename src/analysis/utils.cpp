@@ -3,11 +3,11 @@
 #include <stdexcept>
 
 #include <fmt/format.h>
-#include <xtensor/xview.hpp>
 #include <grpcpp/client_context.h>
 #include <grpcpp/create_channel.h>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
+#include <xtensor/xview.hpp>
 
 
 xt::xarray<uint16_t> EqualizeCLAHE(xt::xarray<uint16_t> im, double clip_limit)
@@ -143,8 +143,8 @@ xt::xarray<float> UNet::GetScore(xt::xarray<float> im)
 
     // Get output tensor proto
     if (resp.outputs().size() != 1) {
-        throw std::runtime_error(
-            fmt::format("unexpected output: {} output tensors", resp.outputs().size()));
+        throw std::runtime_error(fmt::format(
+            "unexpected output: {} output tensors", resp.outputs().size()));
     }
     tensorflow::TensorProto output_tensor = resp.outputs().begin()->second;
 
@@ -161,31 +161,33 @@ xt::xarray<float> UNet::GetScore(xt::xarray<float> im)
     }
     xt::xarray<float> score = xt::xarray<float>::from_shape(shape);
     memcpy(score.data(), output_tensor.float_val().data(),
-                output_tensor.float_val_size() * sizeof(float));
+           output_tensor.float_val_size() * sizeof(float));
 
     // Slice output based on shape
     if (shape.size() == 3) {
         // shape = [1, height, width]
         if (shape[0] != 1) {
-            throw std::runtime_error(
-                fmt::format("unexpected output shape ({})", fmt::join(shape, ", ")));
+            throw std::runtime_error(fmt::format("unexpected output shape ({})",
+                                                 fmt::join(shape, ", ")));
         }
-        xt::xarray<float> score_sliced = xt::view(score, 0, xt::all(), xt::all());
+        xt::xarray<float> score_sliced =
+            xt::view(score, 0, xt::all(), xt::all());
         return score_sliced;
     } else if (shape.size() == 4) {
         // shape = [1, height, width, 2]
         if (shape[0] != 1) {
-            throw std::runtime_error(
-                fmt::format("unexpected output shape ({})", fmt::join(shape, ", ")));
+            throw std::runtime_error(fmt::format("unexpected output shape ({})",
+                                                 fmt::join(shape, ", ")));
         }
         if (shape[3] != 2) {
-            throw std::runtime_error(
-                fmt::format("unexpected output shape ({})", fmt::join(shape, ", ")));
+            throw std::runtime_error(fmt::format("unexpected output shape ({})",
+                                                 fmt::join(shape, ", ")));
         }
-        xt::xarray<float> score_sliced = xt::view(score, 0, xt::all(), xt::all(), 1);
+        xt::xarray<float> score_sliced =
+            xt::view(score, 0, xt::all(), xt::all(), 1);
         return score_sliced;
     } else {
-        throw std::runtime_error(
-            fmt::format("unexpected output shape ({})", fmt::join(shape, ", ")));
+        throw std::runtime_error(fmt::format("unexpected output shape ({})",
+                                             fmt::join(shape, ", ")));
     }
 }

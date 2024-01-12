@@ -30,7 +30,7 @@ AnalysisManager::~AnalysisManager()
 void AnalysisManager::LoadFile()
 {
     std::unique_lock<std::shared_mutex> lk(mutex_quant);
-    
+
     if (h5file) {
         delete h5file;
         h5file = nullptr;
@@ -112,7 +112,7 @@ AnalysisManager::GetSegmentationScore(std::string ndimage_name, int i_t,
 
     // Preprocess
     xt::xarray<float> imnorm = Normalize(im_raw_arr);
-    
+
     // U-Net
     return unet.GetScore(imnorm);
 }
@@ -139,7 +139,7 @@ int AnalysisManager::QuantifyRegions(std::string ndimage_name, int i_t,
 
     // U-Net
     xt::xarray<float> im_score = unet.GetScore(imnorm);
-    
+
     // Segment score image and calculate mean score of regions
     std::vector<ImageRegionProp> region_prop;
     xt::xarray<uint16_t> im_labels = RegionLabel(im_score, region_prop);
@@ -240,8 +240,8 @@ int AnalysisManager::QuantifyRegions(std::string ndimage_name, int i_t,
 
         quantifications[{ndimage_name, i_t}] = results;
 
-        if (std::find(ndimage_names.begin(), ndimage_names.end(), ndimage_name) ==
-            ndimage_names.end())
+        if (std::find(ndimage_names.begin(), ndimage_names.end(),
+                      ndimage_name) == ndimage_names.end())
         {
             ndimage_names.push_back(ndimage_name);
         }

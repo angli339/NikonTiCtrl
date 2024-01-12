@@ -65,7 +65,8 @@ void configApp()
     qApp->setStyleSheet(styleSheet);
 }
 
-void initLogger() {
+void initLogger()
+{
     slog::InitConsole();
 
     // Write logs to folder
@@ -77,12 +78,14 @@ void initLogger() {
         if (!std::filesystem::exists(log_folder)) {
             std::filesystem::create_directory(log_folder);
         }
-        std::string filename = fmt::format("NikonTiCtrl-{:%Y%m%d-%H%M%S}.log", utils::Now().Local());
+        std::string filename = fmt::format("NikonTiCtrl-{:%Y%m%d-%H%M%S}.log",
+                                           utils::Now().Local());
         std::filesystem::path log_path = log_folder / filename;
         slog::DefaultLogger().SetFilename(log_path);
         LOG_INFO("Writing log to {}", log_path.string());
     } else {
-        LOG_ERROR("Failed to get LOCALAPPDATA path from environment variables. Log is not written to a file.");
+        LOG_ERROR("Failed to get LOCALAPPDATA path from environment variables. "
+                  "Log is not written to a file.");
     }
 }
 
@@ -95,7 +98,8 @@ int main(int argc, char *argv[])
     try {
         std::filesystem::path systemConfigPath = getSystemConfigPath();
         if (!std::filesystem::exists(systemConfigPath)) {
-            LOG_FATAL("Cannot find config file at {}", systemConfigPath.string());
+            LOG_FATAL("Cannot find config file at {}",
+                      systemConfigPath.string());
             return 1;
         }
         loadSystemConfig(systemConfigPath);

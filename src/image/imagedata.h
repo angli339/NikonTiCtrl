@@ -7,8 +7,7 @@
 
 #include <opencv2/core/mat.hpp>
 
-enum class DataType
-{
+enum class DataType {
     Unknown,
     Bool8,
     Uint8,
@@ -19,8 +18,7 @@ enum class DataType
     Float64
 };
 
-enum class ColorType
-{
+enum class ColorType {
     Unknown,
     Mono8,
     Mono10,
@@ -36,45 +34,18 @@ public:
     ImageData() {}
     ImageData(uint32_t height, uint32_t width, DataType dtype, ColorType ctype);
 
-    bool empty()
-    {
-        return buf == nullptr;
-    }
-    uint32_t size()
-    {
-        return height * width;
-    }
+    bool empty() { return buf == nullptr; }
+    uint32_t size() { return height * width; }
 
-    DataType DataType()
-    {
-        return dtype;
-    }
-    ColorType ColorType()
-    {
-        return ctype;
-    }
+    DataType DataType() { return dtype; }
+    ColorType ColorType() { return ctype; }
     uint8_t ElemSize();
 
-    std::pair<uint32_t, uint32_t> Shape()
-    {
-        return {height, width};
-    }
-    uint32_t Height()
-    {
-        return height;
-    }
-    uint32_t Width()
-    {
-        return width;
-    }
-    size_t BufSize()
-    {
-        return buf_size;
-    }
-    std::shared_ptr<void> Buf()
-    {
-        return buf;
-    }
+    std::pair<uint32_t, uint32_t> Shape() { return {height, width}; }
+    uint32_t Height() { return height; }
+    uint32_t Width() { return width; }
+    size_t BufSize() { return buf_size; }
+    std::shared_ptr<void> Buf() { return buf; }
     void CopyFrom(const std::string &val);
     void CopyFrom(cv::Mat mat);
     void CopyFrom(const float *val, const size_t n_val);

@@ -29,7 +29,8 @@ void SampleManager::LoadFromDB()
         plate->type = PlateTypeFromString(plate_row.type);
         plate->id = plate_row.plate_id;
         if (plate_row.pos_origin_x.has_value() &&
-            plate_row.pos_origin_y.has_value()) {
+            plate_row.pos_origin_y.has_value())
+        {
             plate->pos_origin = {plate_row.pos_origin_x.value(),
                                  plate_row.pos_origin_y.value()};
         }

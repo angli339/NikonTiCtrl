@@ -193,7 +193,7 @@ void AcquirePage::handleExperimentClose()
     ndImageSelected = "";
     ndImageLatest = "";
     lk.unlock();
-    
+
     displayNDImage("");
     experimentDirButton->setText("Select directory...");
 }

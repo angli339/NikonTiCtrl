@@ -78,7 +78,8 @@ XYStageView::XYStageView(QWidget *parent) : QWidget(parent)
     labelPosY = new QLabel(this);
 
     for (const auto &label :
-         {labelPosXName, labelPosYName, labelPosX, labelPosY}) {
+         {labelPosXName, labelPosYName, labelPosX, labelPosY})
+    {
         QFont font = label->font();
         font.setPixelSize(11);
         label->setFont(font);

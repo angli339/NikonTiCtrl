@@ -543,7 +543,8 @@ double Proscan::getXYResolution()
     }
 
     if ((xy_resolution_str.value() != "0.1") &&
-        (xy_resolution_str.value() != "1")) {
+        (xy_resolution_str.value() != "1"))
+    {
         throw std::invalid_argument(fmt::format(
             "unexpected xy_resolution: '{}'", xy_resolution_str.value()));
     }

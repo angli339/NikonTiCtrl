@@ -9,13 +9,17 @@ std::filesystem::path getSystemConfigPath()
     // C:/ProgramData
     std::filesystem::path program_data_dir = std::getenv("ALLUSERSPROFILE");
     if (program_data_dir.empty()) {
-        throw std::runtime_error("failed to get ALLUSERSPROFILE path from environment variables");
+        throw std::runtime_error(
+            "failed to get ALLUSERSPROFILE path from environment variables");
     }
 
     // C:/ProgramData/NikonTiControl
     std::filesystem::path app_dir = program_data_dir / "NikonTiControl";
     if (!std::filesystem::exists(app_dir)) {
-        throw std::runtime_error(fmt::format("Directory {} does not exists. It needs to be created manually and assigned with the correct permission.", app_dir.string()));
+        throw std::runtime_error(
+            fmt::format("Directory {} does not exists. It needs to be created "
+                        "manually and assigned with the correct permission.",
+                        app_dir.string()));
     }
 
     return app_dir / "config.json";
@@ -26,7 +30,8 @@ std::filesystem::path getUserConfigPath()
     // C:/Users/<username>/AppData/Roaming
     std::filesystem::path user_app_data_dir = std::getenv("APPDATA");
     if (user_app_data_dir.empty()) {
-        throw std::runtime_error("failed to get APPDATA path from environment variables");
+        throw std::runtime_error(
+            "failed to get APPDATA path from environment variables");
     }
 
     // C:/Users/<username>/AppData/Roaming/NikonTiControl
@@ -49,13 +54,13 @@ void loadSystemConfig(std::filesystem::path filename)
     try {
         std::map<std::string, std::map<std::string, Label>> m_labels;
         j.at("labels").get_to(m_labels);
-        for (const auto& [k, v] : m_labels) {
+        for (const auto &[k, v] : m_labels) {
             config.system.labels[k] = v;
         }
     } catch (std::exception &e) {
         throw std::runtime_error(fmt::format("labels: {}", e.what()));
     }
-    
+
     try {
         j.at("presets").get_to(config.system.presets);
     } catch (std::exception &e) {
@@ -78,7 +83,8 @@ void loadUserConfig(std::filesystem::path filename)
     }
 }
 
-void createDefaultUserConfig(std::filesystem::path filename) {
+void createDefaultUserConfig(std::filesystem::path filename)
+{
     // C:/Users/<username>
     std::filesystem::path user_home_dir = std::getenv("HOMEPATH");
     std::string username = std::getenv("USERNAME");

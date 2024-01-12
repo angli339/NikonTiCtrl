@@ -44,10 +44,7 @@ public:
     explicit ZStageView(QWidget *parent = nullptr);
 
     void setPositionZ(QString value);
-    void setEnabled(bool enabled)
-    {
-        buttonGroupPFSState->setEnabled(enabled);
-    }
+    void setEnabled(bool enabled) { buttonGroupPFSState->setEnabled(enabled); }
     void setPFSStatus(QString status);
     void setPFSOffset(QString offset);
     void setPFSState(QString state);

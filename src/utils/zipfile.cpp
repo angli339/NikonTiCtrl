@@ -34,7 +34,7 @@ const static uint16_t methodStore = 0; // no compression
 const static uint16_t flagUTF8 = 0x800;
 
 // Extra header IDs
-const static uint16_t zip64ExtraID = 0x0001; // Zip64 extended information
+const static uint16_t zip64ExtraID = 0x0001;    // Zip64 extended information
 const static uint16_t extTimeExtraID = 0x5455;  // Extended timestamp
 const static uint16_t extTimeExtraSize = 5;     // ModTime only
 const static uint8_t extTimeFlagModTime = 0x01; // ModTime only
@@ -413,7 +413,7 @@ void ZipFile::AddFile(std::string name, std::string buf)
     entry->len_extra_local = entry->extra_local.size();
     entry->len_extra_central = entry->extra_central.size();
 
-    
+
     //
     // Lock for adding entry and I/O
     //

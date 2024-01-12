@@ -1,6 +1,6 @@
 #include "channel.h"
 
-void from_json(const nlohmann::json& j, ChannelPreset& p)
+void from_json(const nlohmann::json &j, ChannelPreset &p)
 {
     j.at("name").get_to(p.name);
     j.at("property_value").get_to(p.property_value);
@@ -10,7 +10,8 @@ void from_json(const nlohmann::json& j, ChannelPreset& p)
     }
 
     if (j.contains("illumination_property")) {
-        p.illumination_property = j.at("illumination_property").get<std::string>();
+        p.illumination_property =
+            j.at("illumination_property").get<std::string>();
     }
 
     if (j.contains("default_exposure_ms")) {
@@ -18,6 +19,7 @@ void from_json(const nlohmann::json& j, ChannelPreset& p)
     }
 
     if (j.contains("default_illumination_intensity")) {
-        j.at("default_illumination_intensity").get_to(p.default_illumination_intensity);
+        j.at("default_illumination_intensity")
+            .get_to(p.default_illumination_intensity);
     }
 }

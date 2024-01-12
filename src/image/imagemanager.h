@@ -23,7 +23,8 @@ public:
     ImageData GetNextLiveViewFrame();
 
     std::vector<NDImage *> ListNDImage();
-    std::vector<NDImage *> ListNDImage(std::string plate_id, std::string well_id);
+    std::vector<NDImage *> ListNDImage(std::string plate_id,
+                                       std::string well_id);
     bool HasNDImage(std::string ndimage_name);
     NDImage *GetNDImage(std::string ndimage_name);
 

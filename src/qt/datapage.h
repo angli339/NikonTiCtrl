@@ -1,9 +1,9 @@
 #ifndef DATAPATH_H
 #define DATAPATH_H
 
-#include <QWidget>
-#include <QTableWidget>
 #include <QPushButton>
+#include <QTableWidget>
+#include <QWidget>
 
 #include "qt/experimentcontrol_model.h"
 

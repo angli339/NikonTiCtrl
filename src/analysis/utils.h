@@ -13,7 +13,7 @@
 xt::xarray<uint16_t> EqualizeCLAHE(xt::xarray<uint16_t> im,
                                    double clip_limit = 2);
 
-xt::xarray<float> Normalize(xt::xarray<uint16_t> im); 
+xt::xarray<float> Normalize(xt::xarray<uint16_t> im);
 
 struct ImageRegionProp {
     uint16_t label;

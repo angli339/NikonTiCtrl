@@ -70,7 +70,8 @@ xt::xarray<uint16_t> TiffDecoder::ReadMono16()
     }
     std::optional<uint16_t> sample_format = SampleFormat();
     if (sample_format.has_value() &&
-        (sample_format.value() != SAMPLEFORMAT_UINT)) {
+        (sample_format.value() != SAMPLEFORMAT_UINT))
+    {
         throw std::runtime_error("not uint");
     }
 

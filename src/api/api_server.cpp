@@ -595,7 +595,7 @@ APIServer::GetSegmentationScore(ServerContext *context,
     xt::xarray<float> score;
     try {
         score = exp->Analysis()->GetSegmentationScore(
-            req->ndimage_name(),  req->i_t(), req->ch_name());
+            req->ndimage_name(), req->i_t(), req->ch_name());
     } catch (std::exception &e) {
         return grpc::Status(grpc::StatusCode::INTERNAL,
                             fmt::format("unexpected exception: {}", e.what()));

@@ -1,7 +1,7 @@
 #include "device/nikon/nikon_ti.h"
 
-#include <set>
 #include <fmt/format.h>
+#include <set>
 
 #include "device/nikon/mm_api.h"
 #include "device/nikon/nikon_ti_prop_info.h"
@@ -48,7 +48,7 @@ Microscope::Microscope()
 
     try {
         mmcore->MM_Open(&mmc);
-        
+
         char *info;
         mmcore->MM_GetVersionInfo(mmc, &info);
         std::string mm_version = std::string(info);
@@ -58,20 +58,25 @@ Microscope::Microscope()
         std::string mm_api_version = std::string(info);
         mmcore->MM_StringFree(info);
 
-        char **adapters_c;        
+        char **adapters_c;
         MM_Status status = mmcore->MM_GetDeviceAdapterNames(mmc, &adapters_c);
         if (status != MM_ErrOK) {
-            throw std::runtime_error(fmt::format("MM_GetDeviceAdapterNames: {}({})", (int)status, MM_StatusToString(status)));
+            throw std::runtime_error(
+                fmt::format("MM_GetDeviceAdapterNames: {}({})", (int)status,
+                            MM_StatusToString(status)));
         }
         std::set<std::string> adapters;
-        for(int i = 0; adapters_c[i]; i++) {
-            adapters.insert(std::string( adapters_c[i]));
+        for (int i = 0; adapters_c[i]; i++) {
+            adapters.insert(std::string(adapters_c[i]));
         }
         mmcore->MM_StringListFree(adapters_c);
         if (adapters.contains("NikonTI")) {
-            LOG_DEBUG("MMCoreC loaded: {}, {}, found NikonTI device adapter.", mm_version, mm_api_version);
+            LOG_DEBUG("MMCoreC loaded: {}, {}, found NikonTI device adapter.",
+                      mm_version, mm_api_version);
         } else {
-            LOG_ERROR("MMCoreC loaded: {}, {}. Device adapters: {}. NikonTI device adapter not found.", mm_version, mm_api_version, fmt::join(adapters, ", "));
+            LOG_ERROR("MMCoreC loaded: {}, {}. Device adapters: {}. NikonTI "
+                      "device adapter not found.",
+                      mm_version, mm_api_version, fmt::join(adapters, ", "));
             throw std::runtime_error("NikonTI device adapter not found");
         }
     } catch (std::exception &e) {

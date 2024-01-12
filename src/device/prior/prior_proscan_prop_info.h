@@ -1,8 +1,8 @@
 #ifndef DEVICE_PRIOR_PROSCAN_PROP_INFO_H
 #define DEVICE_PRIOR_PROSCAN_PROP_INFO_H
 
-#include <string>
 #include <map>
+#include <string>
 
 namespace PriorProscan {
 

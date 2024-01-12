@@ -21,6 +21,6 @@ struct Channel {
     double illumination_intensity;
 };
 
-void from_json(const nlohmann::json& j, ChannelPreset& p);
+void from_json(const nlohmann::json &j, ChannelPreset &p);
 
 #endif

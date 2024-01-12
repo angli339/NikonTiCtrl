@@ -7,6 +7,7 @@
     "cmake.installPrefix": "C:/Program Files/NikonTiCtrl",
     "cmake.configureOnOpen": true,
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "editor.formatOnSave": true,
     "files.associations": {
         "any": "cpp",
         "array": "cpp",

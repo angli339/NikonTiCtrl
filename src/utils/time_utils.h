@@ -14,18 +14,9 @@ class StopWatch {
     using clock = std::chrono::steady_clock;
 
 public:
-    StopWatch(const StopWatch &sw)
-    {
-        tp_start = sw.tp_start;
-    }
-    StopWatch()
-    {
-        tp_start = clock::now();
-    }
-    void Reset()
-    {
-        tp_start = clock::now();
-    }
+    StopWatch(const StopWatch &sw) { tp_start = sw.tp_start; }
+    StopWatch() { tp_start = clock::now(); }
+    void Reset() { tp_start = clock::now(); }
     double Milliseconds() const
     {
         return std::chrono::duration<double>(clock::now() - tp_start).count() *
@@ -48,14 +39,8 @@ public:
     std::string FormatRFC3339_Milli_UTC() const;
     std::string FormatRFC3339_Local() const;
 
-    inline std::tm UTC() const
-    {
-        return fmt::gmtime(tp);
-    }
-    inline std::tm Local() const
-    {
-        return fmt::localtime(tp);
-    }
+    inline std::tm UTC() const { return fmt::gmtime(tp); }
+    inline std::tm Local() const { return fmt::localtime(tp); }
 
     inline uint32_t Microseconds() const
     {
@@ -101,10 +86,7 @@ private:
     std::chrono::system_clock::time_point tp;
 };
 
-inline TimePoint Now()
-{
-    return TimePoint(std::chrono::system_clock::now());
-}
+inline TimePoint Now() { return TimePoint(std::chrono::system_clock::now()); }
 
 
 inline void to_json(nlohmann::json &j, const TimePoint &timepoint)

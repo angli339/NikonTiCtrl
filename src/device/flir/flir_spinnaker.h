@@ -35,7 +35,7 @@ private:
     std::string serial;
     Spinnaker::SystemPtr system = nullptr;
     Spinnaker::CameraPtr pCam = nullptr;
-    
+
     std::atomic<bool> connected = false;
     std::map<std::string, PropertyNode *> node_map;
     void clearNodeMap();

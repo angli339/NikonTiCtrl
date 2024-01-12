@@ -28,10 +28,7 @@ ExperimentControlModel::~ExperimentControlModel()
     delete sampleManagerModel;
 }
 
-ExperimentControl *ExperimentControlModel::Experiment()
-{ 
-    return exp;
-}
+ExperimentControl *ExperimentControlModel::Experiment() { return exp; }
 
 ChannelControlModel *ExperimentControlModel::ChannelControlModel()
 {

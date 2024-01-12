@@ -46,7 +46,8 @@ void ImageManager::LoadFromDB()
         ndimage->n_t = ndimage_row.n_t;
         ndimage->dtype = DataType::Uint16;
         ndimage->ctype = ColorType::Mono16;
-        ndimage->site = exp->Samples()->Site(ndimage_row.plate_id, ndimage_row.well_id, ndimage_row.site_id);
+        ndimage->site = exp->Samples()->Site(
+            ndimage_row.plate_id, ndimage_row.well_id, ndimage_row.site_id);
         ndimage->image_manager = this;
 
         dataset.push_back(ndimage);

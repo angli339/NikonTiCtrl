@@ -1,11 +1,11 @@
 #include "image/ndimage.h"
 
+#include "image/imagemanager.h"
+#include "logging.h"
+#include "utils/tifffile.h"
 #include "utils/uuid.h"
 #include "version.h"
-#include "utils/tifffile.h"
 #include <fstream>
-#include "logging.h"
-#include "image/imagemanager.h"
 
 NDImage::NDImage(std::string name, std::vector<std::string> channel_names)
 {
@@ -14,70 +14,31 @@ NDImage::NDImage(std::string name, std::vector<std::string> channel_names)
     n_ch = channel_names.size();
 }
 
-::Site *NDImage::Site()
-{
-    return site;
-}
+::Site *NDImage::Site() { return site; }
 
-int NDImage::Index()
-{
-    return index;
-}
+int NDImage::Index() { return index; }
 
-std::string NDImage::Name()
-{
-    return name;
-}
+std::string NDImage::Name() { return name; }
 
-int NDImage::NumImages()
-{
-    return dataset.size();
-}
+int NDImage::NumImages() { return dataset.size(); }
 
-int NDImage::Width()
-{
-    return width;
-}
+int NDImage::Width() { return width; }
 
-int NDImage::Height()
-{
-    return height;
-}
+int NDImage::Height() { return height; }
 
-int NDImage::NChannels()
-{
-    return n_ch;
-}
+int NDImage::NChannels() { return n_ch; }
 
-int NDImage::NDimZ()
-{
-    return n_z;
-}
+int NDImage::NDimZ() { return n_z; }
 
-int NDImage::NDimT()
-{
-    return n_t;
-}
+int NDImage::NDimT() { return n_t; }
 
-::DataType NDImage::DataType() 
-{
-    return dtype;
-}
+::DataType NDImage::DataType() { return dtype; }
 
-::ColorType NDImage::ColorType()
-{
-    return ctype;
-}
+::ColorType NDImage::ColorType() { return ctype; }
 
-std::vector<std::string> NDImage::ChannelNames()
-{
-    return channel_names;
-}
+std::vector<std::string> NDImage::ChannelNames() { return channel_names; }
 
-std::string NDImage::ChannelName(int i_ch)
-{
-    return channel_names[i_ch];
-}
+std::string NDImage::ChannelName(int i_ch) { return channel_names[i_ch]; }
 
 int NDImage::ChannelIndex(std::string channel_name)
 {
@@ -150,7 +111,8 @@ ImageData NDImage::GetData(int i_ch, int i_z, int i_t)
         TiffDecoder tif(tif_buf);
         xt::xarray<uint16_t> arr = tif.ReadMono16();
 
-        ImageData data(arr.shape(0), arr.shape(1), DataType::Uint16, ColorType::Mono16);
+        ImageData data(arr.shape(0), arr.shape(1), DataType::Uint16,
+                       ColorType::Mono16);
         memcpy(data.Buf().get(), arr.data(), data.BufSize());
 
         dataset[{i_ch, i_z, i_t}] = data;

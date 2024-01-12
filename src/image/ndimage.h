@@ -17,6 +17,7 @@ class ImageManager;
 
 class NDImage {
     friend class ImageManager;
+
 public:
     NDImage(std::string name, std::vector<std::string> channel_names);
 
@@ -47,7 +48,7 @@ public:
 
 private:
     NDImage() {}
-    
+
     ::Site *site = nullptr;
 
     int index = -1;

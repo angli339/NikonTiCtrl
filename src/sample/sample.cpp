@@ -83,7 +83,7 @@ const std::vector<::Well *> Plate::EnabledWells() const
             results.push_back(well);
         }
     }
-    return results; 
+    return results;
 }
 
 int Plate::NumWells() const { return wells.size(); }

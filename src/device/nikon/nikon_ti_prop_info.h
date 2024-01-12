@@ -17,7 +17,7 @@ struct PropInfo {
     std::string description;
     std::string default_value;
     std::vector<std::string> options;
-    
+
     std::string mm_label;
     std::string mm_property;
     bool readonly;

@@ -51,7 +51,8 @@ StatusOr<std::string> Device::GetProperty(std::string property)
 
     PropertyNode *node = Node(property);
     if ((node == nullptr) || !node->Valid()) {
-        return absl::NotFoundError(fmt::format("property {} not found", property));
+        return absl::NotFoundError(
+            fmt::format("property {} not found", property));
     }
     return node->GetValue();
 }
@@ -64,56 +65,66 @@ Status Device::SetProperty(std::string property, std::string value)
 
     PropertyNode *node = Node(property);
     if ((node == nullptr) || !node->Valid()) {
-        return absl::NotFoundError(fmt::format("property {} not found", property));
+        return absl::NotFoundError(
+            fmt::format("property {} not found", property));
     }
     return node->SetValue(value);
 }
 
-Status Device::SetProperty(std::map<std::string, std::string> property_value_map)
+Status
+Device::SetProperty(std::map<std::string, std::string> property_value_map)
 {
     for (const auto &[property, value] : property_value_map) {
         if (!HasProperty(property)) {
-            return absl::NotFoundError(fmt::format("property {} not found", property));
+            return absl::NotFoundError(
+                fmt::format("property {} not found", property));
         }
     }
     for (const auto &[property, value] : property_value_map) {
         PropertyNode *node = Node(property);
         if (node == nullptr) {
-            return absl::NotFoundError(fmt::format("property {} not found", property));
+            return absl::NotFoundError(
+                fmt::format("property {} not found", property));
         }
         Status status = node->SetValue(value);
         if (!status.ok()) {
-            return absl::AbortedError(fmt::format("set property {}: {}", property, status.ToString()));
+            return absl::AbortedError(fmt::format("set property {}: {}",
+                                                  property, status.ToString()));
         }
     }
     return absl::OkStatus();
 }
 
-Status Device::WaitPropertyFor(std::vector<std::string> property_list, std::chrono::milliseconds timeout)
+Status Device::WaitPropertyFor(std::vector<std::string> property_list,
+                               std::chrono::milliseconds timeout)
 {
     std::chrono::steady_clock::time_point deadline =
         std::chrono::steady_clock::now() + timeout;
     return WaitPropertyUntil(property_list, deadline);
 }
 
-Status Device::WaitPropertyUntil(std::vector<std::string> property_list, std::chrono::steady_clock::time_point deadline)
+Status Device::WaitPropertyUntil(std::vector<std::string> property_list,
+                                 std::chrono::steady_clock::time_point deadline)
 {
     for (const auto &property : property_list) {
         if (!HasProperty(property)) {
-            return absl::NotFoundError(fmt::format("property {} not found", property));
+            return absl::NotFoundError(
+                fmt::format("property {} not found", property));
         }
     }
     for (const auto &property : property_list) {
         PropertyNode *node = Node(property);
         if (node == nullptr) {
-            return absl::NotFoundError(fmt::format("property {} not found", property));
+            return absl::NotFoundError(
+                fmt::format("property {} not found", property));
         }
         Status status = node->WaitUntil(deadline);
         if (!status.ok()) {
             if (absl::IsDeadlineExceeded(status)) {
                 return status;
             }
-            return absl::AbortedError(fmt::format("wait property {}: {}", property, status.ToString()));
+            return absl::AbortedError(fmt::format("wait property {}: {}",
+                                                  property, status.ToString()));
         }
     }
     return absl::OkStatus();

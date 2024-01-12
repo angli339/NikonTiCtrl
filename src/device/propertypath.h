@@ -24,22 +24,13 @@ public:
         return (!root) && (dev_name_.empty()) && (property_name_.empty());
     }
 
-    bool IsRoot() const
-    {
-        return root;
-    }
+    bool IsRoot() const { return root; }
     bool IsDevice() const
     {
         return (!dev_name_.empty()) && (property_name_.empty());
     }
-    std::string DeviceName() const
-    {
-        return dev_name_;
-    }
-    std::string PropertyName() const
-    {
-        return property_name_;
-    }
+    std::string DeviceName() const { return dev_name_; }
+    std::string PropertyName() const { return property_name_; }
     std::string ToString() const;
 
 private:
@@ -66,7 +57,6 @@ typedef std::map<PropertyPath, std::string> PropertyValueMap;
 void from_json(const nlohmann::json &j, PropertyValueMap &pv);
 
 // Helper functions
-std::vector<PropertyPath>
-PropertyPathList(PropertyValueMap path_value_map);
+std::vector<PropertyPath> PropertyPathList(PropertyValueMap path_value_map);
 
 #endif

@@ -60,10 +60,7 @@ void DeviceHub::AddCamera(std::string dev_name, Hamamatsu::DCam *dcam)
     hamamatsu_dcam = dcam;
 }
 
-Hamamatsu::DCam *DeviceHub::GetHamamatsuDCam()
-{
-    return hamamatsu_dcam;
-}
+Hamamatsu::DCam *DeviceHub::GetHamamatsuDCam() { return hamamatsu_dcam; }
 
 Status DeviceHub::ConnectAll()
 {
@@ -202,8 +199,7 @@ Status DeviceHub::SetProperty(PropertyPath path, std::string value)
     return dev->SetProperty(path.PropertyName(), value);
 }
 
-Status
-DeviceHub::SetProperty(PropertyValueMap path_value_map)
+Status DeviceHub::SetProperty(PropertyValueMap path_value_map)
 {
     // Check all paths for existence and sort them by device
     std::map<std::string, std::map<std::string, std::string>>

@@ -13,10 +13,7 @@ static std::string level_strings[] LOG_LEVEL_NAMES;
 
 static fmt::text_style level_text_styles[] LOG_LEVEL_TEXT_STYLES;
 
-inline const std::string &to_string(LevelEnum l)
-{
-    return level_strings[l];
-}
+inline const std::string &to_string(LevelEnum l) { return level_strings[l]; }
 
 inline const fmt::text_style &to_text_style(LevelEnum l)
 {
@@ -136,10 +133,7 @@ void InitConsole()
 
 Logger default_logger;
 
-Logger &DefaultLogger()
-{
-    return default_logger;
-}
+Logger &DefaultLogger() { return default_logger; }
 
 } // namespace slog
 

@@ -2,11 +2,11 @@
 #define DEVICE_NIKON_TI_H
 
 #include <atomic>
+#include <map>
 #include <mutex>
 #include <shared_mutex>
 #include <string>
 #include <vector>
-#include <map>
 
 #include <absl/status/status.h>
 #include <absl/status/statusor.h>
@@ -26,10 +26,12 @@ typedef void *MM_Session;
 // nikon_ti_prop_info.h
 struct APIValueConvertor;
 
-class Microscope: public Device {
+class Microscope : public Device {
     friend class PropertyNode;
-    friend void onPropertyChanged(MM_Session mmc, const char* label, const char* property, const char* value);
-    friend void onStagePositionChanged(MM_Session mmc, char* label, double pos);
+    friend void onPropertyChanged(MM_Session mmc, const char *label,
+                                  const char *property, const char *value);
+    friend void onStagePositionChanged(MM_Session mmc, char *label, double pos);
+
 public:
     Microscope();
     ~Microscope();
@@ -45,24 +47,28 @@ public:
     std::map<std::string, ::PropertyNode *> NodeMap() override;
 
 private:
-    void handlePropertyChangedCallback(MM_Session mmc, std::string label, std::string property, std::string value);
-    void handleStagePositionChangedCallback(MM_Session mmc, std::string label, double pos);
-    PropertyNode* getNodeFromMMLabelProperty(std::string label, std::string property);
+    void handlePropertyChangedCallback(MM_Session mmc, std::string label,
+                                       std::string property, std::string value);
+    void handleStagePositionChangedCallback(MM_Session mmc, std::string label,
+                                            double pos);
+    PropertyNode *getNodeFromMMLabelProperty(std::string label,
+                                             std::string property);
 
     std::mutex mmc_mutex;
     MM_Session mmc = nullptr;
 
     // node_map is populated in constructor of the class.
     // A node is marked as valid when the corresponding module is connected.
-    std::map<std::string, PropertyNode*> node_map;
+    std::map<std::string, PropertyNode *> node_map;
 
     // connected records current connection status.
     // If a connection is lost, mmc is not nullptr, but connected is false.
     std::atomic<bool> connected = false;
 };
 
-class PropertyNode: public ::PropertyNode {
+class PropertyNode : public ::PropertyNode {
     friend class Microscope;
+
 public:
     std::string Name() override { return this->name; }
     std::string Description() override { return this->description; }
@@ -91,10 +97,12 @@ private:
     bool readonly;
     APIValueConvertor *value_converter;
 
-    // Node is marked valid when the module is loaded, initialized and completed the first GetValue() call without error. 
+    // Node is marked valid when the module is loaded, initialized and completed
+    // the first GetValue() call without error.
     bool valid = false;
-    
-    // handleValueUpdate updates snapshot, determines set operation status, and sends operation complete event.
+
+    // handleValueUpdate updates snapshot, determines set operation status, and
+    // sends operation complete event.
     void handleValueUpdate(std::string value);
 
     std::shared_mutex mutex_snapshot;
@@ -106,6 +114,6 @@ private:
     std::optional<std::string> pending_set_value;
 };
 
-} // namespace Nikon
+} // namespace NikonTi
 
 #endif

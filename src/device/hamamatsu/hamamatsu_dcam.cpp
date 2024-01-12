@@ -698,7 +698,8 @@ Status PropertyNode::SetValue(std::string value)
     DCAMERR err;
     if (attribute & DCAMPROP_ATTR_AUTOROUNDING) {
         if ((prop_type != DCAMPROP_TYPE_LONG) &&
-            (prop_type != DCAMPROP_TYPE_REAL)) {
+            (prop_type != DCAMPROP_TYPE_REAL))
+        {
             return absl::UnimplementedError(fmt::format(
                 "unexpected property type {} with AUTOROUNDING attribute",
                 prop_type));

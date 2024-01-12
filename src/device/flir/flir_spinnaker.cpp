@@ -182,7 +182,8 @@ Spinnaker::GenApi::INode *PropertyNode::get_dev_node()
         Spinnaker::GenApi::INodeMap &dev_node_map = dev->pCam->GetNodeMap();
         return dev_node_map.GetNode(name.c_str());
     } else {
-        Spinnaker::GenApi::INodeMap &dev_node_map = dev->pCam->GetTLDeviceNodeMap();
+        Spinnaker::GenApi::INodeMap &dev_node_map =
+            dev->pCam->GetTLDeviceNodeMap();
         return dev_node_map.GetNode(name.c_str());
     }
 }
@@ -214,14 +215,16 @@ bool PropertyNode::Writeable()
 StatusOr<std::string> PropertyNode::GetValue()
 {
     Spinnaker::GenApi::INode *dev_node = get_dev_node();
-    Spinnaker::GenApi::CValuePtr str_node = static_cast<Spinnaker::GenApi::CValuePtr>(dev_node);
+    Spinnaker::GenApi::CValuePtr str_node =
+        static_cast<Spinnaker::GenApi::CValuePtr>(dev_node);
     return std::string(str_node->ToString());
 }
 
 Status PropertyNode::SetValue(std::string value)
 {
     Spinnaker::GenApi::INode *dev_node = get_dev_node();
-    Spinnaker::GenApi::CValuePtr str_node = static_cast<Spinnaker::GenApi::CValuePtr>(dev_node);
+    Spinnaker::GenApi::CValuePtr str_node =
+        static_cast<Spinnaker::GenApi::CValuePtr>(dev_node);
     // TODO: do things!
     return absl::OkStatus();
 }

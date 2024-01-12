@@ -6,8 +6,7 @@
 
 typedef void *MM_Session;
 
-typedef enum
-{
+typedef enum {
     MM_ErrOK = 0,
     MM_ErrGENERIC = 1, // unspecified error
     MM_ErrNoDevice = 2,
@@ -64,8 +63,7 @@ typedef enum
 
 std::string MM_StatusToString(MM_Status error);
 
-typedef enum
-{
+typedef enum {
     MM_UnknownType = 0,
     MM_AnyType,
     MM_CameraDevice,
@@ -85,8 +83,7 @@ typedef enum
     MM_GalvoDevice
 } MM_DeviceType;
 
-typedef enum
-{
+typedef enum {
     MM_Undef,
     MM_String,
     MM_Float,
@@ -122,21 +119,22 @@ struct MMCoreC {
     void (*MM_StringListFree)(char **str_list);
 
     MM_Status (*MM_LoadDevice)(MM_Session mm, const char *label,
-                              const char *module_name, const char *device_name);
+                               const char *module_name,
+                               const char *device_name);
     MM_Status (*MM_UnloadDevice)(MM_Session mm, const char *label);
     MM_Status (*MM_UnloadAllDevices)(MM_Session mm);
     MM_Status (*MM_InitializeDevice)(MM_Session mm, const char *label);
     void (*MM_RegisterCallback)(MM_Session mm,
                                 struct MM_EventCallback *callback);
     MM_Status (*MM_GetProperty)(MM_Session mm, const char *label,
-                               const char *prop_name, char **value);
+                                const char *prop_name, char **value);
     MM_Status (*MM_SetPropertyString)(MM_Session mm, const char *label,
-                                     const char *prop_name, const char *value);
+                                      const char *prop_name, const char *value);
     MM_Status (*MM_SetFocusDevice)(MM_Session mm, const char *label);
     MM_Status (*MM_SetPosition)(MM_Session mm, const char *label,
-                               double position);
+                                double position);
     MM_Status (*MM_GetPosition)(MM_Session mm, const char *label,
-                               double *position);
+                                double *position);
 };
 
 extern MMCoreC *mmcore;

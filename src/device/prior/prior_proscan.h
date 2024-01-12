@@ -26,7 +26,7 @@ class PropertyNode;
 class Proscan : public Device {
     friend class PropertyNode;
 
-  public:
+public:
     Proscan(std::string port_name);
     ~Proscan();
 
@@ -38,7 +38,7 @@ class Proscan : public Device {
     ::PropertyNode *Node(std::string name) override;
     std::map<std::string, ::PropertyNode *> NodeMap() override;
 
-  private:
+private:
     Status checkCommunication(int n_attempt);
     Status switchBaudrate();
     StatusOr<uint32_t> clearReadBuffer();
@@ -71,7 +71,7 @@ class Proscan : public Device {
 class PropertyNode : public ::PropertyNode {
     friend class Proscan;
 
-  public:
+public:
     std::string Name() override { return this->name; }
     std::string Description() override { return this->description; }
     bool Valid() override { return this->valid; }
@@ -86,7 +86,7 @@ class PropertyNode : public ::PropertyNode {
 
     std::optional<std::string> GetSnapshot() override;
 
-  private:
+private:
     Proscan *dev;
 
     // Property info

@@ -13,8 +13,7 @@
 
 #include "device/propertypath.h"
 
-enum class EventType
-{
+enum class EventType {
     DeviceConnectionStateChanged,
     DevicePropertyValueUpdate,
     DeviceOperationComplete,
@@ -25,7 +24,7 @@ enum class EventType
 
     ExperimentOpened,
     ExperimentClosed,
-    
+
     PlateCreated,
     PlateModified,
     CurrentPlateChanged,
