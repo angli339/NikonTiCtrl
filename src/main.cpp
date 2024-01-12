@@ -65,9 +65,31 @@ void configApp()
     qApp->setStyleSheet(styleSheet);
 }
 
+void initLogger() {
+    slog::InitConsole();
+
+    // Write logs to folder
+    // C:\Users\<username>\AppData\Local\NikonTiCtrl
+    char *local_app_data_env = std::getenv("LOCALAPPDATA");
+    if (local_app_data_env != NULL) {
+        std::filesystem::path log_folder =
+            std::filesystem::path(local_app_data_env) / "NikonTiCtrl";
+        if (!std::filesystem::exists(log_folder)) {
+            std::filesystem::create_directory(log_folder);
+        }
+        std::string filename = fmt::format("NikonTiCtrl-{:%Y%m%d-%H%M%S}.log", utils::Now().Local());
+        std::filesystem::path log_path = log_folder / filename;
+        slog::DefaultLogger().SetFilename(log_path);
+        LOG_INFO("Writing log to {}", log_path.string());
+    } else {
+        LOG_ERROR("Failed to get LOCALAPPDATA path from environment variables. Log is not written to a file.");
+    }
+}
+
 int main(int argc, char *argv[])
 {
-    slog::InitConsole();
+
+    initLogger();
     LOG_INFO("Welcome to NikonTiControl {}", gitTagVersion);
 
     try {
