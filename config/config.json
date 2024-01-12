@@ -2,6 +2,7 @@
      "unet_model": {
         "server_addr": "127.0.0.1:8500",
         "model_name": "unet_yeast_bf",
+        "model_version": 1,
         "input_name": "input"
      },
      "pixel_size": {

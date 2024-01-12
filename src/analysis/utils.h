@@ -36,12 +36,13 @@ xt::xarray<double> RegionSum(xt::xarray<T> im, xt::xarray<uint16_t> label,
 class UNet {
 public:
     UNet(const std::string server_addr, const std::string model_name,
-         const std::string input_name);
+         const int model_version, const std::string input_name);
     xt::xarray<float> GetScore(xt::xarray<float> im);
 
 private:
     std::string server_addr;
     std::string model_name;
+    int model_version;
     std::string input_name;
 
     std::shared_ptr<::grpc::Channel> grpc_channel;

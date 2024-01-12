@@ -19,9 +19,10 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Label, name, description)
 struct ConfigUnetModel {
     std::string server_addr;
     std::string model_name;
+    int model_version;
     std::string input_name;
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ConfigUnetModel, server_addr, model_name, input_name)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ConfigUnetModel, server_addr, model_name, model_version, input_name)
 
 struct ConfigSystem {
     ConfigUnetModel unet_model;

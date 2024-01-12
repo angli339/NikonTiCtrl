@@ -96,7 +96,7 @@ xt::xarray<uint16_t> RegionLabel(xt::xarray<float> im_score,
 
 
 UNet::UNet(const std::string server_addr, const std::string model_name,
-           const std::string input_name)
+           const int model_version, const std::string input_name)
 {
     grpc::ChannelArguments channel_args;
     channel_args.SetInt(GRPC_ARG_MAX_SEND_MESSAGE_LENGTH, 20 * 1024 * 1024);
@@ -107,6 +107,7 @@ UNet::UNet(const std::string server_addr, const std::string model_name,
 
     this->server_addr = server_addr;
     this->model_name = model_name;
+    this->model_version = model_version;
     this->input_name = input_name;
 }
 
@@ -117,8 +118,8 @@ xt::xarray<float> UNet::GetScore(xt::xarray<float> im)
     tensorflow::serving::PredictResponse resp;
 
     req.mutable_model_spec()->set_name(this->model_name);
+    req.mutable_model_spec()->mutable_version()->set_value(this->model_version);
     req.mutable_model_spec()->set_signature_name("serving_default");
-    // req.mutable_model_spec()->mutable_version()->set_value(1);
 
     tensorflow::TensorProto &input_tensor =
         (*req.mutable_inputs())[this->input_name];

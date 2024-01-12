@@ -11,6 +11,7 @@
 AnalysisManager::AnalysisManager(ExperimentControl *exp)
     : unet(config.system.unet_model.server_addr,
            config.system.unet_model.model_name,
+           config.system.unet_model.model_version,
            config.system.unet_model.input_name)
 {
     this->exp = exp;
