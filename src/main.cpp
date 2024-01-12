@@ -171,7 +171,12 @@ int main(int argc, char *argv[])
     int returnCode = app.exec();
 
     LOG_INFO("Disconnecting devices...");
-    dev.DisconnectAll();
+    absl::Status status = dev.DisconnectAll();
+    if (!status.ok()) {
+        LOG_ERROR("Disconnect: {}", status.ToString());
+    } else {
+        LOG_INFO("All disconnected");
+    }
     LOG_INFO("Disconnected");
 
     LOG_INFO("Shutting down API Server...");
