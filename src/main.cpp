@@ -72,10 +72,18 @@ int main(int argc, char *argv[])
 
     try {
         std::filesystem::path systemConfigPath = getSystemConfigPath();
+        if (!std::filesystem::exists(systemConfigPath)) {
+            LOG_FATAL("Cannot find config file at {}", systemConfigPath.string());
+            return 1;
+        }
         loadSystemConfig(systemConfigPath);
         LOG_INFO("  System config loaded from {}", systemConfigPath.string());
 
         std::filesystem::path userConfigPath = getUserConfigPath();
+        if (!std::filesystem::exists(userConfigPath)) {
+            createDefaultUserConfig(userConfigPath);
+            LOG_WARN("  User config not found. Default config is created.");
+        }
         loadUserConfig(userConfigPath);
         LOG_INFO("  User config loaded from {}", userConfigPath.string());
 

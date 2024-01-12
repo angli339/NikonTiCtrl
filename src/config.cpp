@@ -77,3 +77,21 @@ void loadUserConfig(std::filesystem::path filename)
         throw std::runtime_error(fmt::format("data_root is not set up"));
     }
 }
+
+void createDefaultUserConfig(std::filesystem::path filename) {
+    // C:/Users/<username>
+    std::filesystem::path user_home_dir = std::getenv("HOMEPATH");
+    std::string username = std::getenv("USERNAME");
+    std::filesystem::path default_data_root = user_home_dir / "Data";
+    if (!std::filesystem::exists(default_data_root)) {
+        std::filesystem::create_directory(default_data_root);
+    }
+
+    nlohmann::ordered_json user_config;
+    user_config["name"] = username;
+    user_config["email"] = "";
+    user_config["data_root"] = default_data_root.string();
+
+    std::ofstream file(filename);
+    file << std::setw(4) << user_config << std::endl;
+}

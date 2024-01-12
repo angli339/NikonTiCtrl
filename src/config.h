@@ -49,5 +49,6 @@ std::filesystem::path getUserConfigPath();
 
 void loadSystemConfig(std::filesystem::path filename);
 void loadUserConfig(std::filesystem::path filename);
+void createDefaultUserConfig(std::filesystem::path filename);
 
 #endif
