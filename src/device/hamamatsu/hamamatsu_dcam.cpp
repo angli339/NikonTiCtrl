@@ -20,7 +20,8 @@ std::string DCAMERR_ToString(DCAMERR err)
 DCam::~DCam()
 {
     if (IsConnected()) {
-        Disconnect();
+        Status status = Disconnect();
+        (void)(status);
     }
     for (const auto &[name, node] : node_map) {
         delete node;
@@ -520,7 +521,7 @@ Status DCam::updatePixelFormat()
             ctype = ColorType::Mono16;
             break;
         default:
-            absl::UnimplementedError(fmt::format(
+            return absl::UnimplementedError(fmt::format(
                 "BIT PER CHANNEL={} is not supported", bit_per_channel));
         }
     } else {

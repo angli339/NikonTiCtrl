@@ -37,7 +37,8 @@ Proscan::Proscan(std::string port_name)
 Proscan::~Proscan()
 {
     if (IsConnected()) {
-        Disconnect();
+        Status status = Disconnect();
+        (void)(status);
     }
     for (const auto &[name, node] : node_map) {
         delete node;

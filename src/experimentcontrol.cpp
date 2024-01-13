@@ -172,7 +172,11 @@ void ExperimentControl::runLiveView()
             "Cannot start live view: task control is in busy state");
     }
 
-    channel_control->OpenCurrentShutter();
+    Status status;
+    status = channel_control->OpenCurrentShutter();
+    if (!status.ok()) {
+        throw std::runtime_error(status.ToString());
+    }
 
     SendEvent({
         .type = EventType::TaskStateChanged,
@@ -195,7 +199,10 @@ void ExperimentControl::runLiveView()
             .type = EventType::TaskMessage,
             .value = message,
         });
-        channel_control->CloseCurrentShutter();
+        status = channel_control->CloseCurrentShutter();
+        if (!status.ok()) {
+            LOG_ERROR("CloseCurrentShutter failed: {}", status.ToString());
+        }
         throw std::runtime_error(message);
     }
 
@@ -205,7 +212,10 @@ void ExperimentControl::runLiveView()
         .value = "Ready",
     });
     LOG_INFO("Live view stopped");
-    channel_control->CloseCurrentShutter();
+    status = channel_control->CloseCurrentShutter();
+    if (!status.ok()) {
+        LOG_ERROR("CloseCurrentShutter failed: {}", status.ToString());
+    }
 }
 
 void ExperimentControl::StartLiveView()

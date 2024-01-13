@@ -13,30 +13,52 @@ bool LiveViewTask::IsRunning() { return is_running; }
 
 void LiveViewTask::Run()
 {
-    PrepareBuffer();
-    StartAcqusition();
+    Status status;
+    status = PrepareBuffer();
+    if (!status.ok()) {
+        throw std::runtime_error(status.ToString());
+    }
+    status = StartAcquisition();
+    if (!status.ok()) {
+        throw std::runtime_error(status.ToString());
+    }
     is_running = true;
 
     try {
         for (;;) {
-            ImageData frame = GetFrame();
-            if (frame.empty()) {
+            StatusOr<ImageData> frame = GetFrame();
+            if (!status.ok()) {
+                throw std::runtime_error(status.ToString());
+            }
+            if (frame.value().empty()) {
                 is_running = false;
-                exp->Images()->SetLiveViewFrame(frame);
+                exp->Images()->SetLiveViewFrame(frame.value());
                 return;
             }
-            exp->Images()->SetLiveViewFrame(frame);
+            exp->Images()->SetLiveViewFrame(frame.value());
         }
     } catch (std::exception &e) {
-        StopAcqusition();
+        status = absl::InternalError(e.what());
+        Status stop_acq_status = StopAcquisition();
+        if (!stop_acq_status.ok()) {
+            LOG_ERROR("StopAcquisition failed: {}", stop_acq_status.ToString());
+        }
         is_running = false;
         exp->Images()->SetLiveViewFrame(ImageData());
+        throw e;
+    }
+    return;
+}
+
+void LiveViewTask::Stop()
+{
+    Status status = StopAcquisition();
+    if (!status.ok()) {
+        throw std::runtime_error(status.ToString());
     }
 }
 
-void LiveViewTask::Stop() { StopAcqusition(); }
-
-void LiveViewTask::PrepareBuffer()
+Status LiveViewTask::PrepareBuffer()
 {
     int n_buffer_frames = 2;
 
@@ -46,21 +68,32 @@ void LiveViewTask::PrepareBuffer()
             LOG_DEBUG("[{}] Releasing Buffer (n_frame={})...", task_name,
                       dcam->BufferAllocated());
             sw.Reset();
-            dcam->ReleaseBuffer();
+            Status status = dcam->ReleaseBuffer();
+            if (!status.ok()) {
+                LOG_ERROR("[{}] Release buffer failed: {}", task_name,
+                          status.ToString());
+                return status;
+            }
             LOG_DEBUG("[{}] Buffer released [{:.1f} ms]", task_name,
                       sw.Milliseconds());
         }
         sw.Reset();
-        dcam->AllocBuffer(n_buffer_frames);
+        Status status = dcam->AllocBuffer(n_buffer_frames);
+        if (!status.ok()) {
+            LOG_ERROR("[{}] alloc buffer failed: {}", task_name,
+                      status.ToString());
+            return status;
+        }
         LOG_DEBUG("[{}] Buffer allocated (n_frame={}) [{:.1f} ms]", task_name,
                   n_buffer_frames, sw.Milliseconds());
     } else {
         LOG_DEBUG("[{}] Using existing buffer (n_frame={})", task_name,
                   n_buffer_frames);
     }
+    return absl::OkStatus();
 }
 
-Status LiveViewTask::StartAcqusition()
+Status LiveViewTask::StartAcquisition()
 {
     utils::StopWatch sw;
     StatusOr<std::string> trigger_source = dcam->GetProperty("TRIGGER SOURCE");
@@ -90,7 +123,7 @@ Status LiveViewTask::StartAcqusition()
     return absl::OkStatus();
 }
 
-ImageData LiveViewTask::GetFrame()
+StatusOr<ImageData> LiveViewTask::GetFrame()
 {
     Status status = dcam->WaitFrameReady(1000);
     if (!status.ok()) {
@@ -100,16 +133,10 @@ ImageData LiveViewTask::GetFrame()
     }
 
     // Get latest frame
-    StatusOr<ImageData> frame = dcam->GetFrame(-1);
-    if (!frame.ok()) {
-        throw std::runtime_error(
-            "GetFrame returned empty ImageData without throwing an exception");
-    }
-
-    return frame.value();
+    return dcam->GetFrame(-1);
 }
 
-Status LiveViewTask::StopAcqusition()
+Status LiveViewTask::StopAcquisition()
 {
     utils::StopWatch sw;
     Status status = dcam->StopAcquisition();

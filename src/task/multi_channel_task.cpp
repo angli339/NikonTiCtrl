@@ -44,7 +44,12 @@ Status MultiChannelTask::PrepareBuffer()
             LOG_DEBUG("[{}] Releasing Buffer (n_frame={})...", ndimage_name,
                       dcam->BufferAllocated());
             sw.Reset();
-            dcam->ReleaseBuffer();
+            Status status = dcam->ReleaseBuffer();
+            if (!status.ok()) {
+                LOG_ERROR("[{}] Release buffer failed: {}", ndimage_name,
+                          status.ToString());
+                return status;
+            }
             LOG_DEBUG("[{}] Buffer released [{:.1f} ms]", ndimage_name,
                       sw.Milliseconds());
         }
@@ -74,7 +79,8 @@ Status MultiChannelTask::StartAcqusition()
     return absl::OkStatus();
 }
 
-PropertyValueMap MultiChannelTask::ExposeFrame(int i_ch)
+Status MultiChannelTask::ExposeFrame(int i_ch,
+                                     PropertyValueMap *property_snapshot)
 {
     Channel channel = channels[i_ch];
 
@@ -82,33 +88,45 @@ PropertyValueMap MultiChannelTask::ExposeFrame(int i_ch)
 
     Status status = exp->Channels()->OpenCurrentShutter();
     if (!status.ok()) {
-        LOG_ERROR("[{}][{}] Shutter failed to turn on: {} [{:.1f} ms]",
+        LOG_ERROR("[{}][{}] Failed to request shutter open: {} [{:.1f} ms]",
                   ndimage_name, i_ch + 1, status.ToString(), sw.Milliseconds());
+        return status;
     }
     status = exp->Channels()->WaitShutter();
     if (!status.ok()) {
-        LOG_ERROR(
-            "[{}][{}] Shutter failed to turn on after waiting: {} [{:.1f} ms]",
-            ndimage_name, i_ch + 1, status.ToString(), sw.Milliseconds());
+        LOG_ERROR("[{}][{}] Wait shutter failed: {} [{:.1f} ms]", ndimage_name,
+                  i_ch + 1, status.ToString(), sw.Milliseconds());
+        return status;
     }
     LOG_DEBUG("[{}][{}] Shutter turned on [{:.1f} ms]", ndimage_name, i_ch + 1,
               sw.Milliseconds());
 
     sw.Reset();
-    dcam->FireTrigger();
-    LOG_DEBUG("[{}][{}] Trigger fired [{:.1f} ms]", ndimage_name, i_ch + 1,
-              sw.Milliseconds());
+    Status trigger_status = dcam->FireTrigger();
+    if (!trigger_status.ok()) {
+        LOG_ERROR("[{}][{}] FireTrigger failed: {}", ndimage_name, i_ch + 1,
+                  trigger_status.ToString());
+    } else {
+        LOG_DEBUG("[{}][{}] Trigger fired [{:.1f} ms]", ndimage_name, i_ch + 1,
+                  sw.Milliseconds());
+    }
 
     sw.Reset();
-    auto property_snapshot = exp->Devices()->GetPropertySnapshot();
+    *property_snapshot = exp->Devices()->GetPropertySnapshot();
     LOG_DEBUG("[{}][{}] Device status snapshot got [{:.1f} ms]", ndimage_name,
               i_ch + 1, sw.Milliseconds());
 
-    sw.Reset();
-    dcam->WaitExposureEnd(channel.exposure_ms + 500);
-    sw_exposure_end.Reset();
-    LOG_DEBUG("[{}][{}] Exposure completed [{:.1f} ms]", ndimage_name, i_ch + 1,
-              sw.Milliseconds());
+    if (trigger_status.ok()) {
+        sw.Reset();
+        status = dcam->WaitExposureEnd(channel.exposure_ms + 500);
+        if (!status.ok()) {
+            LOG_ERROR("[{}][{}] WaitExposureEnd failed: {}", ndimage_name,
+                      i_ch + 1, status.ToString());
+        }
+        sw_exposure_end.Reset();
+        LOG_DEBUG("[{}][{}] Exposure completed [{:.1f} ms]", ndimage_name,
+                  i_ch + 1, sw.Milliseconds());
+    }
 
     sw.Reset();
     status = exp->Channels()->CloseCurrentShutter();
@@ -126,7 +144,7 @@ PropertyValueMap MultiChannelTask::ExposeFrame(int i_ch)
               sw.Milliseconds());
 
 
-    return property_snapshot;
+    return status;
 }
 
 ImageData
@@ -159,11 +177,14 @@ MultiChannelTask::GetFrame(int i_ch,
     return frame.value();
 }
 
-Status MultiChannelTask::StopAcqusition()
+void MultiChannelTask::StopAcqusition()
 {
     utils::StopWatch sw;
     StatusOr<bool> shutter_open = exp->Channels()->IsCurrentShutterOpen();
-    if (shutter_open.ok()) {
+    if (!shutter_open.ok()) {
+        LOG_ERROR("[{}] Failed to get current shutter state: {}", ndimage_name,
+                  shutter_open.status().ToString());
+    } else {
         if (*shutter_open) {
             LOG_WARN("[{}] Shutter is still open. Turning off...",
                      ndimage_name);
@@ -179,16 +200,17 @@ Status MultiChannelTask::StopAcqusition()
                           ndimage_name, status.ToString(), sw.Milliseconds());
             }
         }
-    } else {
-        LOG_WARN("[{}] Get current shutter state: {}", ndimage_name,
-                 shutter_open.status().ToString());
     }
 
     sw.Reset();
-    dcam->StopAcquisition();
-    LOG_DEBUG("[{}] Acquisition stopped [{:.1f} ms]", ndimage_name,
-              sw.Milliseconds());
-    return absl::OkStatus();
+    Status status = dcam->StopAcquisition();
+    if (!status.ok()) {
+        LOG_ERROR("[{}] DCAM StopAcquisition failed: {}", ndimage_name,
+                  status.ToString());
+    } else {
+        LOG_DEBUG("[{}] Acquisition stopped [{:.1f} ms]", ndimage_name,
+                  sw.Milliseconds());
+    }
 }
 
 Status MultiChannelTask::Acquire(std::string ndimage_name,
@@ -263,6 +285,8 @@ Status MultiChannelTask::Acquire(std::string ndimage_name,
         for (int i_ch = 0; i_ch < channels.size(); i_ch++) {
             status = exp->Channels()->WaitSwitchChannel();
             if (!status.ok()) {
+                LOG_ERROR("[{}][{}/{}] SwitchChannel failed: {}", ndimage_name,
+                          i_ch + 1, channels.size(), status.ToString());
                 StopAcqusition();
                 return status;
             }
@@ -278,7 +302,14 @@ Status MultiChannelTask::Acquire(std::string ndimage_name,
 
             sw_frame.Reset();
 
-            auto property_snapshot = ExposeFrame(i_ch);
+            PropertyValueMap property_snapshot;
+            status = ExposeFrame(i_ch, &property_snapshot);
+            if (!status.ok()) {
+                LOG_ERROR("[{}][{}/{}] ExposeFrame failed: {}", ndimage_name,
+                          i_ch + 1, channels.size(), status.ToString());
+                StopAcqusition();
+                return status;
+            }
             if (i_ch + 1 < channels.size()) {
                 sw_channel.Reset();
                 Channel next_channel = channels[i_ch + 1];
@@ -318,6 +349,7 @@ Status MultiChannelTask::Acquire(std::string ndimage_name,
                      i_ch + 1, sw_frame.Milliseconds());
         }
     } catch (std::exception &e) {
+        LOG_ERROR("Unexpected exception during acquisition : {}", e.what());
         StopAcqusition();
         throw;
     }

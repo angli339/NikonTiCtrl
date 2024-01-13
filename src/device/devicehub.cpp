@@ -7,7 +7,8 @@
 DeviceHub::~DeviceHub()
 {
     if (ListConnectedDevice().size() > 0) {
-        DisconnectAll();
+        Status status = DisconnectAll();
+        (void)(status);
     }
     for (auto &[dev_name, dev] : dev_map) {
         delete dev;

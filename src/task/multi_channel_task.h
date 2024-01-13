@@ -29,10 +29,10 @@ protected:
     Status EnableTrigger();
     Status PrepareBuffer();
     Status StartAcqusition();
-    PropertyValueMap ExposeFrame(int i_ch);
+    Status ExposeFrame(int i_ch, PropertyValueMap *property_snapshot);
     ImageData GetFrame(int i_ch,
                        std::chrono::system_clock::time_point *timestamp);
-    Status StopAcqusition();
+    void StopAcqusition();
 
 private:
     ExperimentControl *exp;

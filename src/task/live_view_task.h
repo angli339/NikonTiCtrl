@@ -17,10 +17,10 @@ public:
     void Stop();
 
 protected:
-    void PrepareBuffer();
-    Status StartAcqusition();
-    ImageData GetFrame();
-    Status StopAcqusition();
+    Status PrepareBuffer();
+    Status StartAcquisition();
+    StatusOr<ImageData> GetFrame();
+    Status StopAcquisition();
 
 private:
     ExperimentControl *exp;

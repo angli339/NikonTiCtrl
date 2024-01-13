@@ -104,7 +104,8 @@ Microscope::Microscope()
 Microscope::~Microscope()
 {
     if (IsConnected()) {
-        Disconnect();
+        Status status = Disconnect();
+        (void)(status);
     }
     for (const auto &[name, node] : node_map) {
         delete node;
