@@ -73,6 +73,8 @@ void ZipFile::open(std::filesystem::path filename)
 
         eocd64_locator = new Zip64EndCentralDirLocator;
         eocd64_locator->total_disk_number = 1;
+
+        flush();
     }
 }
 
