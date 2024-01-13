@@ -276,8 +276,9 @@ void ExperimentDB::InsertOrReplaceRow(PlateRow row)
         INSERT OR REPLACE INTO "Plate" ("index", uuid, plate_id, type, pos_origin_x, pos_origin_y, metadata)
         VALUES (?,?,?,?,?,?,?)
         )");
+    std::string metadata = row.metadata.dump();
     bind(stmt, row.index, row.uuid, row.plate_id, row.type, row.pos_origin_x,
-         row.pos_origin_y, row.metadata.dump());
+         row.pos_origin_y, metadata);
     step(stmt);
     finalize(stmt);
 }
@@ -288,8 +289,9 @@ void ExperimentDB::InsertOrReplaceRow(WellRow row)
         INSERT OR REPLACE INTO "Well" ("index", uuid, plate_id, well_id, rel_pos_x, rel_pos_y, enabled, metadata)
         VALUES (?,?,?,?,?,?,?,?)
         )");
+    std::string metadata = row.metadata.dump();
     bind(stmt, row.index, row.uuid, row.plate_id, row.well_id, row.rel_pos_x,
-         row.rel_pos_y, row.enabled, row.metadata.dump());
+         row.rel_pos_y, row.enabled, metadata);
     step(stmt);
     finalize(stmt);
 }
@@ -300,8 +302,9 @@ void ExperimentDB::InsertOrReplaceRow(SiteRow row)
         INSERT OR REPLACE INTO "Site" ("index", uuid, plate_id, well_id, site_id, rel_pos_x, rel_pos_y, enabled, metadata)
         VALUES (?,?,?,?,?,?,?,?,?)
         )");
+    std::string metadata = row.metadata.dump();
     bind(stmt, row.index, row.uuid, row.plate_id, row.well_id, row.site_id,
-         row.rel_pos_x, row.rel_pos_y, row.enabled, row.metadata.dump());
+         row.rel_pos_x, row.rel_pos_y, row.enabled, metadata);
     step(stmt);
     finalize(stmt);
 }
@@ -312,8 +315,9 @@ void ExperimentDB::InsertOrReplaceRow(NDImageRow row)
         INSERT OR REPLACE INTO "NDImage" ("index", name, ch_names, width, height, n_ch, n_z, n_t, plate_id, well_id, site_id)
         VALUES (?,?,?,?,?,?,?,?,?,?,?)
         )");
-    bind(stmt, row.index, row.name, row.ch_names.dump(), row.width, row.height,
-         row.n_ch, row.n_z, row.n_t, row.plate_id, row.well_id, row.site_id);
+    std::string ch_names = row.ch_names.dump();
+    bind(stmt, row.index, row.name, ch_names, row.width, row.height, row.n_ch,
+         row.n_z, row.n_t, row.plate_id, row.well_id, row.site_id);
     step(stmt);
     finalize(stmt);
 }
