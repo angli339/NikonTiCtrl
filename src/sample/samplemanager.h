@@ -65,6 +65,12 @@ public:
 private:
     ExperimentControl *exp;
 
+    // Get samples without locking
+    ::Plate *get_plate(std::string plate_id);
+    ::Well *get_well(std::string plate_id, std::string well_id);
+    ::Site *get_site(std::string plate_id, std::string well_id,
+                     std::string site_id);
+
     std::shared_mutex plate_mutex;
     std::vector<::Plate *> plates;
     std::map<std::string, ::Plate *> plate_map;

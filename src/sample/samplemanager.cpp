@@ -122,8 +122,8 @@ void SampleManager::AddPlate(PlateType plate_type, std::string plate_id)
     }
 
     std::unique_lock<std::shared_mutex> lk(plate_mutex);
-    auto it = plate_map.find(plate_id);
-    if (it != plate_map.end()) {
+
+    if (get_plate(plate_id) != nullptr) {
         throw std::invalid_argument("id already exists");
     }
 
@@ -168,7 +168,9 @@ void SampleManager::SetPlatePositionOrigin(std::string plate_id, double x,
         throw std::invalid_argument("no open experiment");
     }
 
-    ::Plate *plate = Plate(plate_id);
+    std::unique_lock<std::shared_mutex> lk(plate_mutex);
+
+    ::Plate *plate = get_plate(plate_id);
     if (plate == nullptr) {
         throw std::invalid_argument(
             fmt::format("plate {} does not exists", plate_id));
@@ -188,6 +190,8 @@ void SampleManager::SetPlatePositionOrigin(std::string plate_id, double x,
             fmt::format("cannot write to DB: {}, rolled back", e.what()));
     }
 
+    lk.unlock();
+
     SendEvent({
         .type = EventType::PlateModified,
         .value = plate_id,
@@ -201,7 +205,9 @@ void SampleManager::SetPlateMetadata(std::string plate_id, std::string key,
         throw std::invalid_argument("no open experiment");
     }
 
-    ::Plate *plate = Plate(plate_id);
+    std::unique_lock<std::shared_mutex> lk(plate_mutex);
+
+    ::Plate *plate = get_plate(plate_id);
     if (plate == nullptr) {
         throw std::invalid_argument(
             fmt::format("plate {} does not exists", plate_id));
@@ -222,6 +228,8 @@ void SampleManager::SetPlateMetadata(std::string plate_id, std::string key,
             fmt::format("cannot write to DB: {}, rolled back", e.what()));
     }
 
+    lk.unlock();
+
     SendEvent({
         .type = EventType::PlateModified,
         .value = plate_id,
@@ -236,7 +244,9 @@ void SampleManager::SetWellsEnabled(std::string plate_id,
         throw std::invalid_argument("no open experiment");
     }
 
-    ::Plate *plate = Plate(plate_id);
+    std::unique_lock<std::shared_mutex> lk(plate_mutex);
+
+    ::Plate *plate = get_plate(plate_id);
     if (plate == nullptr) {
         throw std::invalid_argument(
             fmt::format("plate {} does not exists", plate_id));
@@ -274,6 +284,8 @@ void SampleManager::SetWellsEnabled(std::string plate_id,
             fmt::format("cannot write to DB: {}, rolled back", e.what()));
     }
 
+    lk.unlock();
+
     SendEvent({
         .type = EventType::PlateModified,
         .value = plate_id,
@@ -289,7 +301,9 @@ void SampleManager::SetWellsMetadata(std::string plate_id,
         throw std::invalid_argument("no open experiment");
     }
 
-    ::Plate *plate = Plate(plate_id);
+    std::unique_lock<std::shared_mutex> lk(plate_mutex);
+
+    ::Plate *plate = get_plate(plate_id);
     if (plate == nullptr) {
         throw std::invalid_argument(
             fmt::format("plate {} does not exists", plate_id));
@@ -327,6 +341,8 @@ void SampleManager::SetWellsMetadata(std::string plate_id,
             fmt::format("cannot write to DB: {}, rolled back", e.what()));
     }
 
+    lk.unlock();
+
     SendEvent({
         .type = EventType::PlateModified,
         .value = plate_id,
@@ -343,7 +359,9 @@ void SampleManager::CreateSitesOnCenteredGrid(std::string plate_id,
         throw std::invalid_argument("no open experiment");
     }
 
-    ::Plate *plate = Plate(plate_id);
+    std::unique_lock<std::shared_mutex> lk(plate_mutex);
+
+    ::Plate *plate = get_plate(plate_id);
     if (plate == nullptr) {
         throw std::invalid_argument(
             fmt::format("plate {} does not exists", plate_id));
@@ -438,6 +456,8 @@ void SampleManager::CreateSitesOnCenteredGrid(std::string plate_id,
             fmt::format("cannot write to DB: {}, rolled back", e.what()));
     }
 
+    lk.unlock();
+
     SendEvent({
         .type = EventType::PlateModified,
         .value = plate_id,
@@ -450,17 +470,19 @@ void SampleManager::SetCurrentPlate(std::string plate_id)
         throw std::invalid_argument("no open experiment");
     }
 
+    std::unique_lock<std::shared_mutex> lk(plate_mutex);
     if (plate_id.empty()) {
         this->current_plate = nullptr;
         return;
     }
 
-    ::Plate *plate = Plate(plate_id);
+    ::Plate *plate = get_plate(plate_id);
     if (plate == nullptr) {
         throw std::invalid_argument(
             fmt::format("plate {} not found", plate_id));
     }
     this->current_plate = plate;
+    lk.unlock();
 
     SendEvent({
         .type = EventType::CurrentPlateChanged,
@@ -468,15 +490,37 @@ void SampleManager::SetCurrentPlate(std::string plate_id)
     });
 }
 
-::Plate *SampleManager::CurrentPlate() { return this->current_plate; }
+::Plate *SampleManager::CurrentPlate()
+{
+    std::shared_lock<std::shared_mutex> lk(plate_mutex);
+    return this->current_plate;
+}
 
 ::Plate *SampleManager::Plate(std::string plate_id)
+{
+    std::shared_lock<std::shared_mutex> lk(plate_mutex);
+    return get_plate(plate_id);
+}
+
+::Well *SampleManager::Well(std::string plate_id, std::string well_id)
+{
+    std::shared_lock<std::shared_mutex> lk(plate_mutex);
+    return get_well(plate_id, well_id);
+}
+
+::Site *SampleManager::Site(std::string plate_id, std::string well_id,
+                            std::string site_id)
+{
+    std::shared_lock<std::shared_mutex> lk(plate_mutex);
+    return get_site(plate_id, well_id, site_id);
+}
+
+::Plate *SampleManager::get_plate(std::string plate_id)
 {
     if (!exp->is_open()) {
         throw std::invalid_argument("no open experiment");
     }
 
-    std::shared_lock<std::shared_mutex> lk(plate_mutex);
     auto it = plate_map.find(plate_id);
     if (it == plate_map.end()) {
         return nullptr;
@@ -484,7 +528,7 @@ void SampleManager::SetCurrentPlate(std::string plate_id)
     return it->second;
 }
 
-::Well *SampleManager::Well(std::string plate_id, std::string well_id)
+::Well *SampleManager::get_well(std::string plate_id, std::string well_id)
 {
     ::Plate *plate = Plate(plate_id);
     if (!plate) {
@@ -493,8 +537,8 @@ void SampleManager::SetCurrentPlate(std::string plate_id)
     return plate->Well(well_id);
 }
 
-::Site *SampleManager::Site(std::string plate_id, std::string well_id,
-                            std::string site_id)
+::Site *SampleManager::get_site(std::string plate_id, std::string well_id,
+                                std::string site_id)
 {
     ::Well *well = Well(plate_id, well_id);
     if (!well) {
