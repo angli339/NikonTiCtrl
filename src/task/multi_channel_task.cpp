@@ -147,19 +147,21 @@ Status MultiChannelTask::ExposeFrame(int i_ch,
     return status;
 }
 
-ImageData
+StatusOr<ImageData>
 MultiChannelTask::GetFrame(int i_ch,
                            std::chrono::system_clock::time_point *timestamp)
 {
     Channel channel = channels[i_ch];
     Status status = dcam->WaitFrameReady(1000);
     if (!status.ok()) {
-        // This should not happen
-        // Log and then continue anyways to see whether it is possible to get
-        // frame data if there is no data, throw exception there
-        LOG_WARN(
-            "[{}][{}] WaitFrameReady returned false, which indicates ABORT",
-            ndimage_name, i_ch);
+        // error DCAMERR_LOSTFRAME can happen here in ~1/5000 chance
+        // Calling WaitFrameReady again won't help, and can only get
+        // DCAMERR_TIMEOUT.
+        // So it cannot be recovered here, and let's return
+        // the error.
+        LOG_ERROR("[{}][{}] WaitFrameReady failed: {}", ndimage_name, i_ch + 1,
+                  status.ToString());
+        return status;
     } else {
         LOG_DEBUG("[{}][{}] Frame ready [{:.1f} ms after exposure end]",
                   ndimage_name, i_ch + 1, sw_exposure_end.Milliseconds());
@@ -168,8 +170,11 @@ MultiChannelTask::GetFrame(int i_ch,
     utils::StopWatch sw;
     StatusOr<ImageData> frame = dcam->GetFrame(i_ch, timestamp);
     if (!frame.ok()) {
-        throw std::runtime_error(
-            "GetFrame returned nullptr without throwing an exception");
+        std::string error_msg =
+            fmt::format("[{}][{}] GetFrame failed: {}", ndimage_name, i_ch + 1,
+                        frame.status().ToString());
+        LOG_ERROR(error_msg);
+        return frame.status();
     }
     LOG_DEBUG("[{}][{}] Get frame [{:.1f} ms]", ndimage_name, i_ch + 1,
               sw.Milliseconds());
@@ -281,14 +286,22 @@ Status MultiChannelTask::Acquire(std::string ndimage_name,
     //
     utils::StopWatch sw_frame;
     utils::StopWatch sw_channel;
+    int i_retry = 0;
     try {
         for (int i_ch = 0; i_ch < channels.size(); i_ch++) {
-            status = exp->Channels()->WaitSwitchChannel();
-            if (!status.ok()) {
-                LOG_ERROR("[{}][{}/{}] SwitchChannel failed: {}", ndimage_name,
-                          i_ch + 1, channels.size(), status.ToString());
-                StopAcqusition();
-                return status;
+            if (i_retry > 0) {
+                LOG_INFO("[{}][{}/{}] retry {} ", ndimage_name, i_ch + 1,
+                         channels.size(), i_retry);
+            }
+
+            if (i_retry == 0) {
+                status = exp->Channels()->WaitSwitchChannel();
+                if (!status.ok()) {
+                    LOG_ERROR("[{}][{}/{}] SwitchChannel failed: {}",
+                              ndimage_name, i_ch + 1, channels.size(),
+                              status.ToString());
+                    goto cleanup;
+                }
             }
 
             channel = channels[i_ch];
@@ -307,8 +320,7 @@ Status MultiChannelTask::Acquire(std::string ndimage_name,
             if (!status.ok()) {
                 LOG_ERROR("[{}][{}/{}] ExposeFrame failed: {}", ndimage_name,
                           i_ch + 1, channels.size(), status.ToString());
-                StopAcqusition();
-                return status;
+                goto cleanup;
             }
             if (i_ch + 1 < channels.size()) {
                 sw_channel.Reset();
@@ -319,7 +331,34 @@ Status MultiChannelTask::Acquire(std::string ndimage_name,
             }
 
             std::chrono::system_clock::time_point timestamp;
-            ImageData data = GetFrame(i_ch, &timestamp);
+            StatusOr<ImageData> data = GetFrame(i_ch, &timestamp);
+            status = data.status();
+            if (!status.ok()) {
+                if (absl::IsDataLoss(status)) {
+                    // This is a rare error (~1/5000 chance), try recovering
+                    if (i_retry < 2) {
+                        // Try recovering the error
+                        LOG_ERROR("[{}][{}/{}] [Retry {}] GetFrame failed: {}. "
+                                  "Reacquire the channel after 500 ms",
+                                  ndimage_name, i_ch + 1, channels.size(),
+                                  i_retry, status.ToString());
+                        std::this_thread::sleep_for(
+                            std::chrono::milliseconds(500));
+                        i_retry++;
+                        i_ch--;
+                        continue;
+                    } else {
+                        LOG_ERROR("[{}][{}/{}] [Retry {}] GetFrame failed: {}."
+                                  "Max retries reached. Failed",
+                                  ndimage_name, i_ch + 1, channels.size(),
+                                  i_retry, status.ToString());
+                        goto cleanup;
+                    }
+                }
+                LOG_ERROR("[{}][{}/{}] GetFrame failed: {}", ndimage_name,
+                          i_ch + 1, channels.size(), status.ToString());
+                goto cleanup;
+            }
 
             nlohmann::ordered_json new_metadata;
             new_metadata["timestamp"] =
@@ -343,15 +382,25 @@ Status MultiChannelTask::Acquire(std::string ndimage_name,
                 new_metadata["device_property"][k.ToString()] = v;
             }
 
-            exp->Images()->AddImage(ndimage_name, i_ch, i_z, i_t, data,
+            exp->Images()->AddImage(ndimage_name, i_ch, i_z, i_t, data.value(),
                                     new_metadata);
             LOG_INFO("[{}][{}] Frame completed [{:.0f} ms]", ndimage_name,
                      i_ch + 1, sw_frame.Milliseconds());
+            i_retry = 0;
         }
     } catch (std::exception &e) {
-        LOG_ERROR("Unexpected exception during acquisition : {}", e.what());
+        status = absl::UnknownError(fmt::format(
+            "Unexpected exception during acquisition: {}", e.what()));
+    }
+
+cleanup:
+    // Clean up after failed acquisition
+    if (!status.ok()) {
+        LOG_ERROR("Stopping acquisition due to error: {}", status.ToString());
         StopAcqusition();
-        throw;
+        double task_elapse_ms = sw_task.Milliseconds();
+        LOG_ERROR("[{}] Task failed: {:.0f} ms", ndimage_name, task_elapse_ms);
+        return status;
     }
 
     StopAcqusition();

@@ -427,7 +427,17 @@ Status DCam::WaitFrameReady(uint32_t timeout_ms)
             // Expected when we abort the wait when stopping acquisition
             return absl::CancelledError("dcamwait is aborted");
         }
-        return absl::InternalError(
+        if (err == DCAMERR_LOSTFRAME) {
+            return absl::DataLossError(
+                "dcamwait_start failed: DCAMERR_LOSTFRAME (frame data is "
+                "lost)");
+        }
+        if (err == DCAMERR_MISSINGFRAME_TROUBLE) {
+            return absl::DataLossError(
+                "dcamwait_start failed: DCAMERR_MISSINGFRAME_TROUBLE "
+                "(frame data is lost due to problems in the low level driver)");
+        }
+        return absl::UnknownError(
             fmt::format("dcamwait_start(FRAMEREADY, {}): {}", waitStart.timeout,
                         DCAMERR_ToString(err)));
     }

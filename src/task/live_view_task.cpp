@@ -27,13 +27,18 @@ void LiveViewTask::Run()
     try {
         for (;;) {
             StatusOr<ImageData> frame = GetFrame();
+            if (absl::IsCancelled(frame.status())) {
+                is_running = false;
+                exp->Images()->SetLiveViewFrame(ImageData());
+                return;
+            }
+            if (absl::IsDataLoss(frame.status())) {
+                LOG_WARN("ignore frame data loss ({})",
+                         frame.status().ToString());
+                continue;
+            }
             if (!status.ok()) {
                 throw std::runtime_error(status.ToString());
-            }
-            if (frame.value().empty()) {
-                is_running = false;
-                exp->Images()->SetLiveViewFrame(frame.value());
-                return;
             }
             exp->Images()->SetLiveViewFrame(frame.value());
         }
@@ -126,10 +131,14 @@ Status LiveViewTask::StartAcquisition()
 StatusOr<ImageData> LiveViewTask::GetFrame()
 {
     Status status = dcam->WaitFrameReady(1000);
+    if (absl::IsCancelled(status) || absl::IsDataLoss(status)) {
+        return status;
+    }
     if (!status.ok()) {
-        LOG_DEBUG("[{}] WaitFrameReady returned false, which indicates ABORT",
-                  task_name);
-        return ImageData();
+        LOG_ERROR("[{}] WaitFrameReady failed: {}", task_name,
+                  status.ToString());
+        return absl::InternalError("WaitFrameReady failed: " +
+                                   status.ToString());
     }
 
     // Get latest frame

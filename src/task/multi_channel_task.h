@@ -30,8 +30,8 @@ protected:
     Status PrepareBuffer();
     Status StartAcqusition();
     Status ExposeFrame(int i_ch, PropertyValueMap *property_snapshot);
-    ImageData GetFrame(int i_ch,
-                       std::chrono::system_clock::time_point *timestamp);
+    StatusOr<ImageData>
+    GetFrame(int i_ch, std::chrono::system_clock::time_point *timestamp);
     void StopAcqusition();
 
 private:

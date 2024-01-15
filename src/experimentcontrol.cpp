@@ -297,9 +297,13 @@ void ExperimentControl::runMultiChannelTask(std::string ndimage_name,
         is_busy = false;
         std::string message = fmt::format("Error in task: {}", e.what());
         LOG_ERROR(message);
+        // Set to Ready state for now, so that we can retry without restarting
+        // the program
+        // TODO check whether StopAcquisition was successful,
+        // if not, we should set to Error state
         SendEvent({
             .type = EventType::TaskStateChanged,
-            .value = "Error",
+            .value = "Ready",
         });
         SendEvent({
             .type = EventType::TaskMessage,
