@@ -38,7 +38,7 @@ cmake .. \
 cmake --build .
 
 # Install
-cmake --install .
+sudo cmake --install .
 ```
 
 ### To create zip package for release
