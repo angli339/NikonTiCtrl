@@ -196,6 +196,8 @@ int AnalysisManager::QuantifyRegions(std::string ndimage_name, int i_t,
 
     LOG_DEBUG("Label image saved");
 
+    // Workaround to deal with 0 cell condition
+    // Full implementation should save the results as well
     if (region_prop_filtered.size() == 0) {
         SendEvent({
             .type = EventType::QuantificationCompleted,

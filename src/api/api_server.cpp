@@ -619,6 +619,14 @@ grpc::Status APIServer::QuantifyRegions(ServerContext *context,
         n_regions = exp->Analysis()->QuantifyRegions(
             req->ndimage_name(), req->i_t(), req->segmentation_ch());
 
+        // Workaround to deal with 0 cell condition
+        // Currently QuantificationResults is not saved in 0 cell condition
+        // resulting in failure in GetQuantification
+        if (n_regions == 0) {
+            resp->set_n_regions(n_regions);
+            return grpc::Status::OK;
+        }
+
         results =
             exp->Analysis()->GetQuantification(req->ndimage_name(), req->i_t());
 
