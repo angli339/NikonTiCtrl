@@ -160,6 +160,13 @@ Status Proscan::Connect()
     std::vector<std::pair<std::string, std::string>> init_prop_list = {
         {"CommandProtocol", "0"},
         {"XYResolution", "0.1"},
+
+        // Home filter wheels
+        // this is most of the time not needed, and only occasionally necessary
+        // but when homing is not done, the reported position can be different
+        // from actual position
+        {"FilterWheel1", "H"},
+        {"FilterWheel3", "H"},
     };
     for (const auto &[name, value] : init_prop_list) {
         auto node = node_map[name];
@@ -188,6 +195,13 @@ Status Proscan::Connect()
             return absl::UnavailableError(
                 fmt::format("initialize {}: set to \"{}\": {}", name, value,
                             set_status.ToString()));
+        }
+
+        if (((name == "FilterWheel1") || (name == "FilterWheel3")) &&
+            (value == "H"))
+        {
+            // do not validate read back in the case of homing
+            continue;
         }
 
         // read back to validate
